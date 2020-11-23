@@ -89,7 +89,7 @@ public class Parser {
         return listOfMaterials;
     }
 
-    public void itemFactory(String baseString) {
+    public List<String[]> itemFactory(String baseString) {
         Splitter splitter = new Splitter();
         List<String[]> itemContainers = splitter.generalizedItemSplitter(baseString);
         for (String[] item: itemContainers) {
@@ -100,6 +100,7 @@ public class Parser {
             System.out.println(item[0] + " - " + item[1]);
             System.out.println(item[2] + " - " +item[3]);
         }
+        return itemContainers;
     }
 
     public void itemTroubleFactory(String baseString) {
