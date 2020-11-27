@@ -4,10 +4,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
+
+
 
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
@@ -29,7 +32,7 @@ public class Parser {
         return output.toString();
     }
 
-    public int hexToDecimal(String hexNumber) {
+    public int hexToDecimal(String hexNumber, String item) {
         String[] hexPartition = hexNumber.split(" ");
         switch (hexPartition.length) {
             case 1:
@@ -57,75 +60,107 @@ public class Parser {
                     return base3/2+second3+third3;
                 }
             default: // more than 3, rip
-                System.out.println("Time to do more testing fam.");
+                System.out.println(item + " - Keep an eye out for these items.");
                 return 0;
         }
     }
 
-    public void factory(String path, String prefabType) throws IOException {
+    public List<String[]> factory(String path, String prefabType) throws IOException {
         String baseString = spaceInserter(byteToString(path));
         switch (prefabType) {
             case "recipe":
-                recipeFactory(baseString); // nothing is stored for now
-                break;
+                return recipeFactory(baseString);
             case "item":
-                itemFactory(baseString);
-                break;
+                return itemFactory(baseString);
+//            case "prefab":
+//                return prefabFactory(baseString, path);
             case "item-testing":
                 itemTroubleFactory(baseString);
                 break;
         }
+        return new ArrayList<>();
     }
 
-    public List<String[]> recipeFactory(String baseString) {
+    public List<String[]> recipeFactory(String baseString)  {
         Splitter splitter = new Splitter();
         List<String[]> listOfMaterials = splitter.recipeSplitter(baseString);
         for (String[] item: listOfMaterials) {
             item[0] = hexToAscii(item[0]);
-            int quantity = hexToDecimal(item[1]);
+            int quantity = hexToDecimal(item[1], item[0]);
             item[1] = quantity == 0 ? "Unlocked automatically" : Integer.toString(quantity);
-            System.out.println(item[0] + " - " + item[1]);
+            String toPrint = item[0] + " - " + item[1];
+//            System.out.println(toPrint); // prints item parsed
         }
         return listOfMaterials;
     }
 
-    public List<String[]> itemFactory(String baseString) {
+    public List<String[]> itemFactory(String baseString)  {
         Splitter splitter = new Splitter();
         List<String[]> itemContainers = splitter.generalizedItemSplitter(baseString);
-        for (String[] item: itemContainers) {
-            item[0] = hexToAscii(item[0]);
-            item[1] = hexToAscii(item[1]);
-            item[2] = hexToAscii(item[2]);
-            item[3] = hexToAscii(item[3]);
-            System.out.println(item[0] + " - " + item[1]);
-            System.out.println(item[2] + " - " +item[3]);
-        }
+        convertWrite(itemContainers);
         return itemContainers;
     }
 
-    public void itemTroubleFactory(String baseString) {
-        Splitter splitter = new Splitter();
-        List<String[]> itemContainers = splitter.itemSplitterTroubleshooter(baseString);
+//    public List<String[]> prefabFactory(String baseString, String path) {
+//        Splitter splitter = new Splitter();
+//        List<String[]> itemContainers = splitter.prefabMatch(baseString, path);
+//        for (String[] item: itemContainers) {
+//            item[0] = hexToAscii(item[0]);
+//            item[1] = hexToAscii(item[1]);
+//            String printItem = item[0] + " - " + item[1];
+//            System.out.println(printItem);
+//        }
+//        return itemContainers;
+//    }
+
+    private void convertWrite(List<String[]> itemContainers)  {
         for (String[] item: itemContainers) {
             item[0] = hexToAscii(item[0]);
             item[1] = hexToAscii(item[1]);
             item[2] = hexToAscii(item[2]);
             item[3] = hexToAscii(item[3]);
-//            System.out.println("name");
-            System.out.println(item[0] + " - " + item[1]);
-//            System.out.println("desc");
-            System.out.println(item[2] + " - " +item[3]);
+            String printName = item[0] + " - " + item[1];
+            String printDesc = item[2] + " - " + item[3];
+            System.out.println(printName);
+            System.out.println(printDesc);
         }
     }
 
-    public void convertDirectory(String path, String prefabType) throws IOException {
+    public void itemTroubleFactory(String baseString)  {
+        Splitter splitter = new Splitter();
+        List<String[]> itemContainers = splitter.itemSplitterTroubleshooter(baseString);
+        convertWrite(itemContainers);
+    }
+
+    public List<List<String[]>> convertDirectory(String path, String prefabType) throws IOException {
         File dir = new File(path);
         File[] directoryListing = dir.listFiles();
+        List<List<String[]>> returnList = new ArrayList<>();
         if (directoryListing != null) {
+            String writePath = path +".txt"; // to be figured out how to use
             for (File child : directoryListing) {
-                System.out.println(child.getPath());
-                factory(child.getPath(), prefabType);
+                String childPath = child.getPath();
+//                System.out.println(childPath); // prints path
+                returnList.add(factory(childPath, prefabType));
             }
         }
+        return returnList;
     }
+
+//    public void prefabConvertDirectory(String path) throws IOException {
+//        File[] files = new File(path).listFiles();
+//        assert files != null;
+//        prefabConvertDirectoryHelper(files);
+//    }
+//
+//    public void prefabConvertDirectoryHelper(File[] files) throws IOException {
+//        for (File file : files) {
+//            if (file.isDirectory()) {
+//                System.out.println("Directory: " + file.getName());
+//                prefabConvertDirectoryHelper(Objects.requireNonNull(file.listFiles()));
+//            } else {
+//                factory(file.getPath(), "prefab");
+//            }
+//        }
+//    }
 }

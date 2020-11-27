@@ -1,3 +1,9 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,10 +56,10 @@ public class Splitter {
 
     public List<String[]> generalizedItemSplitter(String hexString) {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 ";
-//        String subHexString = hexString.substring(hexString.indexOf("24 70"));
+//        String subHexString = hexString.substring(hexString.indexOf("24 70")); // old identifier
         String subHexString = hexString.substring(hexString.indexOf("24 70")+24);
         String[] firstParse = subHexString.split(itemIdentifier);
-        System.out.println(firstParse.length);
+//        System.out.println(firstParse.length); // used for troubleshooting
         // each item is stored in 2 indices; name and description
         List<String[]> itemList = new ArrayList<>();
         Pattern p = Pattern.compile(hexAlphabetExtended);
@@ -62,7 +68,6 @@ public class Splitter {
         String noPath = "4E 2F 41";
         String description = "64 65 73 63";
         String name = "6E 61 6D 65";
-        // TODO: split these sub-cases into helper methods? and pull out duplicate code
         for (int i = 0; i < firstParse.length; i++) {
             // case 1: both are available
             if (firstParse[i].contains(name) && i+1 < firstParse.length && firstParse[i+1].contains(description)) {
@@ -117,7 +122,7 @@ public class Splitter {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 ";
         String subHexString = hexString.substring(hexString.indexOf("24 70"));
         String[] firstParse = subHexString.split(itemIdentifier);
-        System.out.println(firstParse.length);
+//        System.out.println(firstParse.length); // used for troubleshooting
         // each item is stored in 2 indices; name and description
         List<String[]> itemList = new ArrayList<>();
         Pattern p = Pattern.compile(hexAlphabetExtended);
@@ -198,5 +203,48 @@ public class Splitter {
 //            }
 //        }
 //        return itemList;
+//    }
+
+    //    // new approach; match files to path instead of attempting to form items myself; match the natural file structure
+//    public List<String[]> prefabMatch(String hexString, String path) {
+//        String itemIdentifier = " 24 70 72 65 66 61 62 73 "; // $prefabs
+//        String subHexString = hexString.substring(hexString.indexOf("24 70")+24);
+//        String[] firstParse = subHexString.split(itemIdentifier);
+//        if (firstParse.length == 1) {
+//            parseFail(path);
+//            return new ArrayList<>();
+//        }
+//        // each item is stored in 2 indices; path and name/description
+//        List<String[]> itemList = new ArrayList<>();
+//        Pattern p = Pattern.compile(hexAlphabetExtended);
+//        Parser parser = new Parser();
+//        String noData = "4E 6F 20 64 61 74 61 20 61 73 73 6F 63 69 61 74 65 64 2E";
+//        String description = "64 65 73 63";
+//        String name = "6E 61 6D 65";
+//        for (int i = 0; i < firstParse.length; i++) {
+//            if (firstParse[i].contains(name) || firstParse[i].contains(description)) {
+//                String[] item = firstParse[i].split(" 18 \\w\\w " );
+//                String itemPath = "70 72 65 66 61 62 73 "+item[0];
+//                Matcher m1 = p.matcher(item[1]);
+//                if (m1.find() && !item[1].substring(0,2).contains("BE")) {
+//                    String itemText = item[1].substring(m1.start(), item[1].indexOf(" BE"));
+//                    itemList.add(new String[] {itemPath, itemText});
+//                    i++;
+//                }
+//            } else {
+//                parseFail(path);
+//            }
+//        }
+//        return itemList;
+//    }
+
+//    private void parseFail(String path) {
+//        try {
+//            Path writePath = Paths.get("C:\\Users\\Julian\\Desktop\\parsing\\logged.txt");
+//            Files.write(writePath, Arrays.asList(path + "was not added to the list"), StandardCharsets.UTF_8,
+//                    Files.exists(writePath) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+//        } catch (IOException e) {
+//            System.out.println("Could not write to file.");
+//        }
 //    }
 }
