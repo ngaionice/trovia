@@ -1,25 +1,28 @@
 import java.io.IOException;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Parser parser = new Parser();
-        Reshaper reshape = new Reshaper();
+        Workflows workflows = new Workflows();
 //        parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_abilities", "item");
-//        parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_collections", "item");
 //        parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_equipment", "item");
 //        parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_loot", "item");
 //        parser.prefabConvertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\prefabs");
 
-        List<List<String[]>> recipes = parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_recipes", "recipe");
-        List<List<String[]>> items = parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_item", "item");
-        List<List<String[]>> placeables = parser.convertDirectory("C:\\Users\\Julian\\Desktop\\parsing\\test_placeable", "item");
+        // dir paths
+        String recipeDirPath = "C:\\Users\\Julian\\Desktop\\parsing\\test_recipes";
+        String itemDirPath = "C:\\Users\\Julian\\Desktop\\parsing\\test_item";
+        String collDirPath = "C:\\Users\\Julian\\Desktop\\parsing\\test_collections";
+        String[] recipeRefPaths = new String[] {"C:\\Users\\Julian\\Desktop\\parsing\\test_item", "C:\\Users\\Julian\\Desktop\\parsing\\test_placeable"};
 
-        List<String> paths = reshape.extractUniquePaths(recipes);
-        List<String[]> itemsMerged = reshape.itemListMerge(items);
-        List<String[]> placeablesMerged = reshape.itemListMerge(placeables);
+        // log paths
+        String dupLogPath = "C:\\Users\\Julian\\Desktop\\parsing\\duplicates.txt";
+        String unmatchedLogPath = "C:\\Users\\Julian\\Desktop\\parsing\\unmatched.txt";
+        String incompleteItemPath = "C:\\Users\\Julian\\Desktop\\parsing\\incomplete_items.txt";
+        String incompleteCollPath = "C:\\Users\\Julian\\Desktop\\parsing\\incomplete_collections.txt";
 
-        List<String[]> allMerged = reshape.referenceMerge(placeablesMerged, itemsMerged);
-        reshape.itemMatch(allMerged, paths);
+        // workflows
+        workflows.recipePathMatch(recipeRefPaths,recipeDirPath, dupLogPath, unmatchedLogPath);
+        workflows.itemProcess(itemDirPath, incompleteItemPath);
+        workflows.itemProcess(collDirPath, incompleteCollPath);
     }
 }

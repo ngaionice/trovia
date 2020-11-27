@@ -34,7 +34,6 @@ public class Splitter {
                 parsedList.add(currItem);
             }
         }
-        // need to solve the issue of the last string
         String lastString = parsedList.get(lastIndex-1)[0];
         String[] lastStringArray = lastString.split(" ");
         int lastValidCharacter = 0;
@@ -56,10 +55,8 @@ public class Splitter {
 
     public List<String[]> generalizedItemSplitter(String hexString) {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 ";
-//        String subHexString = hexString.substring(hexString.indexOf("24 70")); // old identifier
         String subHexString = hexString.substring(hexString.indexOf("24 70")+24);
         String[] firstParse = subHexString.split(itemIdentifier);
-//        System.out.println(firstParse.length); // used for troubleshooting
         // each item is stored in 2 indices; name and description
         List<String[]> itemList = new ArrayList<>();
         Pattern p = Pattern.compile(hexAlphabetExtended);
@@ -123,7 +120,6 @@ public class Splitter {
         String subHexString = hexString.substring(hexString.indexOf("24 70"));
         String[] firstParse = subHexString.split(itemIdentifier);
 //        System.out.println(firstParse.length); // used for troubleshooting
-        // each item is stored in 2 indices; name and description
         List<String[]> itemList = new ArrayList<>();
         Pattern p = Pattern.compile(hexAlphabetExtended);
         for (String s : firstParse) {
@@ -134,7 +130,7 @@ public class Splitter {
                 String itemName = itemNameList[1].substring(m1.start(), itemNameList[1].indexOf(" BE"));
                 itemList.add(new String[]{itemNamePath, itemName, "4E 2F 41", "4E 2F 41"});
             } else {
-                System.out.println("Something is problematic");
+                System.out.println("Something is problematic, check" + hexString);
                 break;
             }
         }

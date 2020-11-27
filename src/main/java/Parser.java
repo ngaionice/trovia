@@ -121,8 +121,8 @@ public class Parser {
             item[3] = hexToAscii(item[3]);
             String printName = item[0] + " - " + item[1];
             String printDesc = item[2] + " - " + item[3];
-            System.out.println(printName);
-            System.out.println(printDesc);
+//            System.out.println(printName);
+//            System.out.println(printDesc);
         }
     }
 
@@ -140,7 +140,9 @@ public class Parser {
             String writePath = path +".txt"; // to be figured out how to use
             for (File child : directoryListing) {
                 String childPath = child.getPath();
-//                System.out.println(childPath); // prints path
+//                if (!prefabType.equals("recipe")) {
+//                    System.out.println(childPath); // prints path
+//                }
                 returnList.add(factory(childPath, prefabType));
             }
         }
