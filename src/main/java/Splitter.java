@@ -12,9 +12,12 @@ import java.util.regex.Pattern;
 
 public class Splitter {
 
-    static String hexAlphabetBase = "[6][0-9A-F]|[7][0-9A]|2F"; // contains slash
-    static String hexAlphabetExtended = "0A|[4][1-9A-F]|[5][0-9A]|[6][0-9A-F]|[7][0-9A]|2[017CE]|3[AF]|5[CF]";
+    String hexAlphabetBase = "[6][0-9A-F]|[7][0-9A]|2F"; // contains slash
+    String hexAlphabetExtended = "0A|[4][1-9A-F]|[5][0-9A]|[6][0-9A-F]|[7][0-9A]|2[017CE]|3[AF]|5[CF]";
     // period, space, newline, exclaim/question marks, backslash, underscore, maybe some more that i forgot
+    String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // lowercase letters, underscore and digits
+    Pattern p = Pattern.compile(hexAlphabetPrefab);
+
 
     public List<String[]> recipeSplitter(String hexString) {
         String itemIdentifier = " 28 00 AE 03 00 01 18 00 28 00 1E 40 00 1E ";
@@ -54,7 +57,7 @@ public class Splitter {
     }
 
     public List<String[]> generalizedItemSplitter(String hexString) {
-        String itemIdentifier = " 24 70 72 65 66 61 62 73 ";
+        String itemIdentifier = " 24 70 72 65 66 61 62 73 "; // $prefabs
         String subHexString = hexString.substring(hexString.indexOf("24 70")+24);
         String[] firstParse = subHexString.split(itemIdentifier);
         // each item is stored in 2 indices; name and description
@@ -114,6 +117,115 @@ public class Splitter {
         }
         return itemList;
     }
+
+    /** Takes in a hex string from placeable/crafting that contains the suffix _interactive in the file name,
+     * and with spaces inserted by Parser.spaceInserter
+     *
+     * @param hexString the string to be parsed; contains everything in the file
+     * @param path the path of the file, for logging purposes
+     * @return a list of string arrays, with the first array containing the first array containing only the name of the crafting station,
+     * and all subsequent arrays following the format [category name, recipes...],
+     */
+    public List<String[]> recipeBenchSplitter(String hexString, String path) throws Exception {
+        List<String[]> itemList = new ArrayList<>();
+        String categorySplit = "24 70 72 65 66 61 62 73 "; // $prefab in hex
+
+        // first identify the number of categories; $prefabs show up at least twice for 0 categories; +1 for each additional
+        String temp = hexString.replace(categorySplit, "");
+        int occ = (hexString.length() - temp.length()) / categorySplit.length();
+
+        if (occ == 2) {
+            int rangeStart = hexString.indexOf(categorySplit);
+            int rangeEnd = hexString.substring(rangeStart + 24).indexOf(categorySplit)+rangeStart;
+            String substring = hexString.substring(rangeStart, rangeEnd);
+            String dirtyStationName = hexString.substring(rangeEnd);
+            if (dirtyStationName.contains("20")) {
+                String stationName = dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
+                itemList.add(new String[] {stationName});
+            } else {
+                throw new Exception("No crafting station name was found for "+path+".");
+            }
+            itemList.add(recipeBenchHelper(substring, path));
+        } else if (occ > 2) {
+            String[] substrings = hexString.split(categorySplit);
+            String dirtyStationName = substrings[substrings.length-1];
+            if (dirtyStationName.contains("20")) {
+                String stationName = "24 70 72 65 66 61 62 73 " + dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
+                itemList.add(new String[] {stationName});
+            } else {
+                throw new Exception("No crafting station name was found for "+path+".");
+            }
+            for (int i = 1; i < substrings.length-1; i++) {
+                itemList.add(recipeBenchHelper(substrings[i], path));
+            }
+        } else {
+            throw new Exception("Less than 2 '$prefab's were found for" + path + ".");
+        }
+        return itemList;
+    }
+
+    /**
+     * Helper method for recipeBenchSplitter.
+     *
+     * @param unparsed substring containing category name and recipe names
+     * @return a String array with string[0] being the category name and all other indices containing recipe file paths
+     */
+    private String[] recipeBenchHelper(String unparsed, String path) {
+        List<String> recipes = new ArrayList<>();
+        String recipeText = "72 65 63 69 70 65 "; // recipe in hex
+
+        int nameEnd = unparsed.indexOf("BE ");
+        if (nameEnd != -1) { // no such string, then something probably went wrong
+            String name = "24 70 72 65 66 61 62 73 " + unparsed.substring(0, nameEnd);
+            recipes.add(name);
+            String rawRecipes = unparsed.substring(nameEnd);
+            Pattern re = Pattern.compile(recipeText);
+            Matcher m = re.matcher(rawRecipes);
+            List<Integer> indices = new ArrayList<>();
+
+            // find all the starting points of recipes
+            while (true) {
+                if (m.find()) {
+                    indices.add(m.start());
+                } else {
+                    break;
+                }
+            }
+
+            // extract the recipes
+            for (int i = 0; i < indices.size(); i++) {
+                if (i+1 < indices.size()) {
+                    recipes.add(rawRecipes.substring(indices.get(i), indices.get(i+1)));
+                } else {
+                    recipes.add(rawRecipes.substring(indices.get(i))); // last recipe
+                }
+            }
+
+            // clean up the recipes
+            for (int i = 1; i < recipes.size(); i++) {
+                String processing = recipes.get(i);
+                if (processing.length()-6 > 0) {
+                    processing = processing.substring(0, processing.length()-6); // removing the guaranteed 2 characters that are useless
+                    int lastIndex = 0;
+                    for (int j = 0; j < processing.length(); j += 3) {
+                        if (processing.substring(j, j+2).matches(hexAlphabetPrefab)) {
+                            lastIndex = j + 3;
+                        } else {
+                            break;
+                        }
+                    }
+                    recipes.set(i, processing.substring(0, lastIndex));
+                } else {
+                    System.out.println("Recipe clean-up failed at "+path+".");
+                }
+            }
+
+        } else {
+            System.out.println("No recipes were parsed at " + path + ".");
+        }
+        return recipes.toArray(new String[0]);
+    }
+
 
     public List<String[]> itemSplitterTroubleshooter(String hexString) {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 ";

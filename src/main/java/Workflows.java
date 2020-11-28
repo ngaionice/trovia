@@ -20,7 +20,7 @@ public class Workflows {
      * @return a map with the item name as the key, and their associated paths
      * @throws IOException if the specified text file does not exist.
      */
-    public Map<String, String[]> recipePathMatch(String[] refPaths, String recipeDirPath, String dupLogPath, String unmatchedLogPath) throws IOException {
+    public Map<String, String[]> recipePathMatch(String[] refPaths, String recipeDirPath, String dupLogPath, String unmatchedLogPath) throws Exception {
         List<List<String[]>> recipesParsed = parser.convertDirectory(recipeDirPath, "recipe");
         List<String> recipeUniquePaths = reshaper.extractUniquePaths(recipesParsed);
         List<String[]> references = new ArrayList<>();
@@ -42,7 +42,7 @@ public class Workflows {
      * @return a Map with item name as key, and [namePath, name, descPath, desc] as value.
      * @throws IOException if the specified text file does not exist.
      */
-    public Map<String, String[]> itemProcess(String dirPath, String logPath) throws IOException {
+    public Map<String, String[]> itemProcess(String dirPath, String logPath) throws Exception {
         List<List<String[]>> parserOutput = parser.convertDirectory(dirPath, "item");
         List<String[]> itemsReshaped = reshaper.itemListMerge(parserOutput);
         return reshaper.itemEntryFormat(itemsReshaped, logPath);

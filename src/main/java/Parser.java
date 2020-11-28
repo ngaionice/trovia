@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Parser {
 
@@ -22,7 +23,7 @@ public class Parser {
         return hexRaw.replaceAll("(.{" + val + "})", "$1 ").trim();
     }
 
-    public String hexToAscii(String hexString) {
+    public static String hexToAscii(String hexString) {
         StringBuilder output = new StringBuilder();
 
         for (int i = 0; i < hexString.length(); i += 3) {
@@ -65,18 +66,18 @@ public class Parser {
         }
     }
 
-    public List<String[]> factory(String path, String prefabType) throws IOException {
+    public List<String[]> factory(String path, String prefabType) throws Exception {
         String baseString = spaceInserter(byteToString(path));
         switch (prefabType) {
             case "recipe":
                 return recipeFactory(baseString);
             case "item":
                 return itemFactory(baseString);
-//            case "prefab":
-//                return prefabFactory(baseString, path);
             case "item-testing":
                 itemTroubleFactory(baseString);
                 break;
+            case "bench": 
+                return benchFactory(baseString, path);
         }
         return new ArrayList<>();
     }
@@ -101,18 +102,6 @@ public class Parser {
         return itemContainers;
     }
 
-//    public List<String[]> prefabFactory(String baseString, String path) {
-//        Splitter splitter = new Splitter();
-//        List<String[]> itemContainers = splitter.prefabMatch(baseString, path);
-//        for (String[] item: itemContainers) {
-//            item[0] = hexToAscii(item[0]);
-//            item[1] = hexToAscii(item[1]);
-//            String printItem = item[0] + " - " + item[1];
-//            System.out.println(printItem);
-//        }
-//        return itemContainers;
-//    }
-
     private void convertWrite(List<String[]> itemContainers)  {
         for (String[] item: itemContainers) {
             item[0] = hexToAscii(item[0]);
@@ -126,13 +115,30 @@ public class Parser {
         }
     }
 
+    public List<String[]> benchFactory(String baseString, String path) throws Exception {
+        Splitter splitter = new Splitter();
+        List<String[]> recipes = splitter.recipeBenchSplitter(baseString, path);
+        for (int i = 0; i < recipes.size(); i++) {
+            recipes.set(i, Arrays.stream(recipes.get(i)).map(Parser::hexToAscii).toArray(String[]::new));
+
+            // testing
+
+        }
+        for (String[] item: recipes) {
+            for (String string: item) {
+                System.out.println(string);
+            }
+        }
+        return recipes;
+    }
+
     public void itemTroubleFactory(String baseString)  {
         Splitter splitter = new Splitter();
         List<String[]> itemContainers = splitter.itemSplitterTroubleshooter(baseString);
         convertWrite(itemContainers);
     }
 
-    public List<List<String[]>> convertDirectory(String path, String prefabType) throws IOException {
+    public List<List<String[]>> convertDirectory(String path, String prefabType) throws Exception {
         File dir = new File(path);
         File[] directoryListing = dir.listFiles();
         List<List<String[]>> returnList = new ArrayList<>();
@@ -164,5 +170,17 @@ public class Parser {
 //                factory(file.getPath(), "prefab");
 //            }
 //        }
+//    }
+
+    //    public List<String[]> prefabFactory(String baseString, String path) {
+//        Splitter splitter = new Splitter();
+//        List<String[]> itemContainers = splitter.prefabMatch(baseString, path);
+//        for (String[] item: itemContainers) {
+//            item[0] = hexToAscii(item[0]);
+//            item[1] = hexToAscii(item[1]);
+//            String printItem = item[0] + " - " + item[1];
+//            System.out.println(printItem);
+//        }
+//        return itemContainers;
 //    }
 }
