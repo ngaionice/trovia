@@ -1,9 +1,3 @@
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,8 +12,14 @@ public class Splitter {
     String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // lowercase letters, underscore and digits
     Pattern p = Pattern.compile(hexAlphabetPrefab);
 
-
-    public List<String[]> recipeSplitter(String hexString) {
+    /**
+     * Takes in a hex string with spaces inserted by Parser.insertSpaces, then returns a list of string arrays,
+     * with each array in the format of [item name path, item quantity]
+     *
+     * @param hexString a hex string with spaces every 2 characters
+     * @return a list of string arrays, each array has the format of [item name path, item quantity]
+     */
+    public List<String[]> splitRecipe(String hexString) {
         String itemIdentifier = " 28 00 AE 03 00 01 18 00 28 00 1E 40 00 1E ";
         String[] firstParse = hexString.split(itemIdentifier);
         List<String> processing = Arrays.asList(firstParse);
@@ -56,7 +56,17 @@ public class Splitter {
         return parsedList;
     }
 
-    public List<String[]> generalizedItemSplitter(String hexString) {
+    /**
+     * Takes in a hex string with spaces inserted, and returns a string array containing an item's name and description,
+     * as well as their corresponding paths.
+     *
+     * If name || description was not found for an object, inserts N/A into name/description path (in hex),
+     * along with a message stating that no name/description was found for that item.
+     *
+     * @param hexString a hex string (either belonging to item or collection) with spaces inserted every 2 characters
+     * @return a string array in the format [path of name, name, path of description, description]
+     */
+    public List<String[]> splitItemGeneralized(String hexString) {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 "; // $prefabs
         String subHexString = hexString.substring(hexString.indexOf("24 70")+24);
         String[] firstParse = subHexString.split(itemIdentifier);
@@ -69,6 +79,7 @@ public class Splitter {
         String description = "64 65 73 63";
         String name = "6E 61 6D 65";
         for (int i = 0; i < firstParse.length; i++) {
+
             // case 1: both are available
             if (firstParse[i].contains(name) && i+1 < firstParse.length && firstParse[i+1].contains(description)) {
                 String[] itemNameList = firstParse[i].split(" 18 \\w\\w " );
@@ -88,6 +99,7 @@ public class Splitter {
                     break;
                 }
             }
+
             // case 2: only name
             else if (firstParse[i].contains(name) && (i+1 >= firstParse.length || !firstParse[i+1].contains(description))) {
                 String[] itemNameList = firstParse[i].split(" 18 \\w\\w " );
@@ -101,7 +113,8 @@ public class Splitter {
                     break;
                 }
             }
-            // else: only desc is available
+
+            // else: only description is available
             else {
                 String[] itemDescList = firstParse[i].split(" 18 \\w\\w ");
                 String itemDescPath = "70 72 65 66 61 62 73 "+itemDescList[0];
@@ -118,15 +131,16 @@ public class Splitter {
         return itemList;
     }
 
-    /** Takes in a hex string from placeable/crafting that contains the suffix _interactive in the file name,
+    /**
+     * Takes in a hex string from placeable/crafting that contains the suffix _interactive in the file name,
      * and with spaces inserted by Parser.spaceInserter
      *
      * @param hexString the string to be parsed; contains everything in the file
      * @param path the path of the file, for logging purposes
-     * @return a list of string arrays, with the first array containing the first array containing only the name of the crafting station,
+     * @return a list of string arrays, with the first array containing only the name of the crafting station,
      * and all subsequent arrays following the format [category name, recipes...],
      */
-    public List<String[]> recipeBenchSplitter(String hexString, String path) throws Exception {
+    public List<String[]> splitBenchRecipes(String hexString, String path) throws Exception {
         List<String[]> itemList = new ArrayList<>();
         String categorySplit = "24 70 72 65 66 61 62 73 "; // $prefab in hex
 
@@ -145,7 +159,7 @@ public class Splitter {
             } else {
                 throw new Exception("No crafting station name was found for "+path+".");
             }
-            itemList.add(recipeBenchHelper(substring, path));
+            itemList.add(splitBenchRecipesHelper(substring, path));
         } else if (occ > 2) {
             String[] substrings = hexString.split(categorySplit);
             String dirtyStationName = substrings[substrings.length-1];
@@ -156,7 +170,7 @@ public class Splitter {
                 throw new Exception("No crafting station name was found for "+path+".");
             }
             for (int i = 1; i < substrings.length-1; i++) {
-                itemList.add(recipeBenchHelper(substrings[i], path));
+                itemList.add(splitBenchRecipesHelper(substrings[i], path));
             }
         } else {
             throw new Exception("Less than 2 '$prefab's were found for" + path + ".");
@@ -170,11 +184,11 @@ public class Splitter {
      * @param unparsed substring containing category name and recipe names
      * @return a String array with string[0] being the category name and all other indices containing recipe file paths
      */
-    private String[] recipeBenchHelper(String unparsed, String path) {
+    private String[] splitBenchRecipesHelper(String unparsed, String path) {
         List<String> recipes = new ArrayList<>();
         String recipeText = "72 65 63 69 70 65 "; // recipe in hex
 
-        int nameEnd = unparsed.indexOf("BE ");
+        int nameEnd = unparsed.indexOf("BE "); // end character used to signify end of a category name in files
         if (nameEnd != -1) { // no such string, then something probably went wrong
             String name = "24 70 72 65 66 61 62 73 " + unparsed.substring(0, nameEnd);
             recipes.add(name);
@@ -221,13 +235,13 @@ public class Splitter {
             }
 
         } else {
-            System.out.println("No recipes were parsed at " + path + ".");
+            System.out.println("No end character was identified at " + path + ".");
         }
         return recipes.toArray(new String[0]);
     }
 
 
-    public List<String[]> itemSplitterTroubleshooter(String hexString) {
+    public List<String[]> troubleshootSplitItem(String hexString) {
         String itemIdentifier = " 24 70 72 65 66 61 62 73 ";
         String subHexString = hexString.substring(hexString.indexOf("24 70"));
         String[] firstParse = subHexString.split(itemIdentifier);

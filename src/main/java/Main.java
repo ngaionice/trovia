@@ -1,4 +1,5 @@
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -24,14 +25,14 @@ public class Main {
         String incompleteCollPath = "C:\\Users\\Julian\\Desktop\\parsing\\incomplete_collections.txt";
 
         // workflows
-//        workflows.recipePathMatch(recipeRefPaths,recipeDirPath, dupLogPath, unmatchedLogPath);
-//        workflows.itemProcess(itemDirPath, incompleteItemPath);
-//        workflows.itemProcess(collDirPath, incompleteCollPath);
+        Map<String, String[]> recipePaths = workflows.matchRecipePaths(recipeRefPaths,recipeDirPath, dupLogPath, unmatchedLogPath);
+        List<List<String[]>> itemList =  workflows.createItems(itemDirPath, incompleteItemPath);
+        workflows.createItems(collDirPath, incompleteCollPath);
 
         // DB testing
 //        MongoHandler mango = new MongoHandler();
 
         // factory testing
-        parser.convertDirectory(benchPath, "bench");
+//        parser.convertDirectory(benchPath, "bench", true);
     }
 }
