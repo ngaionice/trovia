@@ -1,5 +1,4 @@
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -20,17 +19,22 @@ public class Main {
 
         // log paths
         String dupLogPath = "C:\\Users\\Julian\\Desktop\\parsing\\duplicates.txt";
+        String recipeNoBenchPath =  "C:\\Users\\Julian\\Desktop\\parsing\\recipenobench.txt";
         String unmatchedLogPath = "C:\\Users\\Julian\\Desktop\\parsing\\unmatched.txt";
         String incompleteItemPath = "C:\\Users\\Julian\\Desktop\\parsing\\incomplete_items.txt";
         String incompleteCollPath = "C:\\Users\\Julian\\Desktop\\parsing\\incomplete_collections.txt";
 
         // workflows
-        Map<String, String[]> recipePaths = workflows.matchRecipePaths(recipeRefPaths,recipeDirPath, dupLogPath, unmatchedLogPath);
-        List<List<String[]>> itemList =  workflows.createItems(itemDirPath, incompleteItemPath);
-        workflows.createItems(collDirPath, incompleteCollPath);
+        List<List<String[]>> recipes = workflows.createBaseRecipes(recipeDirPath);
+        List<List<String[]>> benches = workflows.getBenchRecipes(parser.convertDirectory(benchPath, "bench", true));
+        List<List<String[]>> completeRecipes = workflows.addRecipeStation(recipes, benches, recipeNoBenchPath);
+//        workflows.recipeTest(completeRecipes);
+//        List<List<String[]>> itemList =  workflows.createItems(itemDirPath, incompleteItemPath);
+//        workflows.createItems(collDirPath, incompleteCollPath);
 
         // DB testing
-//        MongoHandler mango = new MongoHandler();
+        Exporter mango = new Exporter();
+//        mango.importRecipes(completeRecipes);
 
         // factory testing
 //        parser.convertDirectory(benchPath, "bench", true);

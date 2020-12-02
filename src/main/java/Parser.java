@@ -127,11 +127,11 @@ public class Parser {
         for (int i = 0; i < recipes.size(); i++) {
             recipes.set(i, Arrays.stream(recipes.get(i)).map(Parser::hexToAscii).toArray(String[]::new));
         }
-        for (String[] item : recipes) {
-            for (String string : item) {
-                System.out.println(string);
-            }
-        }
+//        for (String[] item : recipes) {
+//            for (String string : item) {
+//                System.out.println(string);
+//            }
+//        }
         return recipes;
     }
 
