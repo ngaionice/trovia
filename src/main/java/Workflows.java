@@ -174,4 +174,17 @@ public class Workflows {
         return outputRecipes;
     }
 
+    public void writeRecipesToFile(List<List<String[]>> createBaseRecipesOut, String writePath) {
+        List<String> items = new ArrayList<>();
+        for (List<String[]> item: createBaseRecipesOut) {
+            items.add(item.get(0)[0]);
+            if (item.size() > 2) {
+                for (int i = 2; i < item.size(); i++) {
+                    items.add(item.get(i)[0] + " - " + item.get(i)[1]);
+                }
+            }
+            items.add("\n");
+        }
+        reshaper.logToFile(items, writePath);
+    }
 }
