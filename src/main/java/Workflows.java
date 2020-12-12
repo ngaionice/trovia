@@ -9,37 +9,6 @@ public class Workflows {
     public Parser parser = new Parser();
 
     /**
-     * Takes in the path of the recipe directory and the paths of the directories to be referenced against,
-     * and associates the unique paths in the recipes to a name from the references;
-     * while logging duplicate matches and unmatched items to separate text files.
-     *
-     * Returns a Map with the item path in recipes as key, and an array [item path in recipes, path of prefab item name, item name] as value.
-     *
-     * @param refPaths      an array of directory paths for the references
-     * @param recipeDirPath the path of the recipe directory
-     * @return a map with the item name's path in recipes as the key, and their associated paths
-     * @throws IOException if the specified text file does not exist.
-     */
-    public Map<String, String[]> matchRecipePaths(String[] refPaths, String recipeDirPath, String dupLogPath, String unmatchedLogPath) throws Exception {
-
-        // gets the recipes and find all the unique item paths
-        List<List<String[]>> recipesParsed = parser.convertDirectory(recipeDirPath, "recipe", false);
-        List<String> recipeUniquePaths = reshaper.extractUniquePaths(recipesParsed);
-
-        // converts all the reference directories, then merging them into 1 list
-        List<String[]> references = new ArrayList<>();
-        for (String directory : refPaths) {
-            List<List<String[]>> itemList = parser.convertDirectory(directory, "item", false);
-            List<String[]> items = reshaper.mergeItemList(itemList);
-            references = Stream.concat(references.stream(), items.stream()).collect(Collectors.toList());
-        }
-
-        // the path matching part
-        List<String[]> matchedPaths = reshaper.matchRecipePaths(references, recipeUniquePaths, unmatchedLogPath);
-        return reshaper.mapRecipePaths(matchedPaths, dupLogPath);
-    }
-
-    /**
      * Takes in the path of a directory of items/collections/possibly other things, and the path of the text file to log incomplete items to;
      * returns list of maps of strings; each map contains:
      * path_name: the prefab path of the item name
@@ -53,9 +22,10 @@ public class Workflows {
      * @throws IOException logging gets interrupted
      */
     public List<Map<String, String>> createItems(String dirPath, String logPath) throws Exception {
+        // TODO: account for the new absolute path being added into the object
 
         // parse the directory and reshape the items to create a map of items; where the key is the item name's path
-        List<List<String[]>> parserOutput = parser.convertDirectory(dirPath, "item", false);
+        List<List<String[]>> parserOutput = parser.convertDirectory(dirPath, "item", true, true);
         List<String[]> itemsReshaped = reshaper.mergeItemList(parserOutput);
         Map<String, String[]> mappedItems = reshaper.mapItems(itemsReshaped, logPath);
 
@@ -91,7 +61,7 @@ public class Workflows {
     public List<List<String[]>> createBaseRecipes(String dirPath) throws Exception {
 
         // each sub-list contains [file name] in index 0, then the rest are all [item path, item quantity]
-        List<List<String[]>> recipeList = parser.convertDirectory(dirPath, "recipe", true);
+        List<List<String[]>> recipeList = parser.convertDirectory(dirPath, "recipe", true, false);
 
         // insert blank crafting bench location, as that is currently not available
         for (List<String[]> recipe : recipeList) {

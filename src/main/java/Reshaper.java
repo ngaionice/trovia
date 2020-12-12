@@ -18,6 +18,8 @@ public class Reshaper { // reshaping the data
      * @return a list of all the string arrays across the list of sub-lists of string arrays from above input.
      */
     public List<String[]> mergeItemList(List<List<String[]>> items) {
+        // TODO: account for new absolute path
+
         List<String[]> returnList = new ArrayList<>();
         for (List<String[]> item: items) {
             returnList.addAll(item);

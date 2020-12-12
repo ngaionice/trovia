@@ -148,11 +148,14 @@ public class Parser {
      *
      * @param path        the path of the directory
      * @param prefabType  the type of prefab in the directory
-     * @param includePath whether to include the file name in the sub-lists; if true, the first String[] contains the file name
+     * @param includeName whether to include the file name or path in the sub-lists; if true, the first String[] contains the file name
+     * @param absPath     whether the file name or path should be included; if true, the absolute path is saved in the first String[]
      * @return a list containing sub-lists of string arrays, which are the output of each parsed file
      * @throws Exception if there are critical file properties missing
      */
-    public List<List<String[]>> convertDirectory(String path, String prefabType, boolean includePath) throws Exception {
+    public List<List<String[]>> convertDirectory(String path, String prefabType, boolean includeName, boolean absPath) throws Exception {
+        // TODO: move to a Files.walk approach to map item paths
+
         File dir = new File(path);
         File[] directoryListing = dir.listFiles();
         List<List<String[]>> returnList = new ArrayList<>();
@@ -163,8 +166,9 @@ public class Parser {
 //                    System.out.println(childPath); // prints path
 //                }
                 List<String[]> parsedFile = factory(childPath, prefabType);
-                if (includePath) {
-                    parsedFile.add(0, new String[]{child.getName()});
+                if (includeName) {
+                    String filePath = absPath ? child.getAbsolutePath() : child.getName();
+                    parsedFile.add(0, new String[]{filePath});
                 }
                 returnList.add(parsedFile);
             }
