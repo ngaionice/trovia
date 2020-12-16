@@ -1,3 +1,5 @@
+package xyz.trovia.parsing;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -94,7 +96,7 @@ public class Parser {
         for (String[] item : listOfMaterials) {
             item[0] = hexToAscii(item[0]);
             int quantity = hexToDecimal(item[1], item[0]);
-            item[1] = quantity == 0 ? "Unlocked automatically" : Integer.toString(quantity);
+            item[1] = quantity == 0 ? Integer.toString(-1) : Integer.toString(quantity);
             String toPrint = item[0] + " - " + item[1];
 //            System.out.println(toPrint); // prints item parsed
         }
