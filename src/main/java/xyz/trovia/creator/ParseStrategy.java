@@ -6,5 +6,5 @@ import java.util.List;
 
 interface ParseStrategy {
 
-    List<Article> parseObject(String splitString, String absPath);
+    Article parseObject(String splitString, String absPath);
 }

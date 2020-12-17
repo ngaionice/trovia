@@ -11,7 +11,7 @@ public class ParseContext {
         this.strategy = strategy;
     }
 
-    public List<Article> parse(String splitString, String absPath) {
+    public Article parse(String splitString, String absPath) {
         return strategy.parseObject(splitString, absPath);
     }
 }

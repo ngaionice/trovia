@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class ParseLangPrefab implements ParseStrategy{
 
-    public List<Article> parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) {
 
         // instantiate the identifiers and variables
         String itemIdentifier = " 24 70 72 65 66 61 62 73 "; // $prefab
@@ -43,6 +43,6 @@ public class ParseLangPrefab implements ParseStrategy{
         // extract the path
         String path = absPath.substring(absPath.lastIndexOf("\\"), absPath.indexOf(".binfab"));
 
-        return Collections.singletonList(new LangFile(path, pairs));
+        return new LangFile(path, pairs);
     }
 }

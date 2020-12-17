@@ -17,7 +17,7 @@ public class ParseItem implements ParseStrategy{
      * @param splitString a hex string with spaces inserted every 2 characters, which is from a file in prefab/item
      * @return an xyz.trovia.objects.Item object in a list, where the item is formed from the input string
      */
-    public List<Article> parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) {
 
         // instantiate the stuff needed to parse
         String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item
@@ -39,7 +39,7 @@ public class ParseItem implements ParseStrategy{
             // if there is no name/desc end marker, which it should, then return an empty item
             if (!splitString.contains(" 68 00 80")) {
                 System.out.println("Item creation at " + absPath + " failed. Neither name nor description was found.");
-                return Collections.singletonList(new Item(absPath));
+                return new Item(absPath);
             }
 
             // otherwise, parse the string
@@ -65,7 +65,7 @@ public class ParseItem implements ParseStrategy{
 
         } else {
             System.out.println("Item creation at " + absPath + " failed.");
-            return Collections.singletonList(new Item(absPath));
+            return new Item(absPath);
         }
 
         // subset recipe path
@@ -112,7 +112,7 @@ public class ParseItem implements ParseStrategy{
             System.out.println("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");
             item = new Item(absPath);
         }
-        return Collections.singletonList(item);
+        return item;
     }
 
     // creating a new item:

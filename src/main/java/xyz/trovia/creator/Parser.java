@@ -83,8 +83,8 @@ public class Parser {
         switch (prefabType) {
 //            case "recipe":
 //                return convertRecipe(baseString);
-            case "item":
-                return convertItem(baseString);
+//            case "item":
+//                return convertItem(baseString);
             case "item-testing":
                 convertTroubleshooting(baseString);
                 break;
@@ -94,12 +94,12 @@ public class Parser {
         return new ArrayList<>();
     }
 
-    public List<String[]> convertItem(String baseString) {
-        Splitter splitter = new Splitter();
-        List<String[]> itemContainers = splitter.splitItemGeneralized(baseString);
-        convertToAscii(itemContainers);
-        return itemContainers;
-    }
+//    public List<String[]> convertItem(String baseString) {
+//        Splitter splitter = new Splitter();
+//        List<String[]> itemContainers = splitter.splitItemGeneralized(baseString);
+//        convertToAscii(itemContainers);
+//        return itemContainers;
+//    }
 
     private void convertToAscii(List<String[]> itemContainers) {
         for (String[] item : itemContainers) {
@@ -169,7 +169,7 @@ public class Parser {
         return returnList;
     }
 
-    public List<Article> createObject(String path, String itemType) throws IOException {
+    public Article createObject(String path, String itemType) throws IOException {
         String rawString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
@@ -179,8 +179,11 @@ public class Parser {
             case "recipe":
                 context = new ParseContext(new ParseRecipe());
                 return context.parse(rawString, path);
+            case "lang-en-prefab":
+                context = new ParseContext(new ParseLangPrefab());
+                return context.parse(rawString, path);
             default:
-                return new ArrayList<>();
+                return null;
         }
     }
 }
