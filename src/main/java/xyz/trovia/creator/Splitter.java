@@ -14,50 +14,6 @@ public class Splitter {
     String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // lowercase letters, underscore and digits
     Pattern p = Pattern.compile(hexAlphabetPrefab);
 
-//    /**
-//     * Takes in a hex string with spaces inserted by Parser.insertSpaces, then returns a list of string arrays,
-//     * with each array in the format of [item name path, item quantity]
-//     *
-//     * @param hexString a hex string with spaces every 2 characters
-//     * @return a list of string arrays, each array has the format of [item name path, item quantity]
-//     */
-//    public List<String[]> splitRecipe(String hexString) {
-//        String itemIdentifier = " 28 00 AE 03 00 01 18 00 28 00 1E 40 00 1E ";
-//        String[] firstParse = hexString.split(itemIdentifier);
-//        List<String> processing = Arrays.asList(firstParse);
-//        Pattern p = Pattern.compile(hexAlphabetBase);
-//        List<String[]> parsedList = new ArrayList<>();
-//        int lastIndex = processing.get(processing.size()-1).contains("2F") ? processing.size() : processing.size()-1;
-//        for (String item: processing.subList(0, lastIndex)) {
-//            Matcher m = p.matcher(item);
-//            if (m.find()) {
-//                int position = m.start();
-//                String[] currItem = item.substring(position).split(" 10 ");
-//                if (currItem.length == 1) {
-//                    currItem = new String[]{currItem[0], "00"};
-//                }
-//                parsedList.add(currItem);
-//            }
-//        }
-//        String lastString = parsedList.get(lastIndex-1)[0];
-//        String[] lastStringArray = lastString.split(" ");
-//        int lastValidCharacter = 0;
-//        for (String hex: lastStringArray) {
-//            if (hex.matches(hexAlphabetBase)) {
-//                lastValidCharacter++;
-//            } else {
-//                break;
-//            }
-//        }
-//        StringBuilder newLastString = new StringBuilder();
-//        for (int i = 0; i < lastValidCharacter; i++) {
-//            newLastString.append(lastStringArray[i]);
-//            newLastString.append(" ");
-//        }
-//        parsedList.get(lastIndex-1)[0] = newLastString.toString();
-//        return parsedList;
-//    }
-
     /**
      * Takes in a hex string with spaces inserted, and returns a string array containing an item's name and description,
      * as well as their corresponding paths.

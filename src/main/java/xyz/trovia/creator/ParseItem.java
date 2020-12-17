@@ -16,7 +16,7 @@ public class ParseItem implements ParseStrategy{
      * @param splitString a hex string with spaces inserted every 2 characters, which is from a file in prefab/item
      * @return an xyz.trovia.objects.Item object in a list, where the item is formed from the input string
      */
-    public List<Item> parse(String splitString, String absPath) {
+    public List<Item> parseObject(String splitString, String absPath) {
 
         // instantiate the stuff needed to parse
         String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item
@@ -25,7 +25,7 @@ public class ParseItem implements ParseStrategy{
         String lootboxMarker = "4C 6F 6F 74 54 61 62 6C 65"; // LootTable
         String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
         String hexAlphabetColl = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]|2F"; // same as above, + forward slash
-        String recPathStartMarker = "item/";
+        String recPathStartMarker = "item\\";
         String recPathEndMarker = ".binfab";
 
         // instantiate the variables
@@ -43,23 +43,25 @@ public class ParseItem implements ParseStrategy{
 
             // otherwise, parse the string
             int descEnd = splitString.indexOf(nameDescBreakMarker);
-            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker) + 3, descEnd); // removes the $
+            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker) + 3, descEnd + 9); // removes the $
 
             // parse the name
             for (int i = 0; i < nameAndDesc.length(); i += 3) {
                 if (!nameAndDesc.substring(i, i+2).matches(hexAlphabetPrefab)) {
                     String nameHex = nameAndDesc.substring(0, i);
                     name = Parser.hexToAscii(nameHex);
+                    System.out.println(name);
                     break;
                 }
             }
 
             // parse the description
-            int descStart = nameAndDesc.substring(1).indexOf(prefabMarker);
-            descEnd = nameAndDesc.indexOf(nameDescBreakMarker);
+            int descStart = nameAndDesc.substring(1).indexOf(prefabMarker); // shift by 1 to avoid finding the same marker
+            descEnd = nameAndDesc.substring(1).indexOf(nameDescBreakMarker);
             if (descStart != -1) {
-                String descHex = nameAndDesc.substring(descStart + 3, descEnd); // removes the $
+                String descHex = nameAndDesc.substring(1).substring(descStart + 3, descEnd); // removes the $
                 desc = Parser.hexToAscii(descHex);
+                System.out.println(desc);
             }
 
         } else {
@@ -89,7 +91,7 @@ public class ParseItem implements ParseStrategy{
                 for (int i = 0; i < currString.length(); i += 3) {
                     if (!currString.substring(i, i+2).matches(hexAlphabetColl)) {
                         collection.add(Parser.hexToAscii(currString.substring(0, i)));
-                        currString = currString.substring(colIndex + i); // chop off the previous part
+                        currString = currString.substring(i); // chop off the previous part
                         break;
                     }
                 }

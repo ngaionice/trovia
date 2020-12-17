@@ -4,5 +4,5 @@ import java.util.List;
 
 interface ParseStrategy {
 
-    List<?> parse(String splitString, String absPath);
+    List<?> parseObject(String splitString, String absPath);
 }

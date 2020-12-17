@@ -1,10 +1,13 @@
 package xyz.trovia.creator;
 
+import xyz.trovia.objects.Item;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -92,19 +95,6 @@ public class Parser {
         return new ArrayList<>();
     }
 
-//    public List<String[]> convertRecipe(String baseString) {
-//        Splitter splitter = new Splitter();
-//        List<String[]> listOfMaterials = splitter.splitRecipe(baseString);
-//        for (String[] item : listOfMaterials) {
-//            item[0] = hexToAscii(item[0]);
-//            int quantity = hexToDecimal(item[1], item[0]);
-//            item[1] = quantity == 0 ? Integer.toString(-1) : Integer.toString(quantity);
-//            String toPrint = item[0] + " - " + item[1];
-////            System.out.println(toPrint); // prints item parsed
-//        }
-//        return listOfMaterials;
-//    }
-
     public List<String[]> convertItem(String baseString) {
         Splitter splitter = new Splitter();
         List<String[]> itemContainers = splitter.splitItemGeneralized(baseString);
@@ -178,5 +168,20 @@ public class Parser {
             }
         }
         return returnList;
+    }
+
+    public List<?> createObject(String path, String itemType) throws IOException {
+        String rawString = insertSpaces(byteToString(path));
+        ParseContext context;
+        switch (itemType) {
+            case "item":
+                context = new ParseContext(new ParseItem());
+                return context.parse(rawString, path);
+            case "recipe":
+                context = new ParseContext(new ParseRecipe());
+                return context.parse(rawString, path);
+            default:
+                return Collections.singletonList("N/A");
+        }
     }
 }

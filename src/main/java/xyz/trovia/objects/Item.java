@@ -132,6 +132,10 @@ public class Item {
         return decons;
     }
 
+    public String getName() {
+        return name;
+    }
+
 //    public String getBlueprint() {
 //        return blueprint;
 //    }

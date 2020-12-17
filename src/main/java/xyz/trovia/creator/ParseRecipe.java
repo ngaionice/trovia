@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 
 public class ParseRecipe implements ParseStrategy{
 
-    public List<Recipe> parse(String splitString, String absPath) {
+    public List<Recipe> parseObject(String splitString, String absPath) {
 
         // extract path
-        String path = absPath.substring(absPath.lastIndexOf("/"), absPath.indexOf(".binfab"));
+        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
 
         // instantiate identifiers
         String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
