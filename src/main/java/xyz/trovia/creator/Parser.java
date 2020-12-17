@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Parser {
 
+    ParseStrategy strategy;
+
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
         return javax.xml.bind.DatatypeConverter.printHexBinary(array);
@@ -29,7 +31,7 @@ public class Parser {
         return output.toString();
     }
 
-    public int hexToDecimal(String hexNumber, String item) {
+    public static int hexToDecimal(String hexNumber, String item) {
         String[] hexPartition = hexNumber.split(" ");
         switch (hexPartition.length) {
             case 1:
@@ -77,8 +79,8 @@ public class Parser {
     public List<String[]> factory(String path, String prefabType) throws Exception {
         String baseString = insertSpaces(byteToString(path));
         switch (prefabType) {
-            case "recipe":
-                return convertRecipe(baseString);
+//            case "recipe":
+//                return convertRecipe(baseString);
             case "item":
                 return convertItem(baseString);
             case "item-testing":
@@ -90,18 +92,18 @@ public class Parser {
         return new ArrayList<>();
     }
 
-    public List<String[]> convertRecipe(String baseString) {
-        Splitter splitter = new Splitter();
-        List<String[]> listOfMaterials = splitter.splitRecipe(baseString);
-        for (String[] item : listOfMaterials) {
-            item[0] = hexToAscii(item[0]);
-            int quantity = hexToDecimal(item[1], item[0]);
-            item[1] = quantity == 0 ? Integer.toString(-1) : Integer.toString(quantity);
-            String toPrint = item[0] + " - " + item[1];
-//            System.out.println(toPrint); // prints item parsed
-        }
-        return listOfMaterials;
-    }
+//    public List<String[]> convertRecipe(String baseString) {
+//        Splitter splitter = new Splitter();
+//        List<String[]> listOfMaterials = splitter.splitRecipe(baseString);
+//        for (String[] item : listOfMaterials) {
+//            item[0] = hexToAscii(item[0]);
+//            int quantity = hexToDecimal(item[1], item[0]);
+//            item[1] = quantity == 0 ? Integer.toString(-1) : Integer.toString(quantity);
+//            String toPrint = item[0] + " - " + item[1];
+////            System.out.println(toPrint); // prints item parsed
+//        }
+//        return listOfMaterials;
+//    }
 
     public List<String[]> convertItem(String baseString) {
         Splitter splitter = new Splitter();

@@ -18,9 +18,9 @@ public class ParseItem implements ParseStrategy{
      */
     public List<Item> parse(String splitString, String absPath) {
 
-        // instantiating the stuff needed to parse
+        // instantiate the stuff needed to parse
         String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item
-        String descBreakMarker = " 68 00 80";
+        String nameDescBreakMarker = " 68 00 80";
         String collectionMarker = "63 6F 6C 6C 65 63 74 69 6F 6E 73 2F"; // collections/
         String lootboxMarker = "4C 6F 6F 74 54 61 62 6C 65"; // LootTable
         String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
@@ -28,30 +28,22 @@ public class ParseItem implements ParseStrategy{
         String recPathStartMarker = "item/";
         String recPathEndMarker = ".binfab";
 
-        // instantiating the variables
+        // instantiate the variables
         String name = null, desc = null, recPath = null;
         String[] unlocks = new String[0];
 
         // identify name and desc paths
         if (splitString.contains(prefabMarker)) {
 
-            // if there is no desc marker, which it should, then return an empty item
+            // if there is no name/desc end marker, which it should, then return an empty item
             if (!splitString.contains(" 68 00 80")) {
                 System.out.println("Item creation at " + absPath + " failed. Neither name nor description was found.");
                 return Collections.singletonList(new Item(absPath));
             }
 
             // otherwise, parse the string
-            int descEnd = splitString.indexOf(descBreakMarker);
+            int descEnd = splitString.indexOf(nameDescBreakMarker);
             String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker) + 3, descEnd); // removes the $
-
-            // parse the description
-            int descStart = nameAndDesc.substring(1).indexOf(prefabMarker);
-            descEnd = nameAndDesc.indexOf(descBreakMarker);
-            if (descStart != -1) {
-                String descHex = nameAndDesc.substring(descStart + 3, descEnd); // removes the $
-                desc = Parser.hexToAscii(descHex);
-            }
 
             // parse the name
             for (int i = 0; i < nameAndDesc.length(); i += 3) {
@@ -60,6 +52,14 @@ public class ParseItem implements ParseStrategy{
                     name = Parser.hexToAscii(nameHex);
                     break;
                 }
+            }
+
+            // parse the description
+            int descStart = nameAndDesc.substring(1).indexOf(prefabMarker);
+            descEnd = nameAndDesc.indexOf(nameDescBreakMarker);
+            if (descStart != -1) {
+                String descHex = nameAndDesc.substring(descStart + 3, descEnd); // removes the $
+                desc = Parser.hexToAscii(descHex);
             }
 
         } else {
@@ -104,7 +104,7 @@ public class ParseItem implements ParseStrategy{
         }
 
         Item item;
-        if (name != null && desc != null && recPath != null) {
+        if (name != null && recPath != null) {
             item = new Item(name, desc, unlocks, recPath, lootbox);
         } else {
             System.out.println("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");

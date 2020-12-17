@@ -10,7 +10,7 @@ public class Item {
     String name;                // name
     String desc;                // desc
     String recPath;             // relative path of the item; used in recipes
-    String blueprint;           // path of the blueprint; not currently planned to be used, but may be useful in the future
+//    String blueprint;           // path of the blueprint; not currently planned to be used, but may be useful in the future
     boolean isUnlocker;         // if this item is associated to a corresponding collection
     boolean isCraftable = false;// if this item is craftable by a recipe
     boolean isLootbox;          // if this item is a lootbox
@@ -20,14 +20,14 @@ public class Item {
     List<String[]> lootboxCommon = new ArrayList<>();     // if isLootbox = true, list of arrays in format [Item.name, quantity]
     List<String[]> lootboxUncommon = new ArrayList<>();
     List<String[]> lootboxRare = new ArrayList<>();
-    String recipe;              // if hasRecipe = true, file name of the recipe
+    String recipe = "";         // if hasRecipe = true, file name of the recipe, else is an empty string
 
     // an Entity; basic unit; note that gear is not included here
-    public Item(String name, String desc, String[] unlocks, String recPath, String blueprint, boolean isLootbox) {
+    public Item(String name, String desc, String[] unlocks, String recPath, boolean isLootbox) {
         this.name = name;
         this.desc = desc;
         this.recPath = recPath;
-        this.blueprint = blueprint;
+//        this.blueprint = blueprint;
         this.isLootbox = isLootbox;
 
         // if unlocks list was length 0 then it doesn't unlock anything
@@ -37,6 +37,19 @@ public class Item {
         } else {
             isUnlocker = false;
         }
+    }
+
+    /**
+     * For troubleshooting/item exclusion only. Name is the absolute path of the item.
+     * Everything else is set to false or empty.
+     *
+     * @param name path of the un-instantiated item
+     */
+    public Item(String name) {
+        this.name = name;
+        desc = recPath = "";
+        isUnlocker = isLootbox = false;
+        unlocks = decons = new String[0];
     }
 
     // terminology:
@@ -119,7 +132,7 @@ public class Item {
         return decons;
     }
 
-    public String getBlueprint() {
-        return blueprint;
-    }
+//    public String getBlueprint() {
+//        return blueprint;
+//    }
 }
