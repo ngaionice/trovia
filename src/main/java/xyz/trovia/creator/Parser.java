@@ -1,5 +1,6 @@
 package xyz.trovia.creator;
 
+import xyz.trovia.creator.parsestrategies.*;
 import xyz.trovia.objects.Article;
 
 import java.io.*;
@@ -10,8 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Parser {
-
-    ParseStrategy strategy;
 
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
@@ -66,122 +65,57 @@ public class Parser {
         }
     }
 
-    /**
-     * Reads the file at the path, and parses it based on the specified prefabType.
-     *
-     * @param path       path of the file
-     * @param prefabType type of the file
-     * @return a list of string arrays, format and length varies based on prefabType:
-     * "recipe": length 2, format: [item path, quantity]
-     * "item": length 4, format: [item name's path, item name, item description's path, item description]
-     * "bench" length varies, format varies; first array is length 1, contains only the bench's path name; all subsequent arrays follow the format
-     * [path of category name, recipe paths...]
-     * @throws Exception if "bench" is selected, and no category name was found
-     */
-    public List<String[]> factory(String path, String prefabType) throws Exception {
-        String baseString = insertSpaces(byteToString(path));
-        switch (prefabType) {
-//            case "recipe":
-//                return convertRecipe(baseString);
-//            case "item":
-//                return convertItem(baseString);
-            case "item-testing":
-                convertTroubleshooting(baseString);
-                break;
-            case "bench":
-                return convertBench(baseString, path);
-        }
-        return new ArrayList<>();
-    }
-
-//    public List<String[]> convertItem(String baseString) {
-//        Splitter splitter = new Splitter();
-//        List<String[]> itemContainers = splitter.splitItemGeneralized(baseString);
-//        convertToAscii(itemContainers);
-//        return itemContainers;
-//    }
-
-    private void convertToAscii(List<String[]> itemContainers) {
-        for (String[] item : itemContainers) {
-            item[0] = hexToAscii(item[0]);
-            item[1] = hexToAscii(item[1]);
-            item[2] = hexToAscii(item[2]);
-            item[3] = hexToAscii(item[3]);
-            String printName = item[0] + " - " + item[1];
-            String printDesc = item[2] + " - " + item[3];
-//            System.out.println(printName);
-//            System.out.println(printDesc);
-        }
-    }
-
-    public List<String[]> convertBench(String baseString, String path) throws Exception {
-        Splitter splitter = new Splitter();
-        List<String[]> recipes = splitter.splitBenchRecipes(baseString, path);
-        for (int i = 0; i < recipes.size(); i++) {
-            recipes.set(i, Arrays.stream(recipes.get(i)).map(Parser::hexToAscii).toArray(String[]::new));
-        }
-//        for (String[] item : recipes) {
-//            for (String string : item) {
-//                System.out.println(string);
+//    /**
+//     * Takes in a directory path, and parses the files in the directory according to the specified prefab type.
+//     * <p>
+//     * Returns a list containing lists of string arrays output by parsing each file.
+//     *
+//     * @param path        the path of the directory
+//     * @param prefabType  the type of prefab in the directory
+//     * @param includeName whether to include the file name or path in the sub-lists; if true, the first String[] contains the file name
+//     * @param absPath     whether the file name or path should be included; if true, the absolute path is saved in the first String[]
+//     * @return a list containing sub-lists of string arrays, which are the output of each parsed file
+//     * @throws Exception if there are critical file properties missing
+//     */
+//    public List<List<String[]>> convertDirectory(String path, String prefabType, boolean includeName, boolean absPath) throws Exception {
+        // TODO: move to a Files.walk approach to map item paths
+//
+//        File dir = new File(path);
+//        File[] directoryListing = dir.listFiles();
+//        List<List<String[]>> returnList = new ArrayList<>();
+//        if (directoryListing != null) {
+//            for (File child : directoryListing) {
+//                String childPath = child.getPath();
+////                if (!prefabType.equals("recipe")) {
+////                    System.out.println(childPath); // prints path
+////                }
+//                List<String[]> parsedFile = factory(childPath, prefabType);
+//                if (includeName) {
+//                    String filePath = absPath ? child.getAbsolutePath() : child.getName();
+//                    parsedFile.add(0, new String[]{filePath});
+//                }
+//                returnList.add(parsedFile);
 //            }
 //        }
-        return recipes;
-    }
-
-    public void convertTroubleshooting(String baseString) {
-        Splitter splitter = new Splitter();
-        List<String[]> itemContainers = splitter.troubleshootSplitItem(baseString);
-        convertToAscii(itemContainers);
-    }
-
-    /**
-     * Takes in a directory path, and parses the files in the directory according to the specified prefab type.
-     * <p>
-     * Returns a list containing lists of string arrays output by parsing each file.
-     *
-     * @param path        the path of the directory
-     * @param prefabType  the type of prefab in the directory
-     * @param includeName whether to include the file name or path in the sub-lists; if true, the first String[] contains the file name
-     * @param absPath     whether the file name or path should be included; if true, the absolute path is saved in the first String[]
-     * @return a list containing sub-lists of string arrays, which are the output of each parsed file
-     * @throws Exception if there are critical file properties missing
-     */
-    public List<List<String[]>> convertDirectory(String path, String prefabType, boolean includeName, boolean absPath) throws Exception {
-        // TODO: move to a Files.walk approach to map item paths
-
-        File dir = new File(path);
-        File[] directoryListing = dir.listFiles();
-        List<List<String[]>> returnList = new ArrayList<>();
-        if (directoryListing != null) {
-            for (File child : directoryListing) {
-                String childPath = child.getPath();
-//                if (!prefabType.equals("recipe")) {
-//                    System.out.println(childPath); // prints path
-//                }
-                List<String[]> parsedFile = factory(childPath, prefabType);
-                if (includeName) {
-                    String filePath = absPath ? child.getAbsolutePath() : child.getName();
-                    parsedFile.add(0, new String[]{filePath});
-                }
-                returnList.add(parsedFile);
-            }
-        }
-        return returnList;
-    }
+//        return returnList;
+//    }
 
     public Article createObject(String path, String itemType) throws IOException {
-        String rawString = insertSpaces(byteToString(path));
+        String splitString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
             case "item":
                 context = new ParseContext(new ParseItem());
-                return context.parse(rawString, path);
+                return context.parse(splitString, path);
             case "recipe":
                 context = new ParseContext(new ParseRecipe());
-                return context.parse(rawString, path);
+                return context.parse(splitString, path);
+            case "bench":
+                context = new ParseContext(new ParseBench());
+                return context.parse(splitString, path);
             case "lang-en-prefab":
                 context = new ParseContext(new ParseLangPrefab());
-                return context.parse(rawString, path);
+                return context.parse(splitString, path);
             default:
                 return null;
         }

@@ -13,4 +13,13 @@ public class LangFile implements Article{
         this.name = name;
         this.strings = strings;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<String[]> getStrings() {
+        return strings;
+    }
+
 }

@@ -42,7 +42,7 @@ public class ParseLangPrefab implements ParseStrategy {
         }
 
         // extract the path
-        String path = absPath.substring(absPath.lastIndexOf("\\"), absPath.indexOf(".binfab"));
+        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
 
         return new LangFile(path, pairs);
     }
