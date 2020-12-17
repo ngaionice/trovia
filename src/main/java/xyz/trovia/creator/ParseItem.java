@@ -50,7 +50,6 @@ public class ParseItem implements ParseStrategy{
                 if (!nameAndDesc.substring(i, i+2).matches(hexAlphabetPrefab)) {
                     String nameHex = nameAndDesc.substring(0, i);
                     name = Parser.hexToAscii(nameHex);
-                    System.out.println(name);
                     break;
                 }
             }
@@ -61,7 +60,6 @@ public class ParseItem implements ParseStrategy{
             if (descStart != -1) {
                 String descHex = nameAndDesc.substring(1).substring(descStart + 3, descEnd); // removes the $
                 desc = Parser.hexToAscii(descHex);
-                System.out.println(desc);
             }
 
         } else {
@@ -75,6 +73,7 @@ public class ParseItem implements ParseStrategy{
 
         if (recPathStart != -1 && recPathEnd != -1) {
             recPath = absPath.substring(recPathStart, recPathEnd);
+            recPath = recPath.replaceAll("\\\\", "/");
         }
 
         // identify if collection exists
