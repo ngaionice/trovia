@@ -136,6 +136,14 @@ public class Item {
         return name;
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
+    public String getRecPath() {
+        return recPath;
+    }
+
 //    public String getBlueprint() {
 //        return blueprint;
 //    }
