@@ -1,6 +1,7 @@
 package xyz.trovia.creator;
 
 import xyz.trovia.objects.Item;
+import xyz.trovia.objects.Article;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +17,7 @@ public class ParseItem implements ParseStrategy{
      * @param splitString a hex string with spaces inserted every 2 characters, which is from a file in prefab/item
      * @return an xyz.trovia.objects.Item object in a list, where the item is formed from the input string
      */
-    public List<Item> parseObject(String splitString, String absPath) {
+    public List<Article> parseObject(String splitString, String absPath) {
 
         // instantiate the stuff needed to parse
         String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item

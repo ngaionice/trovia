@@ -1,6 +1,6 @@
 package xyz.trovia.objects;
 
-public class Recipe {
+public class Recipe implements Article {
 
     // for actual recipes, or manual recipes, e.g. gear upgrade costs, module upgrade costs
 

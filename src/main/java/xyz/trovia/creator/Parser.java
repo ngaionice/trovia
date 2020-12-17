@@ -1,13 +1,12 @@
 package xyz.trovia.creator;
 
-import xyz.trovia.objects.Item;
+import xyz.trovia.objects.Article;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -170,7 +169,7 @@ public class Parser {
         return returnList;
     }
 
-    public List<?> createObject(String path, String itemType) throws IOException {
+    public List<Article> createObject(String path, String itemType) throws IOException {
         String rawString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
@@ -181,7 +180,7 @@ public class Parser {
                 context = new ParseContext(new ParseRecipe());
                 return context.parse(rawString, path);
             default:
-                return Collections.singletonList("N/A");
+                return new ArrayList<>();
         }
     }
 }

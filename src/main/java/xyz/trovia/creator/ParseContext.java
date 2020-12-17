@@ -1,5 +1,7 @@
 package xyz.trovia.creator;
 
+import xyz.trovia.objects.Article;
+
 import java.util.List;
 
 public class ParseContext {
@@ -9,7 +11,7 @@ public class ParseContext {
         this.strategy = strategy;
     }
 
-    public List<?> parse(String splitString, String absPath) {
+    public List<Article> parse(String splitString, String absPath) {
         return strategy.parseObject(splitString, absPath);
     }
 }

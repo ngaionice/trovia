@@ -1,5 +1,6 @@
 package xyz.trovia.creator;
 
+import xyz.trovia.objects.Article;
 import xyz.trovia.objects.Recipe;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class ParseRecipe implements ParseStrategy{
 
-    public List<Recipe> parseObject(String splitString, String absPath) {
+    public List<Article> parseObject(String splitString, String absPath) {
 
         // extract path
         String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));

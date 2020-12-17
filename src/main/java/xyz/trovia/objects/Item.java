@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Item {
+public class Item implements Article {
 
     String name;                // name
     String desc;                // desc
