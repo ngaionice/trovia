@@ -1,4 +1,4 @@
-package xyz.trovia.creator;
+package xyz.trovia.creator.parsestrategies;
 
 import xyz.trovia.objects.Article;
 

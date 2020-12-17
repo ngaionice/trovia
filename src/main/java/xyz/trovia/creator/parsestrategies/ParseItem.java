@@ -1,13 +1,14 @@
-package xyz.trovia.creator;
+package xyz.trovia.creator.parsestrategies;
 
+import xyz.trovia.creator.Parser;
+import xyz.trovia.creator.parsestrategies.ParseStrategy;
 import xyz.trovia.objects.Item;
 import xyz.trovia.objects.Article;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class ParseItem implements ParseStrategy{
+public class ParseItem implements ParseStrategy {
 
     /**
      * Returns a list containing a single item obtained by parsing the input hex string.

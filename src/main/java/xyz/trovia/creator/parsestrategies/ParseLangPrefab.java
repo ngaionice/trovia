@@ -1,15 +1,16 @@
-package xyz.trovia.creator;
+package xyz.trovia.creator.parsestrategies;
 
+import xyz.trovia.creator.Parser;
+import xyz.trovia.creator.parsestrategies.ParseStrategy;
 import xyz.trovia.objects.Article;
 import xyz.trovia.objects.LangFile;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParseLangPrefab implements ParseStrategy{
+public class ParseLangPrefab implements ParseStrategy {
 
     public Article parseObject(String splitString, String absPath) {
 

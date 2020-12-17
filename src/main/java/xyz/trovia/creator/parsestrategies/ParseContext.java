@@ -1,8 +1,7 @@
-package xyz.trovia.creator;
+package xyz.trovia.creator.parsestrategies;
 
+import xyz.trovia.creator.parsestrategies.ParseStrategy;
 import xyz.trovia.objects.Article;
-
-import java.util.List;
 
 public class ParseContext {
     private ParseStrategy strategy;

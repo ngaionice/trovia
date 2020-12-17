@@ -1,18 +1,19 @@
-package xyz.trovia.creator;
+package xyz.trovia.creator.parsestrategies;
 
+import xyz.trovia.creator.Parser;
+import xyz.trovia.creator.parsestrategies.ParseStrategy;
 import xyz.trovia.objects.Article;
 import xyz.trovia.objects.Recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParseRecipe implements ParseStrategy{
+public class ParseRecipe implements ParseStrategy {
 
-    public List<Article> parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) {
 
         // extract path
         String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
@@ -75,6 +76,6 @@ public class ParseRecipe implements ParseStrategy{
         parsedList.remove(lastIndex-1);
         String[][] costs = parsedList.toArray(new String[0][0]);
 
-        return Collections.singletonList(new Recipe(path, costs, product));
+        return new Recipe(path, costs, product);
     }
 }
