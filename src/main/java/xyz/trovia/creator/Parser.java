@@ -1,4 +1,4 @@
-package xyz.trovia.parsing;
+package xyz.trovia.creator;
 
 import java.io.*;
 import java.nio.file.Files;

@@ -1,7 +1,7 @@
+package xyz.trovia.creator;
+
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Workflows {
     // workflows that call on the different classes to prepare for data entry into MongoDB
@@ -157,4 +157,6 @@ public class Workflows {
         }
         reshaper.logToFile(items, writePath);
     }
+
+
 }

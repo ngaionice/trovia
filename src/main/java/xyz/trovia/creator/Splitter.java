@@ -1,4 +1,4 @@
-package xyz.trovia.parsing;
+package xyz.trovia.creator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
