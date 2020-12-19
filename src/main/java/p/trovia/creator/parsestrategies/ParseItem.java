@@ -44,7 +44,7 @@ public class ParseItem implements ParseStrategy {
 
             // otherwise, parse the string
             int descEnd = splitString.indexOf(nameDescBreakMarker);
-            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker) + 3, descEnd + 9); // removes the $
+            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker), descEnd + 9);
 
             // parse the name
             for (int i = 0; i < nameAndDesc.length(); i += 3) {
@@ -59,7 +59,7 @@ public class ParseItem implements ParseStrategy {
             int descStart = nameAndDesc.substring(1).indexOf(prefabMarker); // shift by 1 to avoid finding the same marker
             descEnd = nameAndDesc.substring(1).indexOf(nameDescBreakMarker);
             if (descStart != -1) {
-                String descHex = nameAndDesc.substring(1).substring(descStart + 3, descEnd); // removes the $
+                String descHex = nameAndDesc.substring(1).substring(descStart, descEnd);
                 desc = Parser.hexToAscii(descHex);
             }
 

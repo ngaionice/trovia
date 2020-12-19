@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class Item implements Article {
 
-    String name;                // name
-    String desc;                // desc
+    String name;                // name, e.g. $prefabs_item_aura_music_01_item_name
+    String desc;                // desc, e.g. $prefabs_item_aura_music_01_item_description
     String recPath;             // relative path of the item; used in recipes
 //    String blueprint;           // path of the blueprint; not currently planned to be used, but may be useful in the future
     boolean isUnlocker;         // if this item is associated to a corresponding collection

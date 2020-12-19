@@ -26,7 +26,7 @@ public class ParseBench implements ParseStrategy {
             String dirtyStationName = splitString.substring(rangeEnd);
             if (dirtyStationName.contains("20")) {
                 String stationNameUntrimmed = dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
-                String stationNameTrimmed = stationNameUntrimmed.substring(stationNameUntrimmed.indexOf("70 72")); // modify here in the future if there is a need to use $ instead
+                String stationNameTrimmed = stationNameUntrimmed.substring(stationNameUntrimmed.indexOf("24 70 72"));
                 categoryList.add(Collections.singletonList(Parser.hexToAscii(stationNameTrimmed)));
             } else {
                 System.out.println("No crafting station name was found for "+absPath+".");

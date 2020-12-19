@@ -27,7 +27,7 @@ public class ParseLangPrefab implements ParseStrategy {
         // split each item into the path and the actual string
         for (String s : pathsAndStrings) {
             String[] itemNameList = s.split(" 18 \\w\\w ");
-            String stringPath = "70 72 65 66 61 62 73 " + itemNameList[0]; // add the "prefab" back in since it was split
+            String stringPath = "24 70 72 65 66 61 62 73 " + itemNameList[0]; // add the "$prefab" back in since it was split
             Matcher m1 = p.matcher(itemNameList[1]);
 
             // find the string, convert to ASCII, and put the array into the list, if no string is found, break the loop

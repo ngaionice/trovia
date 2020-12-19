@@ -6,8 +6,12 @@ import java.util.Map;
 
 public class Bench implements Article{
 
-    String name;   // station name
+    String name;   // station name; e.g. $prefabs_placeable_crafting_holiday_snowfest_interactive_craftingstation_name
     Map<String[], List<String>> categories; // key: [category #, category path]; value: list of recipe file names
+    // e.g.
+    // key: [$prefabs_placeable_crafting_crafting_gardening_harvest_interactive_craftingcategory_5_name, 5]
+    // value: [recipe_item_mount_ball_mushroom]
+
     // note that category # is a string here, and that it starts at 1
 
     public Bench(String name, Map<String[], List<String>> categories) {
