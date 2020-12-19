@@ -8,6 +8,9 @@ public class Bench implements Article{
 
     String name;   // station name; e.g. $prefabs_placeable_crafting_holiday_snowfest_interactive_craftingstation_name
     Map<String[], List<String>> categories; // key: [category #, category path]; value: list of recipe file names
+    boolean profession;
+    String professionName;
+
     // e.g.
     // key: [$prefabs_placeable_crafting_crafting_gardening_harvest_interactive_craftingcategory_5_name, 5]
     // value: [recipe_item_mount_ball_mushroom]
@@ -17,6 +20,20 @@ public class Bench implements Article{
     public Bench(String name, Map<String[], List<String>> categories) {
         this.name = name;
         this.categories = categories;
+    }
+
+    /**
+     * Constructor to be used for professions, i.e. the file is from ./professions
+     *
+     * Profession files don't have the station name in the files, so they have to be added in separately.
+     *
+     * @param categories categories in the bench
+     * @param professionName file name of the profession; e.g. gardening
+     */
+    public Bench(Map<String[], List<String>> categories, String professionName) {
+        this.categories = categories;
+        this.profession = true;
+        this.professionName = professionName;
     }
 
     /**
@@ -66,5 +83,13 @@ public class Bench implements Article{
             }
         }
         return null;
+    }
+
+    public boolean getProfession() {
+        return profession;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -12,6 +12,7 @@ public class ParseBench implements ParseStrategy {
 
     public Article parseObject(String splitString, String absPath) {
         List<List<String>> categoryList = new ArrayList<>();
+        ParseHelper helper = new ParseHelper();
         String categorySplit = "24 70 72 65 66 61 62 73 "; // $prefab
 
         // first identify the number of categories; $prefabs show up at least twice for 0 categories; +1 for each additional
@@ -31,7 +32,7 @@ public class ParseBench implements ParseStrategy {
             } else {
                 System.out.println("No crafting station name was found for "+absPath+".");
             }
-            categoryList.add(parseHelper(substring, absPath));
+            categoryList.add(helper.parseHelper(substring, absPath, "24 70 72 65 66 61 62 73 "));
         }
 
         // more than 1 category
@@ -45,7 +46,7 @@ public class ParseBench implements ParseStrategy {
                 System.out.println("No crafting station name was found for "+absPath+".");
             }
             for (int i = 1; i < substrings.length-1; i++) {
-                categoryList.add(parseHelper(substrings[i], absPath));
+                categoryList.add(helper.parseHelper(substrings[i], absPath, "24 70 72 65 66 61 62 73 "));
             }
         }
 
@@ -74,66 +75,5 @@ public class ParseBench implements ParseStrategy {
         return new Bench(name, categories);
     }
 
-    /**
-     * Helper method for parseObject.
-     *
-     * @param unparsed substring containing category name and recipe names
-     * @return a list of strings, with index 0 being the category name and all other indices being recipe file paths
-     */
-    private List<String> parseHelper(String unparsed, String path) {
-        List<String> recipes = new ArrayList<>();
-        String recipeText = "72 65 63 69 70 65 "; // recipe in hex
-        String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // lowercase letters, underscore and digits
 
-        int nameEnd = unparsed.indexOf("BE "); // end character used to signify end of a category name in files
-        if (nameEnd != -1) { // no such string, then something probably went wrong
-            String name = "24 70 72 65 66 61 62 73 " + unparsed.substring(0, nameEnd);
-            recipes.add(name);
-            String rawRecipes = unparsed.substring(nameEnd);
-            Pattern re = Pattern.compile(recipeText);
-            Matcher m = re.matcher(rawRecipes);
-            List<Integer> indices = new ArrayList<>();
-
-            // find all the starting points of recipes
-            while (true) {
-                if (m.find()) {
-                    indices.add(m.start());
-                } else {
-                    break;
-                }
-            }
-
-            // extract the recipes
-            for (int i = 0; i < indices.size(); i++) {
-                if (i+1 < indices.size()) {
-                    recipes.add(rawRecipes.substring(indices.get(i), indices.get(i+1)));
-                } else {
-                    recipes.add(rawRecipes.substring(indices.get(i))); // last recipe
-                }
-            }
-
-            // clean up the recipes
-            for (int i = 1; i < recipes.size(); i++) {
-                String processing = recipes.get(i);
-                if (processing.length()-6 > 0) {
-                    processing = processing.substring(0, processing.length()-6); // removing the guaranteed 2 characters that are useless
-                    int lastIndex = 0;
-                    for (int j = 0; j < processing.length(); j += 3) {
-                        if (processing.substring(j, j+2).matches(hexAlphabetPrefab)) {
-                            lastIndex = j + 3;
-                        } else {
-                            break;
-                        }
-                    }
-                    recipes.set(i, processing.substring(0, lastIndex));
-                } else {
-                    System.out.println("Recipe clean-up failed at "+path+".");
-                }
-            }
-
-        } else {
-            System.out.println("No end character was identified at " + path + ".");
-        }
-        return recipes;
-    }
 }
