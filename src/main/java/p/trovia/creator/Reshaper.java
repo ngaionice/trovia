@@ -1,4 +1,4 @@
-package xyz.trovia.creator;
+package p.trovia.creator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

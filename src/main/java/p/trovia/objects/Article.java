@@ -1,4 +1,4 @@
-package xyz.trovia.objects;
+package p.trovia.objects;
 
 public interface Article {
 }

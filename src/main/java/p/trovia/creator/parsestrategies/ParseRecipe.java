@@ -1,9 +1,8 @@
-package xyz.trovia.creator.parsestrategies;
+package p.trovia.creator.parsestrategies;
 
-import xyz.trovia.creator.Parser;
-import xyz.trovia.creator.parsestrategies.ParseStrategy;
-import xyz.trovia.objects.Article;
-import xyz.trovia.objects.Recipe;
+import p.trovia.creator.Parser;
+import p.trovia.objects.Article;
+import p.trovia.objects.Recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;

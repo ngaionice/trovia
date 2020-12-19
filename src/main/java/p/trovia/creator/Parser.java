@@ -1,14 +1,11 @@
-package xyz.trovia.creator;
+package p.trovia.creator;
 
-import xyz.trovia.creator.parsestrategies.*;
-import xyz.trovia.objects.Article;
+import p.trovia.creator.parsestrategies.*;
+import p.trovia.objects.Article;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Parser {
 

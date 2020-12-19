@@ -1,4 +1,4 @@
-package xyz.trovia.objects;
+package p.trovia.objects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
