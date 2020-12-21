@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class ParseLangPrefab implements ParseStrategy {
 
+    @Override
     public Article parseObject(String splitString, String absPath) {
 
         // instantiate the identifiers and variables

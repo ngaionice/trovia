@@ -17,6 +17,7 @@ public class ParseItem implements ParseStrategy {
      * @param splitString a hex string with spaces inserted every 2 characters, which is from a file in prefab/item
      * @return an xyz.trovia.objects.Item object in a list, where the item is formed from the input string
      */
+    @Override
     public Article parseObject(String splitString, String absPath) {
 
         // instantiate the stuff needed to parse

@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 public class ParseRecipe implements ParseStrategy {
 
+    @Override
     public Article parseObject(String splitString, String absPath) {
 
         // extract path

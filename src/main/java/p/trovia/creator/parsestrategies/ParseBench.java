@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 public class ParseBench implements ParseStrategy {
 
+    @Override
     public Article parseObject(String splitString, String absPath) {
         List<List<String>> categoryList = new ArrayList<>();
         ParseHelper helper = new ParseHelper();

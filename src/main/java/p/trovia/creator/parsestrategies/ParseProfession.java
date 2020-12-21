@@ -8,6 +8,7 @@ import java.util.*;
 
 public class ParseProfession implements ParseStrategy{
 
+    @Override
     public Article parseObject(String splitString, String absPath) {
 
         // instantiate the necessary variables
