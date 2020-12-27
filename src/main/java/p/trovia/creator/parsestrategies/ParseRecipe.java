@@ -15,8 +15,12 @@ public class ParseRecipe implements ParseStrategy {
     @Override
     public Article parseObject(String splitString, String absPath) {
 
-        // extract path
-        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
+        Markers m = new Markers();
+
+        // extract path and rPath
+        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
+        String rPath = absPath.substring(absPath.indexOf("prefab\\")+7, absPath.indexOf(m.endFile));
+        rPath = rPath.replaceAll("\\\\", "/");
 
         // instantiate identifiers
         String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
@@ -36,9 +40,9 @@ public class ParseRecipe implements ParseStrategy {
 
         // process each chunk one by one
         for (String item: hexStringList.subList(0, lastIndex)) {
-            Matcher m = p.matcher(item);
-            if (m.find()) {
-                int position = m.start();
+            Matcher ma = p.matcher(item);
+            if (ma.find()) {
+                int position = ma.start();
                 String[] currItem = item.substring(position).split(" 10 ");
                 if (currItem.length == 1) {
                     currItem = new String[]{currItem[0], "00"};
@@ -76,6 +80,6 @@ public class ParseRecipe implements ParseStrategy {
         parsedList.remove(lastIndex-1);
         String[][] costs = parsedList.toArray(new String[0][0]);
 
-        return new Recipe(path, costs, product);
+        return new Recipe(path, rPath, costs, product);
     }
 }

@@ -9,7 +9,7 @@ public class Item implements Article {
 
     String name;                // name, e.g. $prefabs_item_aura_music_01_item_name
     String desc;                // desc, e.g. $prefabs_item_aura_music_01_item_description
-    String recPath;             // relative path of the item; used in recipes
+    String rPath;             // relative path of the item; used in recipes
 //    String blueprint;           // path of the blueprint; not currently planned to be used, but may be useful in the future
     boolean isUnlocker;         // if this item is associated to a corresponding collection
     boolean isCraftable = false;// if this item is craftable by a recipe
@@ -23,10 +23,10 @@ public class Item implements Article {
     String recipe = "";         // if hasRecipe = true, file name of the recipe, else is an empty string
 
     // an Entity; basic unit; note that gear is not included here
-    public Item(String name, String desc, String[] unlocks, String recPath, boolean isLootbox) {
+    public Item(String name, String desc, String[] unlocks, String rPath, boolean isLootbox) {
         this.name = name;
         this.desc = desc;
-        this.recPath = recPath;
+        this.rPath = rPath;
 //        this.blueprint = blueprint;
         this.isLootbox = isLootbox;
 
@@ -47,7 +47,7 @@ public class Item implements Article {
      */
     public Item(String name) {
         this.name = name;
-        desc = recPath = "";
+        desc = rPath = "";
         isUnlocker = isLootbox = false;
         unlocks = decons = new String[0];
     }
@@ -140,8 +140,8 @@ public class Item implements Article {
         return desc;
     }
 
-    public String getRecPath() {
-        return recPath;
+    public String getRPath() {
+        return rPath;
     }
 
 //    public String getBlueprint() {

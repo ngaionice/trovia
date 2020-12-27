@@ -12,18 +12,18 @@ public class ParseBench implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) {
+        Markers m = new Markers();
         List<List<String>> categoryList = new ArrayList<>();
         ParseHelper helper = new ParseHelper();
-        String categorySplit = "24 70 72 65 66 61 62 73 "; // $prefab
 
         // first identify the number of categories; $prefabs show up at least twice for 0 categories; +1 for each additional
-        String temp = splitString.replace(categorySplit, "");
-        int occ = (splitString.length() - temp.length()) / categorySplit.length();
+        String temp = splitString.replace(m.prefab, "");
+        int occ = (splitString.length() - temp.length()) / m.prefab.length();
 
         // only 1 category
         if (occ == 2) {
-            int rangeStart = splitString.indexOf(categorySplit);
-            int rangeEnd = splitString.substring(rangeStart + 24).indexOf(categorySplit)+rangeStart;
+            int rangeStart = splitString.indexOf(m.prefab);
+            int rangeEnd = splitString.substring(rangeStart + 24).indexOf(m.prefab)+rangeStart;
             String substring = splitString.substring(rangeStart, rangeEnd);
             String dirtyStationName = splitString.substring(rangeEnd);
             if (dirtyStationName.contains("20")) {
@@ -33,21 +33,21 @@ public class ParseBench implements ParseStrategy {
             } else {
                 System.out.println("No crafting station name was found for "+absPath+".");
             }
-            categoryList.add(helper.parseHelper(substring, absPath, "24 70 72 65 66 61 62 73 "));
+            categoryList.add(helper.parseHelper(substring, absPath, m.prefab));
         }
 
         // more than 1 category
         else if (occ > 2) {
-            String[] substrings = splitString.split(categorySplit);
+            String[] substrings = splitString.split(m.prefab);
             String dirtyStationName = substrings[substrings.length-1];
             if (dirtyStationName.contains("20")) {
-                String stationName = "24 70 72 65 66 61 62 73 " + dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
+                String stationName = m.prefab + dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
                 categoryList.add(Collections.singletonList(Parser.hexToAscii(stationName)));
             } else {
                 System.out.println("No crafting station name was found for "+absPath+".");
             }
             for (int i = 1; i < substrings.length-1; i++) {
-                categoryList.add(helper.parseHelper(substrings[i], absPath, "24 70 72 65 66 61 62 73 "));
+                categoryList.add(helper.parseHelper(substrings[i], absPath, m.prefab));
             }
         }
 
@@ -73,7 +73,11 @@ public class ParseBench implements ParseStrategy {
 
             categories.put(categoryName, recipes);
         }
-        return new Bench(name, categories);
+
+        String rPath = absPath.substring(absPath.indexOf("prefab\\")+7, absPath.indexOf(m.endFile));
+        rPath = rPath.replaceAll("\\\\", "/");
+
+        return new Bench(name, rPath, categories);
     }
 
 

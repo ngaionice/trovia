@@ -11,15 +11,16 @@ public class ParseProfession implements ParseStrategy{
     @Override
     public Article parseObject(String splitString, String absPath) {
 
+        Markers m = new Markers();
+
         // instantiate the necessary variables
         List<List<String>> categoryList = new ArrayList<>();
         ParseHelper helper =  new ParseHelper();
-        String catMarker = "24 43 72 61 66 74 69 6E 67 "; // $Crafting
 
         // getting recipes
-        String[] substrings = splitString.split(catMarker);
+        String[] substrings = splitString.split(m.crafting);
         for (int i = 1; i < substrings.length-1; i++) {
-            categoryList.add(helper.parseHelper(substrings[i], absPath, "24 43 72 61 66 74 69 6E 67 "));
+            categoryList.add(helper.parseHelper(substrings[i], absPath, m.crafting));
         }
 
         // cleaning up the category names, and putting the converted stuff into the map
@@ -36,8 +37,10 @@ public class ParseProfession implements ParseStrategy{
         }
 
         // creating the Bench object
-        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
+        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
+        String rPath = absPath.substring(absPath.indexOf("prefab\\")+7, absPath.indexOf(m.endFile));
+        rPath = rPath.replaceAll("\\\\", "/");
 
-        return new Bench(categories, path);
+        return new Bench(rPath, categories, path);
     }
 }

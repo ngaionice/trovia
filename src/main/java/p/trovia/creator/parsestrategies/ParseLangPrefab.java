@@ -15,14 +15,13 @@ public class ParseLangPrefab implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) {
 
         // instantiate the identifiers and variables
-        String itemIdentifier = " 24 70 72 65 66 61 62 73 "; // $prefab
-        String hexAlphabetExtended = "0A|[4][1-9A-F]|[5][0-9A]|[6][0-9A-F]|[7][0-9A]|2[017CE]|3[AF]|5[CF]";
+        Markers m = new Markers();
         List<String[]> pairs = new ArrayList<>();
-        Pattern p = Pattern.compile(hexAlphabetExtended);
+        Pattern p = Pattern.compile(m.alphabetExtended);
 
         // trim the initial part, which is irrelevant, then split by "$prefab"
         String trimmedString = splitString.substring(splitString.indexOf("24 70"));
-        String[] pathsAndStrings = trimmedString.split(itemIdentifier);
+        String[] pathsAndStrings = trimmedString.split(m.prefabSpaced);
 //        System.out.println(pathsAndStrings.length); // used for troubleshooting
 
         // split each item into the path and the actual string
@@ -42,8 +41,10 @@ public class ParseLangPrefab implements ParseStrategy {
         }
 
         // extract the path
-        String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(".binfab"));
+        String name = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
+        String rPath = absPath.substring(absPath.indexOf("language"), absPath.indexOf(m.endFile));
+        rPath = rPath.replaceAll("\\\\", "/");
 
-        return new LangFile(path, pairs);
+        return new LangFile(name, rPath, pairs);
     }
 }

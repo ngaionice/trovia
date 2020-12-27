@@ -14,24 +14,23 @@ public class ParseHelper {
      * @return a list of strings, with index 0 being the category name and all other indices being recipe file paths
      */
     List<String> parseHelper(String unparsed, String path, String catMarker) {
+        Markers m = new Markers();
         List<String> recipes = new ArrayList<>();
-        String recipeText = "72 65 63 69 70 65 "; // recipe in hex
-        String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // lowercase letters, underscore and digits
 
         int nameEnd = unparsed.indexOf("BE "); // end character used to signify end of a category name in files
         if (nameEnd != -1) { // no such string, then something probably went wrong
             String name = catMarker + unparsed.substring(0, nameEnd);
             recipes.add(name);
             String rawRecipes = unparsed.substring(nameEnd);
-            Pattern re = Pattern.compile(recipeText);
-            Matcher m = re.matcher(rawRecipes);
+            Pattern re = Pattern.compile(m.recipe);
+            Matcher matcher = re.matcher(rawRecipes);
             List<Integer> indices = new ArrayList<>();
 
             // find all the starting points of recipes
             while (true) {
-                if (m.find()) {
-                    int index = m.start();
-                    if (!rawRecipes.substring(index-3, index-1).matches(hexAlphabetPrefab)) { // ignore recipes that unlock recipes
+                if (matcher.find()) {
+                    int index = matcher.start();
+                    if (!rawRecipes.substring(index-3, index-1).matches(m.alphabetPrefab)) { // ignore recipes that unlock recipes
                         indices.add(index);
                     }
                 } else {
@@ -55,7 +54,7 @@ public class ParseHelper {
                     processing = processing.substring(0, processing.length()-6); // removing the guaranteed 2 characters that are useless
                     int lastIndex = 0;
                     for (int j = 0; j < processing.length(); j += 3) {
-                        if (processing.substring(j, j+2).matches(hexAlphabetPrefab)) {
+                        if (processing.substring(j, j+2).matches(m.alphabetPrefab)) {
                             lastIndex = j + 3;
                         } else {
                             break;
@@ -72,4 +71,5 @@ public class ParseHelper {
         }
         return recipes;
     }
+
 }

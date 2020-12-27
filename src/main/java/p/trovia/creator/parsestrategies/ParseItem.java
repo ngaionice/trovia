@@ -21,17 +21,13 @@ public class ParseItem implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) {
 
         // instantiate the stuff needed to parse
+        Markers m = new Markers();
         String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item
-        String nameDescBreakMarker = " 68 00 80";
-        String collectionMarker = "63 6F 6C 6C 65 63 74 69 6F 6E 73 2F"; // collections/
-        String lootboxMarker = "4C 6F 6F 74 54 61 62 6C 65"; // LootTable
-        String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
-        String hexAlphabetColl = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]|2F"; // same as above, + forward slash
         String recPathStartMarker = "item\\";
         String recPathEndMarker = ".binfab";
 
         // instantiate the variables
-        String name = null, desc = null, recPath = null;
+        String name = null, desc = null, rPath = null;
         String[] unlocks = new String[0];
 
         // identify name and desc paths
@@ -44,12 +40,12 @@ public class ParseItem implements ParseStrategy {
             }
 
             // otherwise, parse the string
-            int descEnd = splitString.indexOf(nameDescBreakMarker);
-            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker), descEnd + 9);
+            int descEnd = splitString.indexOf(m.endNameDesc);
+            String nameAndDesc = splitString.substring(splitString.indexOf(prefabMarker), descEnd);
 
             // parse the name
             for (int i = 0; i < nameAndDesc.length(); i += 3) {
-                if (!nameAndDesc.substring(i, i+2).matches(hexAlphabetPrefab)) {
+                if (!nameAndDesc.substring(i, i+2).matches(m.alphabetPrefab)) {
                     String nameHex = nameAndDesc.substring(0, i);
                     name = Parser.hexToAscii(nameHex);
                     break;
@@ -58,9 +54,8 @@ public class ParseItem implements ParseStrategy {
 
             // parse the description
             int descStart = nameAndDesc.substring(1).indexOf(prefabMarker); // shift by 1 to avoid finding the same marker
-            descEnd = nameAndDesc.substring(1).indexOf(nameDescBreakMarker);
             if (descStart != -1) {
-                String descHex = nameAndDesc.substring(1).substring(descStart, descEnd);
+                String descHex = nameAndDesc.substring(1).substring(descStart);
                 desc = Parser.hexToAscii(descHex);
             }
 
@@ -69,28 +64,28 @@ public class ParseItem implements ParseStrategy {
             return new Item(absPath);
         }
 
-        // subset recipe path
-        int recPathStart = absPath.indexOf(recPathStartMarker);
-        int recPathEnd = absPath.indexOf(recPathEndMarker);
+        // subset relative path
+        int rPathStart = absPath.indexOf(recPathStartMarker);
+        int rPathEnd = absPath.indexOf(recPathEndMarker);
 
-        if (recPathStart != -1 && recPathEnd != -1) {
-            recPath = absPath.substring(recPathStart, recPathEnd);
-            recPath = recPath.replaceAll("\\\\", "/");
+        if (rPathStart != -1 && rPathEnd != -1) {
+            rPath = absPath.substring(rPathStart, rPathEnd);
+            rPath = rPath.replaceAll("\\\\", "/");
         }
 
         // identify if collection exists
-        if (splitString.contains(collectionMarker)) {
+        if (splitString.contains(m.collection)) {
             List<String> collection = new ArrayList<>();
 
             // locate all the markers
-            int colIndex = splitString.indexOf(collectionMarker);
+            int colIndex = splitString.indexOf(m.collection);
             String currString = splitString.substring(colIndex);
 
-            while (currString.contains(collectionMarker)) {
+            while (currString.contains(m.collection)) {
 
                 // parse string
                 for (int i = 0; i < currString.length(); i += 3) {
-                    if (!currString.substring(i, i+2).matches(hexAlphabetColl)) {
+                    if (!currString.substring(i, i+2).matches(m.alphabetCollection)) {
                         collection.add(Parser.hexToAscii(currString.substring(0, i)));
                         currString = currString.substring(i); // chop off the previous part
                         break;
@@ -102,13 +97,13 @@ public class ParseItem implements ParseStrategy {
 
         // identify if lootbox exists
         boolean lootbox = false;
-        if (splitString.contains(lootboxMarker)) {
+        if (splitString.contains(m.lootbox)) {
             lootbox = true;
         }
 
         Item item;
-        if (name != null && recPath != null) {
-            item = new Item(name, desc, unlocks, recPath, lootbox);
+        if (name != null && rPath != null) {
+            item = new Item(name, desc, unlocks, rPath, lootbox);
         } else {
             System.out.println("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");
             item = new Item(absPath);

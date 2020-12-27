@@ -7,6 +7,7 @@ import java.util.Map;
 public class Bench implements Article{
 
     String name;   // station name; e.g. $prefabs_placeable_crafting_holiday_snowfest_interactive_craftingstation_name
+    String rPath;   // relative path of the file
     Map<String[], List<String>> categories; // key: [category #, category path]; value: list of recipe file names
     boolean profession;
     String professionName;
@@ -17,8 +18,9 @@ public class Bench implements Article{
 
     // note that category # is a string here, and that it starts at 1
 
-    public Bench(String name, Map<String[], List<String>> categories) {
+    public Bench(String name, String rPath, Map<String[], List<String>> categories) {
         this.name = name;
+        this.rPath = rPath;
         this.categories = categories;
     }
 
@@ -30,7 +32,8 @@ public class Bench implements Article{
      * @param categories categories in the bench
      * @param professionName file name of the profession; e.g. gardening
      */
-    public Bench(Map<String[], List<String>> categories, String professionName) {
+    public Bench(String rPath, Map<String[], List<String>> categories, String professionName) {
+        this.rPath = rPath;
         this.categories = categories;
         this.profession = true;
         this.professionName = professionName;
@@ -87,6 +90,11 @@ public class Bench implements Article{
 
     public boolean getProfession() {
         return profession;
+    }
+
+    @Override
+    public String getRPath() {
+        return rPath;
     }
 
     public void setName(String name) {
