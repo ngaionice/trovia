@@ -29,7 +29,7 @@ public class Parser {
         return output.toString();
     }
 
-    public static int hexToDecimal(String hexNumber, String item) {
+    public static int recipeH2D(String hexNumber, String item) {
         String[] hexPartition = hexNumber.split(" ");
         switch (hexPartition.length) {
             case 1:
@@ -59,6 +59,19 @@ public class Parser {
             default: // more than 3, rip
                 System.out.println(item + " - Keep an eye out for these items.");
                 return 0;
+        }
+    }
+
+    public static double collectionH2D(String hexNumber) {
+        String[] hexPartition = hexNumber.split(" ");
+        int first = Integer.parseInt(hexPartition[0], 16);
+        int second = Integer.parseInt(hexPartition[1], 16);
+        int denom = 67 - second;
+
+        if (first > 128) {
+            return 2*(128/Math.pow(4, denom)) + 2*(first-128)/Math.pow(4, denom);
+        } else {
+            return 128/Math.pow(4, denom) + first/Math.pow(4, denom);
         }
     }
 
