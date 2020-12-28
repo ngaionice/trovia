@@ -21,6 +21,7 @@ public class Item implements Article {
     List<String[]> lootboxUncommon = new ArrayList<>();
     List<String[]> lootboxRare = new ArrayList<>();
     String recipe = "";         // if hasRecipe = true, file name of the recipe, else is an empty string
+    List<String> notes;
 
     // an Entity; basic unit; note that gear is not included here
     public Item(String name, String desc, String[] unlocks, String rPath, boolean isLootbox) {
@@ -144,7 +145,17 @@ public class Item implements Article {
         return rPath;
     }
 
-//    public String getBlueprint() {
-//        return blueprint;
-//    }
+    /**
+     * Add notes to this Item entry. Text should not be directly added to this entry; instead, a key-value pair
+     * should be entered to a user-generated LangFile entry (tentatively with relative path "languages/en/custom"),
+     * and the key used in the LangFile entry should be input here as the parameter.
+     *
+     * @param key the key mapped to the corresponding string in LangFile with rPath languages/en/custom
+     */
+    public void addNotes(String key) {
+        if (notes == null) {
+            notes = new ArrayList<>();
+        }
+        notes.add(key);
+    }
 }

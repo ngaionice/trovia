@@ -31,4 +31,8 @@ public class LangFile implements Article{
         return strings;
     }
 
+    public void addString(String key, String value) {
+        strings.put(key, value);
+    }
+
 }
