@@ -16,6 +16,7 @@ public class Collection implements Article{
     Map<CollectionEnums.Property, Double> properties;  // should not contain mastery info
     Map<CollectionEnums.Buff, Double> buffs;           // for dragons only, else is null
     List<String> notes;
+    String recipe;
 
     // for non-dragons
     public Collection(String name, String desc, String rPath, List<CollectionEnums.CollectionType> types, Map<CollectionEnums.Property, Double> properties) {
@@ -106,5 +107,9 @@ public class Collection implements Article{
 
     public void setGeodeMR(int mastery) {
         geodeMR = mastery;
+    }
+
+    public void setRecipe(String rPath) {
+        recipe = rPath;
     }
 }

@@ -9,18 +9,18 @@ public class Item implements Article {
 
     String name;                // name, e.g. $prefabs_item_aura_music_01_item_name
     String desc;                // desc, e.g. $prefabs_item_aura_music_01_item_description
-    String rPath;             // relative path of the item; used in recipes
+    String rPath;               // relative path of the item; used in recipes
 //    String blueprint;           // path of the blueprint; not currently planned to be used, but may be useful in the future
     boolean isUnlocker;         // if this item is associated to a corresponding collection
-    boolean isCraftable = false;// if this item is craftable by a recipe
+    boolean isCraftable;        // if this item is craftable by a recipe
     boolean isLootbox;          // if this item is a lootbox
-    boolean isDecon = false;    // if this item can be deconstructed into other items
+    boolean isDecon;            // if this item can be deconstructed into other items
     String[] unlocks;           // if isUnlocker = true, list of collection paths that it unlocks; else is an empty array
     String[] decons;            // if canDecon = true, list of Item.name it decons to; else is an empty array
-    List<String[]> lootboxCommon = new ArrayList<>();     // if isLootbox = true, list of arrays in format [Item.name, quantity]
-    List<String[]> lootboxUncommon = new ArrayList<>();
-    List<String[]> lootboxRare = new ArrayList<>();
-    String recipe = "";         // if hasRecipe = true, file name of the recipe, else is an empty string
+    List<String[]> lootboxCommon;     // if isLootbox = true, list of arrays in format [Item.name, quantity]
+    List<String[]> lootboxUncommon;
+    List<String[]> lootboxRare;
+    String recipe;         // if hasRecipe = true, file name of the recipe, else is an empty string
     List<String> notes;
 
     // an Entity; basic unit; note that gear is not included here
@@ -114,6 +114,10 @@ public class Item implements Article {
     }
 
     public String getRecipe() {
+        if (recipe == null) {
+            System.out.println("There appears to be no recipe associated with this item.");
+            return null;
+        }
         return recipe;
     }
 
@@ -122,6 +126,9 @@ public class Item implements Article {
         contents.put("common", this.lootboxCommon);
         contents.put("uncommon", this.lootboxUncommon);
         contents.put("rare", this.lootboxRare);
+        if (lootboxCommon == null || lootboxUncommon == null || lootboxRare == null) {
+            System.out.println("One or more lootbox rarities do not currently have anything logged.");
+        }
         return contents;
     }
 
