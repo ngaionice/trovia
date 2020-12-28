@@ -113,7 +113,7 @@ public class Parser {
 //        return returnList;
 //    }
 
-    public Article createObject(String path, String itemType) throws IOException {
+    public Article createObject(String path, String itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {

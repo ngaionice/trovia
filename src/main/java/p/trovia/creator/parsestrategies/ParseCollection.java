@@ -90,8 +90,8 @@ public class ParseCollection implements ParseStrategy{
             int indexT = splitString.indexOf(m.turnRate);
             properties.put(CollectionEnums.Property.TURN_RATE, Parser.collectionH2D(splitString.substring(indexT-6, indexT-1)));
 
-            int indexAc = splitString.indexOf(m.accel);
-            properties.put(CollectionEnums.Property.ACCEL, Parser.collectionH2D(splitString.substring(indexAc-6, indexAc-1)));
+            int indexAc = splitString.indexOf("24", indexT + m.turnRate.length());
+            properties.put(CollectionEnums.Property.ACCEL, Parser.collectionH2D(splitString.substring(indexAc + 9, indexAc + 15)));
         }
 
         // dragon

@@ -9,7 +9,7 @@ public class ParseContext {
         this.strategy = strategy;
     }
 
-    public Article parse(String splitString, String absPath) {
+    public Article parse(String splitString, String absPath) throws ParseException {
         return strategy.parseObject(splitString, absPath);
     }
 }
