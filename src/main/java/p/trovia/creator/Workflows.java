@@ -4,13 +4,14 @@ import java.util.*;
 
 public class Workflows {
     // workflows that call on the different classes to prepare for data entry into MongoDB
-    public Reshaper reshaper = new Reshaper();
     public Parser parser = new Parser();
 
     /**
-     * Adds the missing bench paths in the recipes from createRecipes.
+     * Adds the missing bench paths in Recipe instances.
      *
      * Probably a horribly inefficient method.
+     *
+     * TODO: convert to return type to void, as well as the input parameters (will probably need a RecipeManager of sorts)
      *
      * @param recipes output from createRecipes
      * @param benchRecipes output from getBenchRecipes
@@ -42,10 +43,11 @@ public class Workflows {
         for (List<String[]> item: recipes) {
             log.add(item.get(0)[0]);
         }
-        reshaper.logToFile(log, logPath);
+        Parser.logToFile(log, logPath);
         return outputRecipes;
     }
 
+    // TODO: change input type and thus corresponding code
     public void writeRecipesToFile(List<List<String[]>> createBaseRecipesOut, String writePath) {
         List<String> items = new ArrayList<>();
         for (List<String[]> item: createBaseRecipesOut) {
@@ -57,7 +59,7 @@ public class Workflows {
             }
             items.add("\n");
         }
-        reshaper.logToFile(items, writePath);
+        Parser.logToFile(items, writePath);
     }
 
 

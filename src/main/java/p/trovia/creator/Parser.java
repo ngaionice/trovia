@@ -6,8 +6,11 @@ import p.trovia.objects.Article;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Parser {
+
+
 
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
@@ -134,6 +137,26 @@ public class Parser {
                 return context.parse(splitString, path);
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Logs the supplied strings to the text file at the path specified. Requires the text file to exist in order to log.
+     *
+     * @param itemToLog list of strings to be logged
+     * @param path path of the text file to be logged to
+     */
+    public static void logToFile(List<String> itemToLog, String path) {
+        try(FileWriter fw = new FileWriter(path, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter out = new PrintWriter(bw))
+        {
+            for (String item:itemToLog) {
+                out.println(item);
+//                System.out.println(item);
+            }
+        } catch (IOException e) {
+            System.out.println("Logging to" + path + "failed.");
         }
     }
 }
