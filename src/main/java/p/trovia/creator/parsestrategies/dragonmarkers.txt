@@ -9,8 +9,10 @@ crit hit - old:      63 72 69 74 68 69 74 63 68 61 6E 63 65 46       (crithitcha
 
 phys dmg:            70 68 79 73 69 63 61 6C 64 61 6D 61 67 65 46    (physicaldamageF)
 phys dmg - old:      64 61 6D 61 67 65 70 68 79 73 46                (damagephysF)
+
 magi dmg:            73 70 65 6C 6C 64 61 6D 61 67 65 46             (spelldamageF)
 magi dmg - old:      64 61 6D 61 67 65 73 70 65 6C 6C 46             (damagespellF)
+magi dmg:            6D 61 67 69 63 64 61 6D 61 67 65 46             (magicdamageF)
 
 attk spd:            61 74 74 61 63 6B 73 70 65 65 64 46             (attackspeedF)
 

@@ -126,6 +126,9 @@ public class Parser {
             case "profession":
                 context = new ParseContext(new ParseProfession());
                 return context.parse(splitString, path);
+            case "collection":
+                context = new ParseContext(new ParseCollection());
+                return context.parse(splitString, path);
             case "lang-en-prefab":
                 context = new ParseContext(new ParseLangPrefab());
                 return context.parse(splitString, path);

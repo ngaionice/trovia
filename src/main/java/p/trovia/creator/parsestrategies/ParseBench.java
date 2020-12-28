@@ -74,7 +74,7 @@ public class ParseBench implements ParseStrategy {
             categories.put(categoryName, recipes);
         }
 
-        String rPath = absPath.substring(absPath.indexOf("prefab\\")+7, absPath.indexOf(m.endFile));
+        String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
         rPath = rPath.replaceAll("\\\\", "/");
 
         return new Bench(name, rPath, categories);

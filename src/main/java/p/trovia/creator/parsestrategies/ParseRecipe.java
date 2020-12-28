@@ -72,7 +72,7 @@ public class ParseRecipe implements ParseStrategy {
         // convert the hex strings/numbers to ascii/decimals
         for (String[] item : parsedList) {
             item[0] = Parser.hexToAscii(item[0]);
-            item[1] = Integer.toString(Parser.hexToDecimal(item[1], item[0]));
+            item[1] = Integer.toString(Parser.recipeH2D(item[1], item[0]));
         }
 
         // create the object
