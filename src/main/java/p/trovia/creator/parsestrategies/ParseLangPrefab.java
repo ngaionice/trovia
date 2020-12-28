@@ -4,8 +4,8 @@ import p.trovia.creator.Parser;
 import p.trovia.objects.Article;
 import p.trovia.objects.LangFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +16,7 @@ public class ParseLangPrefab implements ParseStrategy {
 
         // instantiate the identifiers and variables
         Markers m = new Markers();
-        List<String[]> pairs = new ArrayList<>();
+        Map<String, String> pairs = new HashMap<>(1000);
         Pattern p = Pattern.compile(m.alphabetExtended);
 
         // trim the initial part, which is irrelevant, then split by "$prefab"
@@ -33,7 +33,7 @@ public class ParseLangPrefab implements ParseStrategy {
             // find the string, convert to ASCII, and put the array into the list, if no string is found, break the loop
             if (m1.find()) {
                 String string = itemNameList[1].substring(m1.start(), itemNameList[1].indexOf(" BE"));
-                pairs.add(new String[]{Parser.hexToAscii(stringPath), Parser.hexToAscii(string)});
+                pairs.put(Parser.hexToAscii(stringPath), Parser.hexToAscii(string));
             } else {
                 System.out.println("Something is problematic, check " + s + " in " + absPath);
                 break;

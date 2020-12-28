@@ -1,6 +1,7 @@
 package p.trovia.objects;
 
 import java.util.List;
+import java.util.Map;
 
 public class LangFile implements Article{
 
@@ -8,10 +9,10 @@ public class LangFile implements Article{
 
     String name; // file name (not the path!); e.g. prefabs_collections_aura
     String rPath;   // relative path of this file
-    List<String[]> strings; // list of string arrays, each array has the format of [path, actual string]
-    // e.g. [$prefabs_item_aura_music_01_item_description, A fitting ode to the chaos of battle.]
+    Map<String, String> strings; // map of strings, each entry has the format of key: $string_key; value: string
+    // e.g. key: $prefabs_item_aura_music_01_item_description; value: A fitting ode to the chaos of battle.
 
-    public LangFile(String name, String rPath, List<String[]> strings) {
+    public LangFile(String name, String rPath, Map<String, String> strings) {
         this.name = name;
         this.rPath = rPath;
         this.strings = strings;
@@ -26,7 +27,7 @@ public class LangFile implements Article{
         return rPath;
     }
 
-    public List<String[]> getStrings() {
+    public Map<String, String> getStrings() {
         return strings;
     }
 
