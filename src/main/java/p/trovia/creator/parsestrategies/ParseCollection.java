@@ -64,8 +64,8 @@ public class ParseCollection implements ParseStrategy{
         }
 
         // wings
-        if (splitString.contains(m.airSpeed)) {
-            int indexA = splitString.indexOf(m.airSpeed);
+        if (splitString.contains(m.airSpeed) || splitString.contains(m.airSpeedA)) {
+            int indexA = splitString.contains(m.airSpeed) ? splitString.indexOf(m.airSpeed) : splitString.indexOf(m.airSpeedA);
             properties.put(CollectionEnums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA-6, indexA-1)));
             types.add(CollectionEnums.CollectionType.WINGS);
 

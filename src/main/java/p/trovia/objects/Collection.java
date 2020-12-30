@@ -74,13 +74,13 @@ public class Collection implements Article{
     }
 
     /**
-     * Returns the stat buffs granted by obtaining this Collection entry. Returns null if the entry is not a final-state dragon.
+     * Returns the stat buffs granted by obtaining this Collection entry. Returns null if the entry is not a final-state dragon, or is a primordial dragon.
      *
      * @return a map containing the buffs granted by this Collection, where keys are the stats, and values are the increases
      */
     public Map<CollectionEnums.Buff, Double> getBuffs() {
         if (buffs == null) {
-            System.out.println("This isn't a dragon, so there are no buffs.");
+            System.out.println("This either isn't a dragon, or is a primordial dragon, so there are no buffs specified.");
             return null;
         } else {
             return buffs;
