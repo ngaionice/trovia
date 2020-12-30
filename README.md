@@ -1,4 +1,4 @@
-# Trovia --- Data Extraction and Management
+# Trovia - Data Extraction and Management
 
 This is a 2-part project. This repository focuses on extracting and managing data extracted from client files of Trove, a voxel MMO. The actual website code is in [a separate repository](https://github.com/ngaionice/trovia-s).
 
