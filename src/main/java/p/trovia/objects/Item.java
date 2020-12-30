@@ -16,10 +16,10 @@ public class Item implements Article {
     boolean isLootbox;          // if this item is a lootbox
     boolean isDecon;            // if this item can be deconstructed into other items
     String[] unlocks;           // if isUnlocker = true, list of collection paths that it unlocks; else is an empty array
-    String[] decons;            // if canDecon = true, list of Item.name it decons to; else is an empty array
-    List<String[]> lootboxCommon;     // if isLootbox = true, list of arrays in format [Item.name, quantity]
-    List<String[]> lootboxUncommon;
-    List<String[]> lootboxRare;
+    Map<String, Integer> decons;            // if canDecon = true, list of Item.name it decons to; else is an empty array
+    Map<String, Integer> lootboxCommon;     // if isLootbox = true, key: rPath of item looted, value: quantity of item looted
+    Map<String, Integer> lootboxUncommon;
+    Map<String, Integer> lootboxRare;
     String recipe;         // if hasRecipe = true, file name of the recipe, else is an empty string
     List<String> notes;
 
@@ -50,7 +50,8 @@ public class Item implements Article {
         this.name = name;
         desc = rPath = "";
         isUnlocker = isLootbox = false;
-        unlocks = decons = new String[0];
+        unlocks = null;
+        decons = null;
     }
 
     // terminology:
@@ -68,12 +69,21 @@ public class Item implements Article {
     }
 
     /**
-     * Sets canDecon to the input value.
+     * Sets isDecon to the input value.
      *
      * @param bool true if this item can be deconstructed
      */
-    public void setDecon(boolean bool) {
+    public void setDeconnable(boolean bool) {
         this.isDecon = bool;
+    }
+
+    /**
+     * Sets isLootbox to the input value.
+     *
+     * @param bool true if this item is a lootbox
+     */
+    public void setLootbox(boolean bool) {
+        this.isLootbox = bool;
     }
 
     /**
@@ -85,16 +95,16 @@ public class Item implements Article {
         this.recipe = recipe;
     }
 
-    public void addLootboxCommon(String[] item) {
-        lootboxCommon.add(item);
+    public void addLootboxCommon(String rPath, int quantity) {
+        lootboxCommon.put(rPath, quantity);
     }
 
-    public void addLootboxUncommon(String[] item) {
-        lootboxUncommon.add(item);
+    public void addLootboxUncommon(String rPath, int quantity) {
+        lootboxUncommon.put(rPath, quantity);
     }
 
-    public void addLootboxRare(String[] item) {
-        lootboxRare.add(item);
+    public void addLootboxRare(String rPath, int quantity) {
+        lootboxRare.put(rPath, quantity);
     }
 
     public boolean isUnlocker() {
@@ -115,14 +125,13 @@ public class Item implements Article {
 
     public String getRecipe() {
         if (recipe == null) {
-            System.out.println("There appears to be no recipe associated with this item.");
             return null;
         }
         return recipe;
     }
 
-    public Map<String, List<String[]>> getLootbox() {
-        Map<String, List<String[]>> contents = new HashMap<>();
+    public Map<String, Map<String, Integer>> getLootbox() {
+        Map<String, Map<String, Integer>> contents = new HashMap<>();
         contents.put("common", this.lootboxCommon);
         contents.put("uncommon", this.lootboxUncommon);
         contents.put("rare", this.lootboxRare);
@@ -136,7 +145,11 @@ public class Item implements Article {
         return unlocks;
     }
 
-    public String[] getDecons() {
+    public void setDecons(Map<String, Integer> decons) {
+        this.decons = decons;
+    }
+
+    public Map<String, Integer> getDecons() {
         return decons;
     }
 
