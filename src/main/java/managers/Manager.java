@@ -1,4 +1,4 @@
-package p.trovia.managers;
+package managers;
 
 public interface Manager {
 

@@ -1,6 +1,6 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
-import p.trovia.objects.Article;
+import objects.Article;
 
 interface ParseStrategy {
 

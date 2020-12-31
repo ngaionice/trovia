@@ -1,9 +1,9 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
-import p.trovia.creator.Parser;
-import p.trovia.objects.Article;
-import p.trovia.objects.Collection;
-import p.trovia.objects.CollectionEnums;
+import parser.Parser;
+import objects.Article;
+import objects.Collection;
+import objects.CollectionEnums;
 
 import java.util.ArrayList;
 import java.util.HashMap;

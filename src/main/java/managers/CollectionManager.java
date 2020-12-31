@@ -1,7 +1,7 @@
-package p.trovia.managers;
+package managers;
 
-import p.trovia.objects.Collection;
-import p.trovia.objects.CollectionEnums;
+import objects.Collection;
+import objects.CollectionEnums;
 
 import java.io.Serializable;
 import java.util.HashMap;

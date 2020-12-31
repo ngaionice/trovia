@@ -1,4 +1,4 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
 import java.util.ArrayList;
 import java.util.List;

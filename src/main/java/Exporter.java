@@ -47,9 +47,10 @@ public class Exporter {
     }
 
     /**
-     * Takes in the output from Workflows.createRecipes, and insert it into the MongoDB database.
+     * OUTDATED
+     * Takes in the output from createRecipes, and insert it into the MongoDB database.
      *
-     * @param recipes output from Workflows.createRecipes.
+     * @param recipes output from createRecipes.
      */
     public void importRecipes(List<List<String[]>> recipes) {
         System.out.println("Starting recipe import.");

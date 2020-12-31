@@ -1,4 +1,4 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
 public class ParseException extends Exception{
 

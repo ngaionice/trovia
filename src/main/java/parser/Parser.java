@@ -1,7 +1,7 @@
-package p.trovia.creator;
+package parser;
 
-import p.trovia.creator.parsestrategies.*;
-import p.trovia.objects.Article;
+import parser.parsestrategies.*;
+import objects.Article;
 
 import java.io.*;
 import java.nio.file.Files;

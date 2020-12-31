@@ -1,4 +1,4 @@
-package p.trovia.objects;
+package objects;
 
 import java.io.Serializable;
 

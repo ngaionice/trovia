@@ -1,6 +1,6 @@
-package p.trovia.managers;
+package managers;
 
-import p.trovia.objects.LangFile;
+import objects.LangFile;
 
 import java.io.Serializable;
 import java.util.HashMap;

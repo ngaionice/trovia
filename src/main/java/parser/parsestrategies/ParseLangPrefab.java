@@ -1,8 +1,8 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
-import p.trovia.creator.Parser;
-import p.trovia.objects.Article;
-import p.trovia.objects.LangFile;
+import parser.Parser;
+import objects.Article;
+import objects.LangFile;
 
 import java.util.HashMap;
 import java.util.Map;

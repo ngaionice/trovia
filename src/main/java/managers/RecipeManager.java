@@ -1,6 +1,6 @@
-package p.trovia.managers;
+package managers;
 
-import p.trovia.objects.Recipe;
+import objects.Recipe;
 
 import java.io.Serializable;
 import java.util.HashMap;

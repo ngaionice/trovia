@@ -1,12 +1,10 @@
-package p.trovia.creator.parsestrategies;
+package parser.parsestrategies;
 
-import p.trovia.creator.Parser;
-import p.trovia.objects.Article;
-import p.trovia.objects.Bench;
+import parser.Parser;
+import objects.Article;
+import objects.Bench;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ParseBench implements ParseStrategy {
 

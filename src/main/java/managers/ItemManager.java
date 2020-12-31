@@ -1,6 +1,6 @@
-package p.trovia.managers;
+package managers;
 
-import p.trovia.objects.Item;
+import objects.Item;
 
 import java.io.Serializable;
 import java.util.ArrayList;
