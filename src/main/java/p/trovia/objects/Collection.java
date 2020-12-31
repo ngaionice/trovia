@@ -87,6 +87,26 @@ public class Collection implements Article{
         }
     }
 
+    public List<String> getNotes() {
+        return notes;
+    }
+
+    public String getRecipe() {
+        return recipe;
+    }
+
+    public int getTroveMR() {
+        return troveMR;
+    }
+
+    public int getGeodeMR() {
+        return geodeMR;
+    }
+
+    public int getPowerRank() {
+        return properties.get(CollectionEnums.Property.POWER_RANK).intValue();
+    }
+
     /**
      * Add notes to this Collection entry. Text should not be directly added to this entry; instead, a key-value pair
      * should be entered to a user-generated LangFile entry (tentatively with relative path "languages/en/custom"),
@@ -111,5 +131,9 @@ public class Collection implements Article{
 
     public void setRecipe(String rPath) {
         recipe = rPath;
+    }
+
+    public void setPowerRank(double pr) {
+        properties.put(CollectionEnums.Property.POWER_RANK, pr);
     }
 }

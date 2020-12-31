@@ -14,7 +14,7 @@ public class RecipeManager {
     Map<String, Recipe> addMap = new HashMap<>(1000);
     Map<String, Recipe> removeMap = new HashMap<>(1000);
 
-    // addMap is used to track new add recipes and changes to existing recipes
+    // addMap is used to track new recipes and changes to existing recipes
     // removeMap is used to track removed recipes and original versions of recipes (relative to last serialized/synchronization state)
 
     public void addRecipe(Recipe recipe) {
@@ -25,6 +25,7 @@ public class RecipeManager {
             // if this recipe is getting overwritten/updated a second time or more, we keep the original version
             if (!removeMap.containsKey(recipe.getRPath())) {
                 removeMap.put(recipe.getRPath() ,recipeMap.get(recipe.getRPath()));
+                // TODO: use a logger to note such an incident
             }
         }
 
@@ -41,7 +42,7 @@ public class RecipeManager {
             removeMap.put(rPath, recipeMap.get(rPath));
         }
 
-        // remove the item
+        // remove the recipe
         recipeMap.remove(rPath);
     }
 
