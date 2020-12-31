@@ -17,16 +17,34 @@ public class ItemManager implements Manager{
     Map<String, Item> removeMap = new HashMap<>(1000);
 
     // addMap is used to track new add items and changes to existing items
-    // removeMap is used to track removed items
+    // removeMap is used to track removed items/original copies of items (relative to last serialized/synchronization state)
 
     public void addItem(Item item) {
+
+        // first check if item with same key exists; if true, then we add it to removeMap before overwriting it
+        if (itemMap.containsKey(item.getRPath())) {
+
+            // if this item is getting overwritten/updated a second time or more, we keep the original version
+            if (!removeMap.containsKey(item.getRPath())) {
+                removeMap.put(item.getRPath() ,itemMap.get(item.getRPath()));
+            }
+        }
+
+        // add/update the item
         itemMap.put(item.getRPath(), item);
         addMap.put(item.getRPath(), item);
     }
 
-    public void removeItem(Item item) {
-        itemMap.remove(item.getRPath());
-        removeMap.put(item.getRPath(), item);
+    public void removeItem(String rPath) {
+
+        // as in addItem, if this item was updated before it gets deleted, we keep the original version in removeMap
+        // and discard this updated version completely
+        if (!removeMap.containsKey(rPath)) {
+            removeMap.put(rPath, itemMap.get(rPath));
+        }
+
+        // remove the item
+        itemMap.remove(rPath);
     }
 
     // getters
