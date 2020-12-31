@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BenchManager implements Manager, Serializable {
+public class BenchManager implements Manager, Search, Serializable {
 
     // use rPath as the key, as it is unique to each Bench
     Map<String, Bench> benchMap = new HashMap<>(5000);
@@ -19,12 +19,12 @@ public class BenchManager implements Manager, Serializable {
     // addMap is used to track new and edited benches
     // removeMap is used to track removed benches (relative to last serialized/synchronization state)
 
-    public void addRecipe(Bench bench) {
+    public void addBench(Bench bench) {
         benchMap.put(bench.getRPath(), bench);
         addMap.put(bench.getRPath(), bench);
     }
 
-    public void removeRecipe(String rPath) {
+    public void removeBench(String rPath) {
         removeMap.put(rPath, benchMap.get(rPath));
         benchMap.remove(rPath);
     }

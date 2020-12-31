@@ -3,6 +3,7 @@ package parser.parsestrategies;
 import parser.Parser;
 import objects.Item;
 import objects.Article;
+import local.Markers;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemManager implements Manager, Serializable {
+public class ItemManager implements Manager, Search, Serializable {
 
     // use rPath as the key, as it is unique to each Item
     Map<String, Item> itemMap = new HashMap<>(5000);
@@ -38,7 +38,7 @@ public class ItemManager implements Manager, Serializable {
      * @param rPath relative path of the item
      * @return language file path of this item's name
      */
-    public String getItemName(String rPath) {
+    public String getName(String rPath) {
         return itemMap.get(rPath).getName();
     }
 
@@ -48,7 +48,7 @@ public class ItemManager implements Manager, Serializable {
      * @param rPath relative path of the item
      * @return language file path of this item's description
      */
-    public String getItemDesc(String rPath) {
+    public String getDesc(String rPath) {
         return itemMap.get(rPath).getDesc();
     }
 

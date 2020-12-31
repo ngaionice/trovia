@@ -11,6 +11,14 @@ import java.util.List;
 public class Parser {
 
 
+    public enum ObjectType {
+        ITEM,
+        BENCH,
+        COLLECTION,
+        LANG_FILE,
+        RECIPE,
+        PROFESSION
+    }
 
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
@@ -113,26 +121,26 @@ public class Parser {
 //        return returnList;
 //    }
 
-    public Article createObject(String path, String itemType) throws IOException, ParseException {
+    public Article createObject(String path, ObjectType itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
-            case "item":
+            case ITEM:
                 context = new ParseContext(new ParseItem());
                 return context.parse(splitString, path);
-            case "recipe":
+            case RECIPE:
                 context = new ParseContext(new ParseRecipe());
                 return context.parse(splitString, path);
-            case "bench":
+            case BENCH:
                 context = new ParseContext(new ParseBench());
                 return context.parse(splitString, path);
-            case "profession":
+            case PROFESSION:
                 context = new ParseContext(new ParseProfession());
                 return context.parse(splitString, path);
-            case "collection":
+            case COLLECTION:
                 context = new ParseContext(new ParseCollection());
                 return context.parse(splitString, path);
-            case "lang-en-prefab":
+            case LANG_FILE:
                 context = new ParseContext(new ParseLangPrefab());
                 return context.parse(splitString, path);
             default:

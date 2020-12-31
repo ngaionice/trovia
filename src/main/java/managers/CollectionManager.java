@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CollectionManager implements Manager, Serializable {
+public class CollectionManager implements Manager, Search, Serializable {
 
     // use rPath as the key, as it is unique to each Collection
     Map<String, Collection> collectionMap = new HashMap<>(5000);
