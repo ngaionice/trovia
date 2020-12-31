@@ -72,6 +72,10 @@ public class Bench implements Article, Serializable {
         return recipes;
     }
 
+    public Map<String[], List<String>> getAllRecipesByCategory() {
+        return categories;
+    }
+
     /**
      * Returns a list of all recipe file names in the specified category.
      *
@@ -89,8 +93,12 @@ public class Bench implements Article, Serializable {
         return null;
     }
 
-    public boolean getProfession() {
+    public boolean isProfession() {
         return profession;
+    }
+
+    public String getProfessionName() {
+        return professionName;
     }
 
     @Override
@@ -98,7 +106,7 @@ public class Bench implements Article, Serializable {
         return rPath;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProfessionName(String name) {
+        this.professionName = name;
     }
 }

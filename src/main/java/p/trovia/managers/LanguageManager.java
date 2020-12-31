@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LanguageManager implements Serializable {
+public class LanguageManager implements Manager, Serializable {
 
     // use rPath as the key, as it is unique to each Recipe
     Map<String, LangFile> langFileMap = new HashMap<>(300);

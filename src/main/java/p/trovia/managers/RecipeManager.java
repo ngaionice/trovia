@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RecipeManager implements Serializable {
+public class RecipeManager implements Manager, Serializable {
 
     // use rPath as the key, as it is unique to each Recipe
     Map<String, Recipe> recipeMap = new HashMap<>(5000);
