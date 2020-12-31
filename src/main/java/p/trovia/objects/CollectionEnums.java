@@ -1,6 +1,8 @@
 package p.trovia.objects;
 
-public class CollectionEnums {
+import java.io.Serializable;
+
+public class CollectionEnums implements Serializable {
 
     public enum CollectionType {
         MOUNT,

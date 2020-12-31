@@ -2,10 +2,11 @@ package p.trovia.managers;
 
 import p.trovia.objects.Recipe;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RecipeManager {
+public class RecipeManager implements Serializable {
 
     // use rPath as the key, as it is unique to each Recipe
     Map<String, Recipe> recipeMap = new HashMap<>(5000);

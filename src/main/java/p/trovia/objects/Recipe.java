@@ -1,6 +1,8 @@
 package p.trovia.objects;
 
-public class Recipe implements Article {
+import java.io.Serializable;
+
+public class Recipe implements Article, Serializable {
 
     // for actual recipes, or manual recipes, e.g. gear upgrade costs, module upgrade costs
 

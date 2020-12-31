@@ -2,12 +2,13 @@ package p.trovia.managers;
 
 import p.trovia.objects.Item;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemManager implements Manager{
+public class ItemManager implements Manager, Serializable {
 
     // use rPath as the key, as it is unique to each Item
     Map<String, Item> itemMap = new HashMap<>(5000);

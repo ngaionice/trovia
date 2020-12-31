@@ -1,11 +1,12 @@
 package p.trovia.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Item implements Article {
+public class Item implements Article, Serializable {
 
     String name;                // name, e.g. $prefabs_item_aura_music_01_item_name
     String desc;                // desc, e.g. $prefabs_item_aura_music_01_item_description

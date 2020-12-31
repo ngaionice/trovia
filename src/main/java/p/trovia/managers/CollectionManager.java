@@ -3,11 +3,12 @@ package p.trovia.managers;
 import p.trovia.objects.Collection;
 import p.trovia.objects.CollectionEnums;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CollectionManager {
+public class CollectionManager implements Serializable {
 
     // use rPath as the key, as it is unique to each Collection
     Map<String, Collection> collectionMap = new HashMap<>(5000);

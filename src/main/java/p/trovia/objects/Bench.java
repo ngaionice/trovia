@@ -1,10 +1,11 @@
 package p.trovia.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Bench implements Article{
+public class Bench implements Article, Serializable {
 
     String name;   // station name; e.g. $prefabs_placeable_crafting_holiday_snowfest_interactive_craftingstation_name
     String rPath;   // relative path of the file

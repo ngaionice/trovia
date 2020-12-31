@@ -1,6 +1,8 @@
 package p.trovia.objects;
 
-public class Gear implements Article{
+import java.io.Serializable;
+
+public class Gear implements Article, Serializable {
 
     // used for actual gear, as well as geode modules
     String name;

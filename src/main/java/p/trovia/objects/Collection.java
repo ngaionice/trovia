@@ -1,11 +1,12 @@
 package p.trovia.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class Collection implements Article{
+public class Collection implements Article, Serializable {
 
     String name;
     String desc;

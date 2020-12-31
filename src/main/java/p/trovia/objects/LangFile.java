@@ -1,9 +1,10 @@
 package p.trovia.objects;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class LangFile implements Article{
+public class LangFile implements Article, Serializable {
 
     // language file, can contain multiple
 
