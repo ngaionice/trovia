@@ -15,35 +15,16 @@ public class RecipeManager implements Serializable {
     Map<String, Recipe> addMap = new HashMap<>(1000);
     Map<String, Recipe> removeMap = new HashMap<>(1000);
 
-    // addMap is used to track new recipes and changes to existing recipes
-    // removeMap is used to track removed recipes and original versions of recipes (relative to last serialized/synchronization state)
+    // addMap is used to track new and edited recipes
+    // removeMap is used to track removed recipes (relative to last serialized/synchronization state)
 
     public void addRecipe(Recipe recipe) {
-
-        // first check if recipe with same key exists; if true, then we add it to removeMap before overwriting it
-        if (recipeMap.containsKey(recipe.getRPath())) {
-
-            // if this recipe is getting overwritten/updated a second time or more, we keep the original version
-            if (!removeMap.containsKey(recipe.getRPath())) {
-                removeMap.put(recipe.getRPath() ,recipeMap.get(recipe.getRPath()));
-                // TODO: use a logger to note such an incident
-            }
-        }
-
-        // add the recipe
         recipeMap.put(recipe.getRPath(), recipe);
         addMap.put(recipe.getRPath(), recipe);
     }
 
     public void removeRecipe(String rPath) {
-
-        // as in addRecipe, if this item was updated before it gets deleted, we keep the original version in removeMap
-        // and discard this updated version completely
-        if (!removeMap.containsKey(rPath)) {
-            removeMap.put(rPath, recipeMap.get(rPath));
-        }
-
-        // remove the recipe
+        removeMap.put(rPath, recipeMap.get(rPath));
         recipeMap.remove(rPath);
     }
 
@@ -69,5 +50,6 @@ public class RecipeManager implements Serializable {
 
     public void setBench(String rPath, String benchRPath) {
         recipeMap.get(rPath).setBench(benchRPath);
+        addMap.put(rPath, recipeMap.get(rPath));
     }
 }

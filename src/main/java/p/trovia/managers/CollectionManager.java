@@ -17,35 +17,16 @@ public class CollectionManager implements Serializable {
     Map<String, Collection> addMap = new HashMap<>(1000);
     Map<String, Collection> removeMap = new HashMap<>(1000);
 
-    // addMap is used to track new collections and changes to existing collections
-    // removeMap is used to track removed collections and original versions of collections (relative to last serialized/synchronization state)
+    // addMap is used to track new and edited collections
+    // removeMap is used to track removed collections (relative to last serialized/synchronization state)
 
     public void addCollection(Collection col) {
-
-        // first check if collection with same key exists; if true, then we add it to removeMap before overwriting it
-        if (collectionMap.containsKey(col.getRPath())) {
-
-            // if this collection is getting overwritten/updated a second time or more, we keep the original version
-            if (!removeMap.containsKey(col.getRPath())) {
-                removeMap.put(col.getRPath() , collectionMap.get(col.getRPath()));
-                // TODO: use a logger to note such an incident
-            }
-        }
-
-        // add the collection
         collectionMap.put(col.getRPath(), col);
         addMap.put(col.getRPath(), col);
     }
 
     public void removeCollection(String rPath) {
-
-        // as in addCollection, if this item was updated before it gets deleted, we keep the original version in removeMap
-        // and discard this updated version completely
-        if (!removeMap.containsKey(rPath)) {
-            removeMap.put(rPath, collectionMap.get(rPath));
-        }
-
-        // remove the collection
+        removeMap.put(rPath, collectionMap.get(rPath));
         collectionMap.remove(rPath);
     }
 
@@ -91,21 +72,26 @@ public class CollectionManager implements Serializable {
 
     public void setTroveMR(String rPath, int mastery) {
         collectionMap.get(rPath).setTroveMR(mastery);
+        addMap.put(rPath, collectionMap.get(rPath));
     }
 
     public void setGeodeMR(String rPath, int mastery) {
         collectionMap.get(rPath).setGeodeMR(mastery);
+        addMap.put(rPath, collectionMap.get(rPath));
     }
 
     public void setPowerRank(String rPath, int pr) {
         collectionMap.get(rPath).setPowerRank(pr);
+        addMap.put(rPath, collectionMap.get(rPath));
     }
 
     public void addNotes(String rPath, String notesRPath) {
         collectionMap.get(rPath).addNotes(notesRPath);
+        addMap.put(rPath, collectionMap.get(rPath));
     }
 
     public void setRecipe(String rPath, String recipeRPath) {
         collectionMap.get(rPath).setRecipe(recipeRPath);
+        addMap.put(rPath, collectionMap.get(rPath));
     }
 }
