@@ -48,8 +48,8 @@ public class RecipeManager implements Manager, Serializable {
 
     // setters
 
-    public void setBench(String rPath, String benchRPath) {
-        recipeMap.get(rPath).setBench(benchRPath);
+    public void setBench(String rPath, String benchIdentifier) {
+        recipeMap.get(rPath).setBench(benchIdentifier);
         addMap.put(rPath, recipeMap.get(rPath));
     }
 }

@@ -60,12 +60,12 @@ public class BenchManager implements Manager, Search, Serializable {
     // setters
 
     /**
-     * Sets the profession name identifier of the specified bench.
+     * Sets the bench name identifier of the specified bench. Used for professions.
      *
      * @param rPath the relative path of the bench
      * @param name the identifier of the name (in a LangFile)
      */
-    public void setProfessionName(String rPath, String name) {
-        benchMap.get(rPath).setProfessionName(name);
+    public void setName(String rPath, String name) {
+        benchMap.get(rPath).setName(name);
     }
 }

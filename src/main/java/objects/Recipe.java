@@ -7,7 +7,7 @@ public class Recipe implements Article, Serializable {
     // for actual recipes, or manual recipes, e.g. gear upgrade costs, module upgrade costs
 
     String name;        // e.g. recipe_block_blue_08
-    String bench;       // e.g. colorchanger_interactive
+    String bench;       // e.g. $prefabs_placeable_crafting_funfactory_interactive_craftingstation_name
     String rPath;       // relative path
     String[][] costs;   // array of string arrays, each sub-array in the format [recipe-specific item path, quantity]
     String[] output;    // the result of crafting the recipe, in the format of [item name path, quantity], if item unlocks automatically, quantity = 0

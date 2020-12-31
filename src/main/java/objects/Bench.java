@@ -106,7 +106,7 @@ public class Bench implements Article, Serializable {
         return rPath;
     }
 
-    public void setProfessionName(String name) {
-        this.professionName = name;
+    public void setName(String name) {
+        this.name = name;
     }
 }
