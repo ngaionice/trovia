@@ -4,7 +4,9 @@ import objects.Recipe;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RecipeManager implements Manager, Serializable {
 
@@ -44,6 +46,10 @@ public class RecipeManager implements Manager, Serializable {
 
     public String getBench(String rPath) {
         return recipeMap.get(rPath).getBench();
+    }
+
+    public Set<String> getNewRPaths() {
+        return addMap.keySet();
     }
 
     // setters

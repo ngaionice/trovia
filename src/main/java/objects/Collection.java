@@ -17,7 +17,7 @@ public class Collection implements Article, Serializable {
     Map<CollectionEnums.Property, Double> properties;  // should not contain mastery info
     Map<CollectionEnums.Buff, Double> buffs;           // for dragons only, else is null
     List<String> notes;
-    String recipe;
+    List<String> recipes;
 
     // for non-dragons
     public Collection(String name, String desc, String rPath, List<CollectionEnums.CollectionType> types, Map<CollectionEnums.Property, Double> properties) {
@@ -92,8 +92,8 @@ public class Collection implements Article, Serializable {
         return notes;
     }
 
-    public String getRecipe() {
-        return recipe;
+    public List<String> getRecipes() {
+        return recipes;
     }
 
     public int getTroveMR() {
@@ -122,16 +122,16 @@ public class Collection implements Article, Serializable {
         notes.add(key);
     }
 
+    public void addRecipe(String recipeRPath) {
+        recipes.add(recipeRPath);
+    }
+
     public void setTroveMR(int mastery) {
         troveMR = mastery;
     }
 
     public void setGeodeMR(int mastery) {
         geodeMR = mastery;
-    }
-
-    public void setRecipe(String rPath) {
-        recipe = rPath;
     }
 
     public void setPowerRank(double pr) {

@@ -33,7 +33,10 @@ public class CollectionManager implements Manager, Search, Serializable {
     // getters
 
     public String getName(String rPath) {
-        return collectionMap.get(rPath).getName();
+        if (collectionMap.containsKey(rPath)) {
+            return collectionMap.get(rPath).getName();
+        }
+        return null;
     }
 
     public String getDesc(String rPath) {
@@ -56,8 +59,8 @@ public class CollectionManager implements Manager, Search, Serializable {
         return collectionMap.get(rPath).getNotes();
     }
 
-    public String getRecipe(String rPath) {
-        return collectionMap.get(rPath).getRecipe();
+    public List<String> getRecipe(String rPath) {
+        return collectionMap.get(rPath).getRecipes();
     }
 
     public Integer[] getMastery(String rPath) {
@@ -90,8 +93,8 @@ public class CollectionManager implements Manager, Search, Serializable {
         addMap.put(rPath, collectionMap.get(rPath));
     }
 
-    public void setRecipe(String rPath, String recipeRPath) {
-        collectionMap.get(rPath).setRecipe(recipeRPath);
+    public void addRecipe(String rPath, String recipeRPath) {
+        collectionMap.get(rPath).addRecipe(recipeRPath);
         addMap.put(rPath, collectionMap.get(rPath));
     }
 }

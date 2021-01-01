@@ -21,7 +21,7 @@ public class Item implements Article, Serializable {
     Map<String, Integer> lootboxCommon;     // if isLootbox = true, key: rPath of item looted, value: quantity of item looted
     Map<String, Integer> lootboxUncommon;
     Map<String, Integer> lootboxRare;
-    String recipe;         // if hasRecipe = true, file name of the recipe, else is an empty string
+    List<String> recipe = new ArrayList<>();         // if hasRecipe = true, a list of rPaths of recipes, else is an empty list
     List<String> notes;
 
     // an Entity; basic unit; note that gear is not included here
@@ -92,8 +92,8 @@ public class Item implements Article, Serializable {
      *
      * @param recipe the file name of the recipe associated to this item
      */
-    public void setRecipe(String recipe) {
-        this.recipe = recipe;
+    public void addRecipe(String recipe) {
+        this.recipe.add(recipe);
     }
 
     public void addLootboxCommon(String rPath, int quantity) {
@@ -124,7 +124,7 @@ public class Item implements Article, Serializable {
         return isCraftable;
     }
 
-    public String getRecipe() {
+    public List<String> getRecipes() {
         if (recipe == null) {
             return null;
         }

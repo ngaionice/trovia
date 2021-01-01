@@ -39,7 +39,10 @@ public class ItemManager implements Manager, Search, Serializable {
      * @return language file path of this item's name
      */
     public String getName(String rPath) {
-        return itemMap.get(rPath).getName();
+        if (itemMap.containsKey(rPath)) {
+            return itemMap.get(rPath).getName();
+        }
+        return null;
     }
 
     /**
@@ -95,13 +98,13 @@ public class ItemManager implements Manager, Search, Serializable {
     }
 
     /**
-     * Returns relative path of the recipe for crafting this item. If no such recipe exists, returns null.
+     * Returns relative paths of the recipe for crafting this item, and the quantity of the item crafted by recipe. If no such recipe exists, returns null.
      *
      * @param rPath relative path of the item
      * @return relative path of the recipe
      */
-    public String getRecipe(String rPath) {
-        return itemMap.get(rPath).getRecipe();
+    public List<String> getRecipe(String rPath) {
+        return itemMap.get(rPath).getRecipes();
     }
 
     /**
@@ -146,7 +149,7 @@ public class ItemManager implements Manager, Search, Serializable {
      */
     public void addRecipe(String rPath, String recipeRPath) {
         Item item = itemMap.get(rPath);
-        item.setRecipe(recipeRPath);
+        item.addRecipe(recipeRPath);
         item.setCraftable(true);
         addMap.put(item.getRPath(), item);
     }

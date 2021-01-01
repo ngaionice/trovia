@@ -32,7 +32,10 @@ public class BenchManager implements Manager, Search, Serializable {
     // getters
 
     public String getName(String rPath) {
-        return benchMap.get(rPath).getName();
+        if (benchMap.containsKey(rPath)) {
+            return benchMap.get(rPath).getName();
+        }
+        return null;
     }
 
     public List<String> getAllRecipes(String rPath) {

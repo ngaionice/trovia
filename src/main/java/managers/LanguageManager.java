@@ -8,8 +8,15 @@ import java.util.Map;
 
 public class LanguageManager implements Manager, Serializable {
 
+    public LanguageManager() {
+        langFileMap = new HashMap<>(300);
+
+        // creates custom notes
+        langFileMap.put("languages/en/prefabs_notes", new LangFile("prefabs_notes", "languages/en/prefabs_notes", new HashMap<>(100)));
+    }
+
     // use rPath as the key, as it is unique to each Recipe
-    Map<String, LangFile> langFileMap = new HashMap<>(300);
+    Map<String, LangFile> langFileMap;
 
     // uses the identifier "$something" as key, for more efficient searching
     Map<String, String> stringsMap = new HashMap<>(20000);
@@ -24,6 +31,8 @@ public class LanguageManager implements Manager, Serializable {
 
     // addMap is used to track new and edited language files
     // removeMap is used to track removed language files (relative to last serialized/synchronization state)
+
+    // note that LangFiles should never have strings deleted, only added to them; else this will break Controller.addNotes
 
     public void addLangFile(LangFile langFile) {
 
@@ -74,6 +83,10 @@ public class LanguageManager implements Manager, Serializable {
 
     public Map<String, String> getAllStrings() {
         return stringsMap;
+    }
+
+    public int getLangFileLength(String rPath) {
+        return langFileMap.get(rPath).getStrings().size();
     }
 
     // setters
