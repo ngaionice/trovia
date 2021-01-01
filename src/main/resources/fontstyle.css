@@ -1,0 +1,26 @@
+
+@font-face {
+    src: url("fonts/RobotoLight.ttf");
+}
+
+@font-face {
+    src: url("fonts/RobotoRegular.ttf");
+}
+
+.label {
+    -fx-font-family: 'Roboto Light';
+}
+
+.button .text {
+    -fx-font-size: 13;
+}
+
+/*.button {*/
+/*    -fx-background-color: transparent;*/
+/*}*/
+
+.table-view .column-header,
+.table-view .column-header .filler,
+.table-view .column-header-background .filler {
+    -fx-background-color: #212121;
+}
