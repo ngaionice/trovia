@@ -7,6 +7,14 @@
     src: url("fonts/RobotoRegular.ttf");
 }
 
+@font-face {
+    src: url("fonts/RobotoMedium.ttf");
+}
+
+@font-face {
+    src: url("fonts/RobotoSlab.ttf");
+}
+
 .label {
     -fx-font-family: 'Roboto Light';
 }
