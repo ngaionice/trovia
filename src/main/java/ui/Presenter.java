@@ -32,6 +32,9 @@ public class Presenter {
     String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
     String benchFilter = "_interactive";
     String langFilter = "prefabs_";
+    String itemFilter = "";
+    String colFilter = "";
+    String recFilter = "";
 
     Background mainBackground = new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY));
     Background buttonBackground = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
@@ -60,12 +63,12 @@ public class Presenter {
 
         // button actions
         cGearBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\collections","")));
-        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\placeable\\crafting",benchFilter)));
-        pItemBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pRecBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pLangBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pProfBtn.setOnAction(event -> root.setCenter(notImplemented()));
+        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\collections",colFilter, "Collections")));
+        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\placeable\\crafting",benchFilter, "Benches")));
+        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\item", itemFilter, "Items")));
+        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\recipes", recFilter, "Recipes")));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\languages\\en", langFilter, "Language Files")));
+        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\professions", "", "Professions")));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 
         // set-up the pane
@@ -196,10 +199,7 @@ public class Presenter {
         saveBox.setAlignment(Pos.CENTER_RIGHT);
 
         JFXButton save = new JFXButton("Save");
-        save.setPrefWidth(60);
-        save.setPrefHeight(35);
-        save.setAlignment(Pos.CENTER);
-        save.setBackground(buttonBackground);
+        buttonSetup(save);
         saveBox.getChildren().add(save);
 
         save.setOnAction(event -> saveCreateSettings(directory.getText(), directory, benchField.getText(), benchField, langField.getText(), langField));
@@ -331,14 +331,49 @@ public class Presenter {
         return articleView;
     }
 
-    JFXTreeView<String> setPaneCreateViewDirectory(String subPath, String filter) {
+    GridPane setPaneCreateViewDirectory(String subPath, String filter, String section) {
+
+        // update dirView to show the directory
         dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter));
         dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
         dirView.getStyleClass().add("dir-view");
         dirView.setStyle("-fx-box-border: #212121;");
         dirView.setEditable(true);
-        return dirView;
+        dirView.setPrefWidth(1000);
+
+        // create button to start parsing
+
+        JFXButton startParse = new JFXButton("Parse");
+        buttonSetup(startParse);
+        startParse.setOnAction(event -> {});
+
+        HBox parseBox = new HBox();
+        parseBox.getChildren().add(startParse);
+
+        // create header
+        Text headerText = new Text("Parse " + section);
+        headerText.setFont(sectionFont);
+        headerText.setFill(Paint.valueOf("#fafafa"));
+
+        // set up the grid
+        GridPane grid = new GridPane();
+        grid.setBackground(mainBackground);
+        grid.setPadding(new Insets(80, 50, 70, 50));
+
+        grid.add(headerText, 0, 0);
+        grid.add(dirView,0, 1);
+        grid.add(parseBox, 0, 2);
+
+        GridPane.setMargin(dirView, new Insets(30, 30, 30, 0));
+
+        return grid;
     }
 
+    void buttonSetup(JFXButton button) {
+        button.setPrefWidth(60);
+        button.setPrefHeight(35);
+        button.setAlignment(Pos.CENTER);
+        button.setBackground(buttonBackground);
 
+    }
 }

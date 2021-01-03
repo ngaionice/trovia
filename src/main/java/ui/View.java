@@ -55,6 +55,8 @@ public class View extends Application {
         StackPane startPane = new StackPane();
         startPane.setBackground(new Background(new BackgroundFill(Color.rgb(33,33,33), CornerRadii.EMPTY, Insets.EMPTY)));
         startPane.getChildren().add(start);
+
+
         root.setCenter(startPane);
     }
 
@@ -64,6 +66,7 @@ public class View extends Application {
         VBox nav = new VBox(70);
         nav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
         nav.setPadding(new Insets(70, 0,0,0));
+
 
         // sub-VBox 1
         VBox mainNav = new VBox();
