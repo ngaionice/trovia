@@ -5,9 +5,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.control.CheckBoxTreeItem;
+import parser.Parser;
+import parser.parsestrategies.ParseException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,5 +95,19 @@ public class UIController {
         return rootItem;
     }
 
-
+    public Task<Void> getParseTask(Parser.ObjectType type) {
+        return new Task<Void>() {
+            @Override protected Void call() throws IOException, ParseException {
+                int selectedPathsLength = selectedPaths.size();
+                for (int i = 0; i < selectedPathsLength; i++) {
+                    updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
+                    updateProgress(i, selectedPathsLength);
+                    con.createObject(selectedPaths.get(i), type);
+                }
+                updateMessage("Parsing complete.");
+                updateProgress(selectedPathsLength, selectedPathsLength);
+                return null;
+            }
+        };
+    }
 }

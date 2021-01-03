@@ -49,15 +49,20 @@ public class View extends Application {
 
     void sceneInitSetUp(BorderPane root) {
         root.setLeft(navInitSetUp(root));
+
+        // set up landing screen
         Text start = new Text("Select an option on the navigation bar to begin.");
         start.setFill(Paint.valueOf("#424242"));
         start.setFont(Font.font("Roboto Light"));
+
         StackPane startPane = new StackPane();
         startPane.setBackground(new Background(new BackgroundFill(Color.rgb(33,33,33), CornerRadii.EMPTY, Insets.EMPTY)));
         startPane.getChildren().add(start);
 
-
         root.setCenter(startPane);
+
+        // set up dynamic resizing
+        root.autosize();
     }
 
     VBox navInitSetUp(BorderPane root) {
@@ -66,6 +71,7 @@ public class View extends Application {
         VBox nav = new VBox(70);
         nav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
         nav.setPadding(new Insets(70, 0,0,0));
+//        nav.prefWidthProperty().bind(root.widthProperty().multiply(0.155));
 
 
         // sub-VBox 1

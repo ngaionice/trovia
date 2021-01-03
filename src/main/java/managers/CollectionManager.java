@@ -70,11 +70,14 @@ public class CollectionManager implements Manager, SearchManager, Serializable {
     }
 
     public List<String[]> getAllNamesAndRPaths() {
-        List<String[]> list = new ArrayList<>();
-        for (Collection item: collectionMap.values()) {
-            list.add(new String[] {item.getName(), item.getRPath()});
+        if (!collectionMap.isEmpty()) {
+            List<String[]> list = new ArrayList<>();
+            for (Collection item: collectionMap.values()) {
+                list.add(new String[] {item.getName(), item.getRPath()});
+            }
+            return list;
         }
-        return list;
+        return null;
     }
 
     // setters

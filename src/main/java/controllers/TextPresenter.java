@@ -7,7 +7,7 @@ import java.util.List;
 public class TextPresenter {
 
     void createSuccess(String path, Parser.ObjectType type) {
-        System.out.println(type.toString().substring(0, 1).toUpperCase() + type.toString().substring(1).toLowerCase() + " creation at " + path + " was successful.");
+        System.out.println(type.toString() + " creation at " + path + " was successful.");
     }
 
     void searchFailure(String rPath) {

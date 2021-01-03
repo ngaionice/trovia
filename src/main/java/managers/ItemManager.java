@@ -132,11 +132,14 @@ public class ItemManager implements Manager, SearchManager, Serializable {
      * @return a list of string arrays
      */
     public List<String[]> getAllNamesAndRPaths() {
-        List<String[]> list = new ArrayList<>();
-        for (Item item: itemMap.values()) {
-            list.add(new String[] {item.getName(), item.getRPath()});
+        if (!itemMap.isEmpty()) {
+            List<String[]> list = new ArrayList<>();
+            for (Item item: itemMap.values()) {
+                list.add(new String[] {item.getName(), item.getRPath()});
+            }
+            return list;
         }
-        return list;
+        return null;
     }
 
     // setters

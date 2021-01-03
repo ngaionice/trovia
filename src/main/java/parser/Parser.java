@@ -17,7 +17,20 @@ public class Parser {
         COLLECTION,
         LANG_FILE,
         RECIPE,
-        PROFESSION
+        PROFESSION;
+
+        @Override
+        public String toString() {
+            switch(this) {
+                case ITEM: return "Item";
+                case BENCH: return "Bench";
+                case COLLECTION: return "Collection";
+                case PROFESSION: return "Profession";
+                case RECIPE: return "Recipe";
+                case LANG_FILE: return "Language File";
+                default: throw new IllegalArgumentException();
+            }
+        }
     }
 
     public String byteToString(String path) throws IOException {

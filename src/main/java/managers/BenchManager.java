@@ -45,11 +45,15 @@ public class BenchManager implements Manager, SearchManager, Serializable {
     }
 
     public List<String[]> getAllNamesAndRPaths() {
-        List<String[]> list = new ArrayList<>();
-        for (Bench item: benchMap.values()) {
-            list.add(new String[] {item.getName(), item.getRPath()});
+
+        if (!benchMap.isEmpty()) {
+            List<String[]> list = new ArrayList<>();
+            for (Bench item: benchMap.values()) {
+                list.add(new String[] {item.getName(), item.getRPath()});
+            }
+            return list;
         }
-        return list;
+        return null;
     }
 
     /**

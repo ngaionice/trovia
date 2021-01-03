@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class LogicController {
 
     Scanner sc = new Scanner(System.in);
-    BenchManager benchM;
+    BenchManager benchM = new BenchManager();
     CollectionManager colM;
     ItemManager itemM;
     LanguageManager langM;
@@ -68,7 +68,7 @@ public class LogicController {
 
     // PARSING
 
-    private void createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
+    void createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
         switch (type) {
             case ITEM:
                 itemM.addItem((Item) p.createObject(absPath, type));
@@ -195,7 +195,6 @@ public class LogicController {
         List<String> newList = new ArrayList<>();
         for (String item: paths) {
             if (item.contains(filter)) {
-//                System.out.println(item);
                 newList.add(item);
             }
         }
@@ -228,7 +227,12 @@ public class LogicController {
         List<String[]> entryList = new ArrayList<>();
         for (SearchManager item: managers) {
 //            System.out.println(item.getAllNamesAndRPaths() == null);
-            entryList.addAll(item.getAllNamesAndRPaths());
+            if (item != null) {
+                List<String[]> list = item.getAllNamesAndRPaths();
+                if (list != null) {
+                    entryList.addAll(list);
+                }
+            }
         }
 
         for (String[] entry: entryList) {

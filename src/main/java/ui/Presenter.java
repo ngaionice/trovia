@@ -4,6 +4,7 @@ import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import controllers.UIController;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -14,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import parser.Parser;
 
 import java.io.File;
 import java.util.Arrays;
@@ -31,14 +33,28 @@ public class Presenter {
 
     String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
     String benchFilter = "_interactive";
-    String langFilter = "prefabs_";
-    String itemFilter = "";
     String colFilter = "";
+    String itemFilter = "";
+    String langFilter = "prefabs_";
     String recFilter = "";
+
+    String benchSubPath = "\\prefabs\\placeable\\crafting";
+    String colSubPath = "\\prefabs\\collections";
+    String itemSubPath = "\\prefabs\\item";
+    String langSubPath = "\\languages\\en";
+    String profSubPath = "\\prefabs\\professions";
+    String recSubPath = "\\prefabs\\recipes";
 
     Background mainBackground = new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY));
     Background buttonBackground = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
 
+    /**
+     * Creates the navigation bar for the Create section of the UI.
+     *
+     * @param root the BorderPane containing the sidebar
+     * @param nav  the VBox with the overarching navigation bar, containing the main menu and the sub-menu
+     * @param mainNav the VBox containing the main menu
+     */
     void callCreate(BorderPane root, VBox nav, VBox mainNav) {
 
         // update center table
@@ -63,12 +79,12 @@ public class Presenter {
 
         // button actions
         cGearBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\collections",colFilter, "Collections")));
-        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\placeable\\crafting",benchFilter, "Benches")));
-        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\item", itemFilter, "Items")));
-        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\recipes", recFilter, "Recipes")));
-        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\languages\\en", langFilter, "Language Files")));
-        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory("\\prefabs\\professions", "", "Professions")));
+        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, colSubPath, colFilter, Parser.ObjectType.COLLECTION)));
+        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, benchSubPath, benchFilter, Parser.ObjectType.BENCH)));
+        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, itemSubPath, itemFilter, Parser.ObjectType.ITEM)));
+        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, recSubPath, recFilter, Parser.ObjectType.RECIPE)));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, langSubPath, langFilter, Parser.ObjectType.LANG_FILE)));
+        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 
         // set-up the pane
@@ -76,6 +92,7 @@ public class Presenter {
 
         nav.getChildren().add(mainNav);
         nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
+
     }
 
     void callModify(BorderPane root, VBox nav, VBox mainNav) {
@@ -178,33 +195,67 @@ public class Presenter {
         settingsText.setFont(sectionFont);
         settingsText.setFill(Paint.valueOf("#fafafa"));
 
-        Text directoryText = new Text("Absolute path of main directory:");
-        directoryText.setFont(normalFont);
-        directoryText.setFill(Paint.valueOf("#c7c7c7"));
-
-        JFXTextField directory = new JFXTextField();
-        directory.setPrefWidth(500);
-        directory.setFocusColor(Paint.valueOf("#c7c7c7"));
-        directory.setPromptText("Current directory: " + dirPath);
+        Text dirText = new Text("Absolute path of main directory:");
+        JFXTextField dirField = new JFXTextField();
+        setUpTextField(dirText, dirField, "Current directory: ", dirPath);
 
         Text benchText = new Text("Filter for bench parsing: (filters out files without the keyword)");
         JFXTextField benchField = new JFXTextField();
-        setUpTextField(benchText, benchField, benchFilter);
+        setUpTextField(benchText, benchField, "Current filter: ", benchFilter);
 
-        Text langText = new Text("Filter for language file parsing: (filters out files without the keyword)");
+        Text colText = new Text("Filter for collection parsing: ");
+        JFXTextField colField = new JFXTextField();
+        setUpTextField(colText, colField, "Current filter: ", colFilter);
+
+        Text itemText = new Text("Filter for item parsing: ");
+        JFXTextField itemField = new JFXTextField();
+        setUpTextField(itemText, itemField, "Current filter: ", itemFilter);
+
+        Text recText = new Text("Filter for recipe parsing: ");
+        JFXTextField recField = new JFXTextField();
+        setUpTextField(recText, recField, "Current filter: ", recFilter);
+
+        Text langText = new Text("Filter for language file parsing: ");
         JFXTextField langField = new JFXTextField();
-        setUpTextField(langText, langField, langFilter);
+        setUpTextField(langText, langField, "Current filter: ", langFilter);
+
+        // TODO: add custom sub-directory path editing
 
         HBox saveBox = new HBox();
         saveBox.setAlignment(Pos.CENTER_RIGHT);
 
         JFXButton save = new JFXButton("Save");
-        buttonSetup(save);
+        buttonSetup(save, 60);
         saveBox.getChildren().add(save);
 
-        save.setOnAction(event -> saveCreateSettings(directory.getText(), directory, benchField.getText(), benchField, langField.getText(), langField));
+        save.setOnAction(event -> {
+            boolean clearDir = saveCreateSettings(dirField.getText(), benchField.getText(), colField.getText(), itemField.getText(), recField.getText(), langField.getText());
 
-        List<Node> gridItems = Arrays.asList(settingsText, directoryText, directory, benchText, benchField, langText, langField, save);
+            if (clearDir) {
+                dirField.clear();
+                dirField.setPromptText("Current directory: " + dirPath);
+            }
+            benchField.clear();
+            colField.clear();
+            itemField.clear();
+            recField.clear();
+            langField.clear();
+
+            benchField.setPromptText("Current filter: " + benchFilter);
+            colField.setPromptText("Current filter: " + colFilter);
+            itemField.setPromptText("Current filter: " + itemFilter);
+            recField.setPromptText("Current filter: " + recFilter);
+            langField.setPromptText("Current filter: " + langFilter);
+        });
+
+        List<Node> gridItems = Arrays.asList(settingsText,
+                dirText, dirField,
+                benchText, benchField,
+                colText, colField,
+                itemText, itemField,
+                recText, recField,
+                langText, langField,
+                save);
 
         // add normal items
         for (int i = 0; i < gridItems.size() - 1; i++) {
@@ -221,18 +272,16 @@ public class Presenter {
         con.setPrefHeight(35);
         grid.getRowConstraints().add(con);
 
-
         return grid;
-
     }
 
-    private void setUpTextField(Text text, JFXTextField textField, String defaultText) {
+    private void setUpTextField(Text text, JFXTextField textField, String promptText, String defaultText) {
         text.setFont(normalFont);
         text.setFill(Paint.valueOf("#c7c7c7"));
 
         textField.setPrefWidth(500);
         textField.setFocusColor(Paint.valueOf("#c7c7c7"));
-        textField.setPromptText("Current filter: " + defaultText);
+        textField.setPromptText(promptText + defaultText);
     }
 
     TableView<String> modifyDisplaySetUp() {
@@ -281,33 +330,43 @@ public class Presenter {
         return pane;
     }
 
-    void saveCreateSettings(String dirInput, TextField dir, String benchInput, TextField bench, String langInput, TextField lang) {
+    boolean saveCreateSettings(String dirInput, String benchInput, String colInput, String itemInput, String recInput, String langInput) {
 
+        boolean alerted = false;
         // set directory path
         if (!dirInput.isEmpty() && dirInput.contains("\\") && new File(dirInput).isDirectory()) {
             dirPath = dirInput;
-            dir.setPromptText("Current directory: " + dirPath);
-            dir.clear();
-        } else if (dirInput.isEmpty()) {
-            dir.clear();
-        } else {
+        } else if (!dirInput.isEmpty()){
             Alert alert = new Alert(Alert.AlertType.ERROR, "The input directory was invalid, so the current directory path was not updated.");
             alert.showAndWait();
+            alerted = true;
         }
 
         // set benchFilter
         if (!benchInput.isEmpty()) {
             benchFilter = benchInput;
-            bench.setPromptText("Current filter: " + benchInput);
-            bench.clear();
+        }
+
+        // set colFilter
+        if (!colInput.isEmpty()) {
+            colFilter = colInput;
+        }
+
+        // set itemFilter
+        if (!itemInput.isEmpty()) {
+            itemFilter = itemInput;
+        }
+
+        // set recFilter
+        if (!recInput.isEmpty()) {
+            recFilter = recInput;
         }
 
         // set langFilter
         if (!langInput.isEmpty()) {
             langFilter = langInput;
-            lang.setPromptText("Current filter: " + langInput);
-            lang.clear();
         }
+        return alerted;
     }
 
     JFXTreeTableView<UIController.Searchable> setPaneViewFiles(List<String> types) {
@@ -331,7 +390,7 @@ public class Presenter {
         return articleView;
     }
 
-    GridPane setPaneCreateViewDirectory(String subPath, String filter, String section) {
+    GridPane setPaneCreateViewDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
 
         // update dirView to show the directory
         dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter));
@@ -339,41 +398,71 @@ public class Presenter {
         dirView.getStyleClass().add("dir-view");
         dirView.setStyle("-fx-box-border: #212121;");
         dirView.setEditable(true);
-        dirView.setPrefWidth(1000);
+        dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+
+        // create header
+        String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
+        Text headerText = new Text("Parse " + type + plural);
+        headerText.setFont(sectionFont);
+        headerText.setFill(Paint.valueOf("#fafafa"));
+
+        // create progress bar and status text
+        JFXProgressBar progressBar = new JFXProgressBar();
+        progressBar.getStyleClass().add("jfx-progress-bar");
+        progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.6));
+        progressBar.setProgress(0);
+
+        final Label progressText = new Label("Status");
+        progressText.setFont(Font.font("Roboto Medium", 11));
+        progressText.setTextFill(Paint.valueOf("#9e9e9e"));
+
+        VBox progressBox = new VBox();
+        progressBox.setAlignment(Pos.BOTTOM_LEFT);
+        progressBox.getChildren().add(progressText);
+        progressBox.getChildren().add(progressBar);
+        progressBox.prefHeightProperty().bind(root.heightProperty().multiply(0.005));
 
         // create button to start parsing
 
         JFXButton startParse = new JFXButton("Parse");
-        buttonSetup(startParse);
-        startParse.setOnAction(event -> {});
+        buttonSetup(startParse, 60);
+        startParse.setOnAction(event -> {
+            // add button
+            Task<Void> task = uiCon.getParseTask(type);
+            progressBar.progressProperty().bind(task.workDoneProperty());
+            progressText.textProperty().bind(task.messageProperty());
+            task.run();
+        });
 
-        HBox parseBox = new HBox();
-        parseBox.getChildren().add(startParse);
-
-        // create header
-        Text headerText = new Text("Parse " + section);
-        headerText.setFont(sectionFont);
-        headerText.setFill(Paint.valueOf("#fafafa"));
+        VBox buttonBox = new VBox();
+        buttonBox.getChildren().add(startParse);
+        buttonBox.setPrefHeight(35);
 
         // set up the grid
         GridPane grid = new GridPane();
+//        grid.setGridLinesVisible(true); // debug
         grid.setBackground(mainBackground);
-        grid.setPadding(new Insets(80, 50, 70, 50));
+        grid.setPadding(new Insets(80, 50, 20, 50));
 
         grid.add(headerText, 0, 0);
-        grid.add(dirView,0, 1);
-        grid.add(parseBox, 0, 2);
+        grid.add(dirView, 0, 1);
+        grid.add(buttonBox, 0, 2);
+        grid.add(progressBox, 0, 3);
 
         GridPane.setMargin(dirView, new Insets(30, 30, 30, 0));
+        GridPane.setMargin(progressBox, new Insets(35, 30, 10, 0));
 
         return grid;
     }
 
-    void buttonSetup(JFXButton button) {
-        button.setPrefWidth(60);
+    void buttonSetup(JFXButton button, int buttonWidth) {
+        button.setPrefWidth(buttonWidth);
         button.setPrefHeight(35);
         button.setAlignment(Pos.CENTER);
         button.setBackground(buttonBackground);
 
     }
+
+
 }
