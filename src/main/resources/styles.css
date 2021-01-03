@@ -32,3 +32,14 @@
 .table-view .column-header-background .filler {
     -fx-background-color: #212121;
 }
+
+.dir-view .tree-cell {
+    -fx-background-color: #212121 ;
+    -fx-text-fill: #eeeeee ;
+}
+
+.dir-view:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+}

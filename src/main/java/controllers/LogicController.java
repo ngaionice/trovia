@@ -2,16 +2,16 @@ package controllers;
 
 import managers.*;
 import objects.*;
+import objects.Collection;
 import parser.Parser;
 import parser.parsestrategies.ParseException;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class Controller {
+public class LogicController {
 
     Scanner sc = new Scanner(System.in);
     BenchManager benchM;
@@ -56,8 +56,8 @@ public class Controller {
      * @return the name of the object, obtained from a LangFile
      */
     private String getName(String rPath) {
-        List<Search> searchables = Arrays.asList(benchM, colM, itemM);
-        for (Search manager: searchables) {
+        List<SearchManager> searchables = Arrays.asList(benchM, colM, itemM);
+        for (SearchManager manager: searchables) {
             if (manager.getName(rPath) != null) {
                 return langM.getString(manager.getName(rPath));
             }
@@ -154,6 +154,88 @@ public class Controller {
             pr.matchRecipeFailure(failed);
             // TODO: log these rPaths somewhere
         }
+    }
+
+    // FILE MANAGEMENT
+
+    /**
+     * Returns all Files in a directory given by the input absolute path. Returns null if the input path is null.
+     *
+     * @param absPath absolute path of the directory
+     * @return  array of File
+     */
+    File[] getFiles(String absPath) {
+        if (absPath == null) {
+            return null;
+        }
+
+        // since presenter checks that the input path is a directory, we can assume that here
+        File dir = new File(absPath);
+        return dir.listFiles();
+    }
+
+    /**
+     * Returns a list of Strings, which is a list of path names from the input File array.
+     *
+     * @param files array of File
+     * @return list of Strings converted from the array
+     */
+    List<String> getPaths(File[] files) {
+        return Arrays.stream(files).map(File::getPath).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a list of Strings, where the Strings are from the input list and contain the input filter string.
+     *
+     * @param paths   list of Strings
+     * @param filter  the string to filter by
+     * @return        list of Strings, keeping only the strings from the input list containing the filter string
+     */
+    List<String> filterOutWithout(List<String> paths, String filter) {
+        List<String> newList = new ArrayList<>();
+        for (String item: paths) {
+            if (item.contains(filter)) {
+//                System.out.println(item);
+                newList.add(item);
+            }
+        }
+        return newList;
+    }
+
+    /**
+     * Returns a list of string arrays. Each string array contains the name and relative path of the Article (in that order).
+     * Article types included are specified by the input list of SearchManagers.
+     *
+     * @param artTypes list of Article types in strings
+     * @return         list of string arrays
+     */
+     List<String[]> getNameAndRPathList(List<String> artTypes) {
+
+        List<SearchManager> managers = new ArrayList<>();
+
+        if (artTypes.contains("bench")) {
+            managers.add(benchM);
+        }
+
+        if (artTypes.contains("collection")) {
+            managers.add(colM);
+        }
+
+        if (artTypes.contains("item")) {
+            managers.add(itemM);
+        }
+
+        List<String[]> entryList = new ArrayList<>();
+        for (SearchManager item: managers) {
+//            System.out.println(item.getAllNamesAndRPaths() == null);
+            entryList.addAll(item.getAllNamesAndRPaths());
+        }
+
+        for (String[] entry: entryList) {
+            entry[0] = langM.getString(entry[0]);
+        }
+
+        return entryList;
     }
 
     // GENERAL

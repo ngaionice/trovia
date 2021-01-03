@@ -1,11 +1,10 @@
 package ui;
 
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXDecorator;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -31,8 +30,11 @@ public class View extends Application {
 
         BorderPane root = new BorderPane();
 
-        Scene scene = new Scene(root, viewWidth, viewHeight);
-        scene.getStylesheets().add(getClass().getResource("/fontstyle.css").toExternalForm());
+        JFXDecorator decorator = new JFXDecorator(primaryStage, root);
+        decorator.setCustomMaximize(true);
+        Scene scene = new Scene(decorator, viewWidth, viewHeight);
+
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         sceneInitSetUp(root);
 
