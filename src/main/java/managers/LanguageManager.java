@@ -32,7 +32,7 @@ public class LanguageManager implements Manager, Serializable {
     // addMap is used to track new and edited language files
     // removeMap is used to track removed language files (relative to last serialized/synchronization state)
 
-    // note that LangFiles should never have strings deleted, only added to them; else this will break Controller.addNotes
+    // note that LangFiles should never have strings deleted, only added to them; else this will break LogicController.addNotes
 
     public void addLangFile(LangFile langFile) {
 

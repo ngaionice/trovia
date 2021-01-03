@@ -3,11 +3,9 @@ package managers;
 import objects.Bench;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class BenchManager implements Manager, Search, Serializable {
+public class BenchManager implements Manager, SearchManager, Serializable {
 
     // use rPath as the key, as it is unique to each Bench
     Map<String, Bench> benchMap = new HashMap<>(5000);
@@ -44,6 +42,14 @@ public class BenchManager implements Manager, Search, Serializable {
 
     public Map<String[], List<String>> getAllRecipesByCategory(String rPath) {
         return benchMap.get(rPath).getAllRecipesByCategory();
+    }
+
+    public List<String[]> getAllNamesAndRPaths() {
+        List<String[]> list = new ArrayList<>();
+        for (Bench item: benchMap.values()) {
+            list.add(new String[] {item.getName(), item.getRPath()});
+        }
+        return list;
     }
 
     /**

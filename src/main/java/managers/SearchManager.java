@@ -1,6 +1,8 @@
 package managers;
 
-public interface Search {
+import java.util.List;
+
+public interface SearchManager {
 
     // has certain methods that allowing string searching
 
@@ -12,4 +14,6 @@ public interface Search {
      * @return a string identifier starting with "$"
      */
     String getName(String rPath);
+
+    List<String[]> getAllNamesAndRPaths();
 }

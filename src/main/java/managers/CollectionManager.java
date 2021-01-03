@@ -4,11 +4,9 @@ import objects.Collection;
 import objects.CollectionEnums;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class CollectionManager implements Manager, Search, Serializable {
+public class CollectionManager implements Manager, SearchManager, Serializable {
 
     // use rPath as the key, as it is unique to each Collection
     Map<String, Collection> collectionMap = new HashMap<>(5000);
@@ -69,6 +67,14 @@ public class CollectionManager implements Manager, Search, Serializable {
 
     public int getPowerRank(String rPath) {
         return collectionMap.get(rPath).getPowerRank();
+    }
+
+    public List<String[]> getAllNamesAndRPaths() {
+        List<String[]> list = new ArrayList<>();
+        for (Collection item: collectionMap.values()) {
+            list.add(new String[] {item.getName(), item.getRPath()});
+        }
+        return list;
     }
 
     // setters

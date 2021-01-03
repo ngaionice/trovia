@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemManager implements Manager, Search, Serializable {
+public class ItemManager implements Manager, SearchManager, Serializable {
 
     // use rPath as the key, as it is unique to each Item
     Map<String, Item> itemMap = new HashMap<>(5000);
