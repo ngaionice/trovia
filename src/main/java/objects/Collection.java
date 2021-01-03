@@ -15,7 +15,7 @@ public class Collection implements Article, Serializable {
     int geodeMR;
     List<CollectionEnums.CollectionType> types;        // refer to CollectionEnums for CollectionTypes
     Map<CollectionEnums.Property, Double> properties;  // should not contain mastery info
-    Map<CollectionEnums.Buff, Double> buffs;           // for dragons only, else is null
+    Map<CollectionEnums.Buff, Double> buffs;           // for dragons and some badges only, else is null
     List<String> notes;
     List<String> recipes;
 
@@ -40,6 +40,16 @@ public class Collection implements Article, Serializable {
         if (isMagRider) {
             types.add(CollectionEnums.CollectionType.MAG);
         }
+    }
+
+    // for badges with dragon buffs
+    public Collection(String name, String desc, String rPath, List<CollectionEnums.CollectionType> types, Map<CollectionEnums.Property, Double> properties, Map<CollectionEnums.Buff, Double> buffs) {
+        this.name = name;
+        this.desc = desc;
+        this.rPath = rPath;
+        this.types = types;
+        this.properties = properties;
+        this.buffs = buffs;
     }
 
     public String getName() {

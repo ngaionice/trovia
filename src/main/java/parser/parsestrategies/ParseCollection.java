@@ -96,8 +96,8 @@ public class ParseCollection implements ParseStrategy{
         }
 
         // dragon
-        Map<CollectionEnums.Buff, Double> dragonBuffs = parseDragon(splitString, m);
-        if (!dragonBuffs.isEmpty()) {
+        Map<CollectionEnums.Buff, Double> dragonBuffs = parseBuffs(splitString, m);
+        if (!dragonBuffs.isEmpty() && types.contains(CollectionEnums.CollectionType.MOUNT)) {
             types.add(CollectionEnums.CollectionType.DRAGON);
         }
 
@@ -110,12 +110,14 @@ public class ParseCollection implements ParseStrategy{
         if (types.contains(CollectionEnums.CollectionType.DRAGON)) {
             boolean isMagRider = properties.containsKey(CollectionEnums.Property.MAG_MS);
             return new Collection(name, desc, rPath, properties, dragonBuffs, isMagRider);
+        } else if (!dragonBuffs.isEmpty()) {
+            return new Collection(name, desc, rPath, types, properties, dragonBuffs);
         }
         return new Collection(name, desc, rPath, types, properties);
     }
 
 
-    private Map<CollectionEnums.Buff, Double> parseDragon(String splitString, Markers m) {
+    private Map<CollectionEnums.Buff, Double> parseBuffs(String splitString, Markers m) {
 
         Map<CollectionEnums.Buff, Double> buffs = new HashMap<>(10);
 
