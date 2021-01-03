@@ -43,3 +43,16 @@
     -fx-background-insets: 0, 1;
     -fx-padding: 1;
 }
+
+.jfx-progress-bar > .track, .jfx-progress-bar > .bar {
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.jfx-progress-bar > .bar {
+    -fx-background-color: #00695c;
+}
+
+.jfx-progress-bar > .track {
+    -fx-background-color: #424242;
+}
