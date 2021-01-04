@@ -31,24 +31,23 @@ public class UIController {
             this.rPath = new SimpleStringProperty(rPath);
         }
 
-    }
-
-    public static class Directory extends RecursiveTreeObject<Directory> {
-
-        public StringProperty rPath;
-
-        public Directory(String name, String rPath) {
-            this.rPath = new SimpleStringProperty(rPath);
+        public String getName() {
+            return name.get();
         }
 
+        public String getRPath() {
+            return rPath.get();
+        }
     }
 
-    public ObservableList<Searchable> getSearchableList(List<String> types) {
+    public ObservableList<Searchable> getSearchableList(List<Parser.ObjectType> types, String filter) {
         ObservableList<Searchable> searchList = FXCollections.observableArrayList();
         List<String[]> nameAndRPathList = con.getNameAndRPathList(types);
 
         for (String[] item: nameAndRPathList) {
-            searchList.add(new Searchable(item[0], item[1]));
+            if (item[0].toLowerCase().contains(filter.toLowerCase())) {
+                searchList.add(new Searchable(item[0], item[1]));
+            }
         }
 
         return searchList;
@@ -109,5 +108,13 @@ public class UIController {
                 return null;
             }
         };
+    }
+
+    public void clearParseList() {
+        selectedPaths.clear();
+    }
+
+    public void debugParse() throws IOException, ParseException {
+        con.createObject("C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset\\languages\\en\\prefabs_item_aura.binfab", Parser.ObjectType.LANG_FILE);
     }
 }

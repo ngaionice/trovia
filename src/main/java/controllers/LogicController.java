@@ -15,37 +15,23 @@ public class LogicController {
 
     Scanner sc = new Scanner(System.in);
     BenchManager benchM = new BenchManager();
-    CollectionManager colM;
-    ItemManager itemM;
-    LanguageManager langM;
-    RecipeManager recM;
+    CollectionManager colM = new CollectionManager();
+    ItemManager itemM = new ItemManager();
+    LanguageManager langM = new LanguageManager();
+    RecipeManager recM = new RecipeManager();
     Parser p = new Parser();
     TextPresenter pr = new TextPresenter();
 
-    // UI
-
-    // what we want to be able to do:
-
     // create objects:
 
-    // parser - done
     // create gear listings
     // create upgrade trees eventually?
 
-
     // modify objects:
-
-    // add benches to recipes - done
-    // add notes to items and collections (and automatically generate appropriate rPaths for them, too) - done
-    // add recipes to items and collections - done
 
     // add/change mastery to items (batch and individual)
     // add lootbox stuff to items
     // add decon stuff to items
-
-    // other functionality
-
-    // view objects and search?
 
     // HELPER?
 
@@ -208,25 +194,27 @@ public class LogicController {
      * @param artTypes list of Article types in strings
      * @return         list of string arrays
      */
-     List<String[]> getNameAndRPathList(List<String> artTypes) {
+     List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes) {
 
+        // the ArrayList that will hold the entries
         List<SearchManager> managers = new ArrayList<>();
 
-        if (artTypes.contains("bench")) {
+        // add the managers selected
+        if (artTypes.contains(Parser.ObjectType.BENCH)) {
             managers.add(benchM);
         }
 
-        if (artTypes.contains("collection")) {
+        if (artTypes.contains(Parser.ObjectType.COLLECTION)) {
             managers.add(colM);
         }
 
-        if (artTypes.contains("item")) {
+        if (artTypes.contains(Parser.ObjectType.ITEM)) {
             managers.add(itemM);
         }
 
+        // add the entries to the ArrayList
         List<String[]> entryList = new ArrayList<>();
         for (SearchManager item: managers) {
-//            System.out.println(item.getAllNamesAndRPaths() == null);
             if (item != null) {
                 List<String[]> list = item.getAllNamesAndRPaths();
                 if (list != null) {
@@ -235,8 +223,11 @@ public class LogicController {
             }
         }
 
+        // convert the string identifiers to their actual strings
         for (String[] entry: entryList) {
-            entry[0] = langM.getString(entry[0]);
+            if (entry.length != 0) {
+                entry[0] = langM.getString(entry[0]);
+            }
         }
 
         return entryList;

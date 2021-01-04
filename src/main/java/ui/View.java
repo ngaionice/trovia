@@ -56,7 +56,7 @@ public class View extends Application {
         start.setFont(Font.font("Roboto Light"));
 
         StackPane startPane = new StackPane();
-        startPane.setBackground(new Background(new BackgroundFill(Color.rgb(33,33,33), CornerRadii.EMPTY, Insets.EMPTY)));
+        startPane.setBackground(new Background(new BackgroundFill(Color.rgb(27,27,27), CornerRadii.EMPTY, Insets.EMPTY)));
         startPane.getChildren().add(start);
 
         root.setCenter(startPane);
@@ -85,7 +85,7 @@ public class View extends Application {
 
         Button[] options = new Button[] {createBtn, modifyBtn, viewBtn, syncBtn};
 
-        pr.vBoxSetup(mainNav, options, "white");
+        pr.vBoxSetup(mainNav, options, "#fafafa");
 
         // sub-VBox 2
         VBox typeNav = new VBox();

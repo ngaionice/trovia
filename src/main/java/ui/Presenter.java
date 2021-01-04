@@ -1,7 +1,6 @@
 package ui;
 
 import com.jfoenix.controls.*;
-import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import controllers.UIController;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -10,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Presenter {
 
@@ -45,7 +46,7 @@ public class Presenter {
     String profSubPath = "\\prefabs\\professions";
     String recSubPath = "\\prefabs\\recipes";
 
-    Background mainBackground = new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY));
+    Background mainBackground = new Background(new BackgroundFill(Color.rgb(27, 27, 27), CornerRadii.EMPTY, Insets.EMPTY));
     Background buttonBackground = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
 
     /**
@@ -79,12 +80,12 @@ public class Presenter {
 
         // button actions
         cGearBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, colSubPath, colFilter, Parser.ObjectType.COLLECTION)));
-        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, benchSubPath, benchFilter, Parser.ObjectType.BENCH)));
-        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, itemSubPath, itemFilter, Parser.ObjectType.ITEM)));
-        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, recSubPath, recFilter, Parser.ObjectType.RECIPE)));
-        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, langSubPath, langFilter, Parser.ObjectType.LANG_FILE)));
-        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateViewDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
+        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, colSubPath, colFilter, Parser.ObjectType.COLLECTION)));
+        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, benchFilter, Parser.ObjectType.BENCH)));
+        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, itemFilter, Parser.ObjectType.ITEM)));
+        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, recFilter, Parser.ObjectType.RECIPE)));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, langFilter, Parser.ObjectType.LANG_FILE)));
+        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 
         // set-up the pane
@@ -125,9 +126,6 @@ public class Presenter {
 
     void callView(BorderPane root, VBox nav, VBox mainNav) {
 
-        // update center table
-        root.setCenter(viewDisplaySetUp());
-
         // remove previous nav
         nav.getChildren().clear();
 
@@ -140,21 +138,26 @@ public class Presenter {
         JFXButton viewAllBtn = new JFXButton("View all");
         JFXButton itemBtn = new JFXButton("View items");
         JFXButton colBtn = new JFXButton("View collections");
-        JFXButton recipeBtn = new JFXButton("View recipes");
+        JFXButton recipeBtn = new JFXButton("View benches");
         JFXButton langBtn = new JFXButton("View language files");
 
         // button actions
+        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
+
         searchBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        viewAllBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(Arrays.asList("bench", "collection", "item"))));
-        itemBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(Collections.singletonList("item"))));
-        colBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(Collections.singletonList("collection"))));
-        recipeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(Collections.singletonList("bench"))));
+        viewAllBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Articles")));
+        itemBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items")));
+        colBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections")));
+        recipeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches")));
         langBtn.setOnAction(event -> root.setCenter(notImplemented()));
 
         Button[] options = new Button[]{searchBtn, viewAllBtn, itemBtn, colBtn, recipeBtn, langBtn};
 
         nav.getChildren().add(mainNav);
         nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
+
+        // update center table
+        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles"));
     }
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
@@ -186,6 +189,10 @@ public class Presenter {
     }
 
     GridPane setPaneCreateSettings() {
+
+        // clears previous saved paths
+        uiCon.clearParseList();
+
         GridPane grid = new GridPane();
         grid.setBackground(mainBackground);
         grid.setPadding(new Insets(80, 50, 70, 50));
@@ -286,7 +293,7 @@ public class Presenter {
 
     TableView<String> modifyDisplaySetUp() {
         TableView<String> table = new TableView<>();
-        table.setBackground(new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY)));
+        table.setBackground(mainBackground);
 
         return table;
 
@@ -294,16 +301,16 @@ public class Presenter {
 
     TableView<String> viewDisplaySetUp() {
         TableView<String> table = new TableView<>();
-        table.setBackground(new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY)));
+        table.setBackground(mainBackground);
 
         return table;
 
     }
 
-    VBox vBoxSetup(VBox vBox, Button[] options, String buttonColor) {
+    VBox vBoxSetup(VBox vBox, Button[] options, String buttonTextColor) {
         for (Button item : options) {
             item.setFont(normalFont);
-            item.setTextFill(Paint.valueOf(buttonColor));
+            item.setTextFill(Paint.valueOf(buttonTextColor));
             item.setMinWidth(175);
             item.setMinHeight(35);
             item.setPadding(new Insets(0, 0, 0, 25));
@@ -324,7 +331,7 @@ public class Presenter {
         display.setFill(Paint.valueOf("#c7c7c7"));
         display.setFont(normalFont);
         StackPane pane = new StackPane();
-        pane.setBackground(new Background(new BackgroundFill(Color.rgb(33, 33, 33), CornerRadii.EMPTY, Insets.EMPTY)));
+        pane.setBackground(mainBackground);
         pane.getChildren().add(display);
 
         return pane;
@@ -369,34 +376,89 @@ public class Presenter {
         return alerted;
     }
 
-    JFXTreeTableView<UIController.Searchable> setPaneViewFiles(List<String> types) {
+    GridPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText) {
 
-        JFXTreeTableColumn<UIController.Searchable, String> artName = new JFXTreeTableColumn<>("Article Name");
-        artName.setPrefWidth(225);
-        artName.setCellValueFactory(param -> param.getValue().getValue().name);
+        // set grid
+        GridPane grid = new GridPane();
+        grid.setBackground(mainBackground);
+        grid.setPadding(new Insets(80, 50, 70, 50));
+        grid.setHgap(20);
 
-        JFXTreeTableColumn<UIController.Searchable, String> rPath = new JFXTreeTableColumn<>("Relative Path");
-        rPath.setPrefWidth(275);
-        rPath.setCellValueFactory(param -> param.getValue().getValue().rPath);
+        // set table
+        TableView<UIController.Searchable> table = new TableView<>();
+        AtomicReference<ObservableList<UIController.Searchable>> articles = new AtomicReference<>(uiCon.getSearchableList(types, ""));
 
-        ObservableList<UIController.Searchable> articles = uiCon.getSearchableList(types);
+        table.setStyle("-fx-box-border: #1B1B1B;");
+        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        table.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+        table.getStyleClass().add("table-view");
 
-        final TreeItem<UIController.Searchable> root = new RecursiveTreeItem<>(articles, RecursiveTreeObject::getChildren);
+        TableColumn<UIController.Searchable, String> nameCol = new TableColumn<>("Name");
+        TableColumn<UIController.Searchable, String> rPathCol = new TableColumn<>("Relative path");
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+        nameCol.setResizable(false);
+        rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.6));
+        rPathCol.setResizable(false);
 
-        articleView.getColumns().setAll(artName, rPath);
-        articleView.setRoot(root);
-        articleView.setShowRoot(false);
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        rPathCol.setCellValueFactory(new PropertyValueFactory<>("rPath"));
 
-        return articleView;
+        table.setItems(articles.get());
+        table.getColumns().setAll(nameCol, rPathCol);
+
+        // set header + search bar
+        HBox headerBox = new HBox();
+        headerBox.setBackground(mainBackground);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Text header = new Text(headerText);
+        header.setFont(sectionFont);
+        header.setFill(Paint.valueOf("#fafafa"));
+
+        JFXTextField searchField = new JFXTextField();
+        searchField.setPromptText("Search by name");
+        searchField.prefWidthProperty().bind(root.widthProperty().multiply(0.15));
+        searchField.setFocusColor(Paint.valueOf("#c7c7c7"));
+
+        JFXButton searchButton =  new JFXButton();
+        searchButton.setText("Go");
+        searchButton.setPrefWidth(35);
+        searchButton.setPrefHeight(30);
+        searchButton.setAlignment(Pos.CENTER);
+        searchButton.setBackground(mainBackground);
+        searchButton.setTextFill(Paint.valueOf("#424242"));
+
+        searchButton.setOnAction(event -> {
+
+            articles.set(uiCon.getSearchableList(types, searchField.getText()));
+            table.setItems(articles.get());
+            table.refresh();
+        });
+
+        headerBox.getChildren().addAll(Arrays.asList(header, spacer, searchField, searchButton));
+
+
+        // add items to grid
+        grid.add(headerBox, 0, 0);
+        grid.add(table, 0, 1);
+
+        GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
+
+        return grid;
     }
 
-    GridPane setPaneCreateViewDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
+    GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
+
+        // clears previous saved paths
+        uiCon.clearParseList();
 
         // update dirView to show the directory
         dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter));
         dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
         dirView.getStyleClass().add("dir-view");
-        dirView.setStyle("-fx-box-border: #212121;");
+        dirView.setStyle("-fx-box-border: #1B1B1B;");
         dirView.setEditable(true);
         dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
         dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
@@ -413,9 +475,9 @@ public class Presenter {
         progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.6));
         progressBar.setProgress(0);
 
-        final Label progressText = new Label("Status");
+        final Text progressText = new Text("Status");
         progressText.setFont(Font.font("Roboto Medium", 11));
-        progressText.setTextFill(Paint.valueOf("#9e9e9e"));
+        progressText.setFill(Paint.valueOf("#C7C7C7"));
 
         VBox progressBox = new VBox();
         progressBox.setAlignment(Pos.BOTTOM_LEFT);
