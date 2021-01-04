@@ -21,13 +21,13 @@ public class ParseLangPrefab implements ParseStrategy {
         Pattern p = Pattern.compile(m.alphabetExtended);
 
         // trim the initial part, which is irrelevant, then split by "$prefab"
-        String trimmedString = splitString.substring(splitString.indexOf("24 70"));
+        String trimmedString = splitString.substring(splitString.indexOf(" 24 70"));
         String[] pathsAndStrings = trimmedString.split(m.prefabSpaced);
 //        System.out.println(pathsAndStrings.length); // used for troubleshooting
 
         // split each item into the path and the actual string
-        for (String s : pathsAndStrings) {
-            String[] itemNameList = s.split(" 18 \\w\\w ");
+        for (int i = 1; i < pathsAndStrings.length; i++) {
+            String[] itemNameList = pathsAndStrings[i].split(" 18 \\w\\w ");
             String stringPath = "24 70 72 65 66 61 62 73 " + itemNameList[0]; // add the "$prefab" back in since it was split
             Matcher m1 = p.matcher(itemNameList[1]);
 
@@ -36,7 +36,7 @@ public class ParseLangPrefab implements ParseStrategy {
                 String string = itemNameList[1].substring(m1.start(), itemNameList[1].indexOf(" BE"));
                 pairs.put(Parser.hexToAscii(stringPath), Parser.hexToAscii(string));
             } else {
-                System.out.println("Something is problematic, check " + s + " in " + absPath);
+                System.out.println("Something is problematic, check " + pathsAndStrings[i] + " in " + absPath);
                 break;
             }
         }
