@@ -2,6 +2,7 @@ package ui;
 
 import com.jfoenix.controls.*;
 import controllers.UIController;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -497,17 +498,24 @@ public class Presenter {
 
     GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
 
+        StackPane currPane = new StackPane();
+        currPane.setBackground(mainBackground);
+
         // clears previous saved paths
         uiCon.clearParseList();
 
         // update dirView to show the directory
-        dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter));
+        boolean isCollection = type == Parser.ObjectType.COLLECTION;
+        dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter, isCollection));
         dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
         dirView.getStyleClass().add("dir-view");
         dirView.setStyle("-fx-box-border: #1B1B1B;");
         dirView.setEditable(true);
         dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
         dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+
+        // put dirView into the StackPane
+        currPane.getChildren().add(dirView);
 
         // create header
         String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
@@ -531,16 +539,40 @@ public class Presenter {
         progressBox.getChildren().add(progressBar);
         progressBox.prefHeightProperty().bind(root.heightProperty().multiply(0.005));
 
-        // create button to start parsing
-
+        // create button to start parsing - needs to show dialog box when there are failed files
         JFXButton startParse = new JFXButton("Parse");
         buttonSetup(startParse, 60);
         startParse.setOnAction(event -> {
+
             // add button
             Task<Void> task = uiCon.getParseTask(type);
-            progressBar.progressProperty().bind(task.workDoneProperty());
+            progressBar.progressProperty().bind(task.progressProperty());
             progressText.textProperty().bind(task.messageProperty());
-            task.run();
+
+            // adds background thread that runs the task, and shows the dialog box after the task is done
+            Thread thread = new Thread(() -> {
+                task.run();
+
+                Platform.runLater(() -> {
+                    if (!uiCon.getFailedPaths().isEmpty()) {
+                        JFXDialogLayout dialogLayout = new JFXDialogLayout();
+                        JFXDialog dialog = new JFXDialog(currPane, dialogLayout, JFXDialog.DialogTransition.CENTER);
+
+                        JFXButton button = new JFXButton("Close");
+                        buttonSetup(button, 60);
+                        button.setOnAction(event1 -> dialog.close());
+
+                        dialogLayout.setHeading(new Text("Incomplete parsing"));
+                        dialogLayout.setBody(uiCon.getFailedContent());
+                        dialogLayout.setActions(button);
+
+                        dialog.show();
+                    }
+                });
+            });
+            thread.start();
+
+
         });
 
         VBox buttonBox = new VBox();
@@ -554,11 +586,11 @@ public class Presenter {
         grid.setPadding(new Insets(80, 50, 20, 50));
 
         grid.add(headerText, 0, 0);
-        grid.add(dirView, 0, 1);
+        grid.add(currPane, 0, 1);
         grid.add(buttonBox, 0, 2);
         grid.add(progressBox, 0, 3);
 
-        GridPane.setMargin(dirView, new Insets(30, 30, 30, 0));
+        GridPane.setMargin(currPane, new Insets(30, 30, 30, 0));
         GridPane.setMargin(progressBox, new Insets(35, 30, 10, 0));
 
         return grid;

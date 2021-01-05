@@ -54,7 +54,7 @@ public class LogicController {
 
     // PARSING
 
-    String createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
+    String createObject(String absPath, Parser.ObjectType type) throws IOException {
         switch (type) {
             case ITEM:
                 try {
@@ -62,6 +62,7 @@ public class LogicController {
                     pr.createSuccess(absPath, type);
                     return null;
                 } catch (ParseException e) {
+                    System.out.println(e.getMessage());
                     return absPath;
                 }
             case BENCH:
@@ -71,6 +72,7 @@ public class LogicController {
                     pr.createSuccess(absPath, type);
                     return null;
                 } catch(ParseException e) {
+                    System.out.println(e.getMessage());
                     return absPath;
                 }
             case RECIPE:
@@ -79,6 +81,7 @@ public class LogicController {
                     pr.createSuccess(absPath, type);
                     return null;
                 } catch (ParseException e) {
+                    System.out.println(e.getMessage());
                     return absPath;
                 }
             case COLLECTION:
@@ -87,6 +90,7 @@ public class LogicController {
                     pr.createSuccess(absPath, type);
                     return null;
                 } catch (ParseException e) {
+                    System.out.println(e.getMessage());
                     return absPath;
                 }
             case LANG_FILE:
@@ -95,6 +99,7 @@ public class LogicController {
                     pr.createSuccess(absPath, type);
                     return null;
                 } catch (ParseException e) {
+                    System.out.println(e.getMessage());
                     return absPath;
                 }
             default: return absPath;

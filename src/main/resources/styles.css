@@ -30,11 +30,11 @@
 .table-view .column-header,
 .table-view .column-header .filler,
 .table-view .column-header-background .filler {
-    -fx-background-color: #212121;
+    -fx-background-color: #1B1B1B;
 }
 
 .dir-view .tree-cell {
-    -fx-background-color: #212121 ;
+    -fx-background-color: #1B1B1B ;
     -fx-text-fill: #eeeeee ;
 }
 
@@ -42,6 +42,46 @@
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
     -fx-background-insets: 0, 1;
     -fx-padding: 1;
+}
+
+.table-view .table-cell {
+    -fx-background-color: #6D6D6D ;
+    -fx-text-fill: #eeeeee ;
+}
+
+.table-view:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #C7C7C7;
+    -fx-font-weight: bold;
+}
+
+.table-view .column-header,
+.table-view .column-header .filler,
+.table-view .column-header-background .filler {
+    -fx-background-color: #424242;
+}
+
+.table-view:focused .table-row-cell:focused {
+    -fx-border-color: derive(-fx-base, 20%);
+    -fx-background-insets: 0 0 0 0;
+}
+
+.table-view:focused .table-row-cell:selected {
+    -fx-background-color: derive(-fx-base, 20%);
+    -fx-background-insets: 0 0 0 0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #FF9800;
+}
+
+.table-row-cell {
+    -fx-table-cell-border-color: transparent;
 }
 
 .jfx-progress-bar > .track, .jfx-progress-bar > .bar {
@@ -55,4 +95,15 @@
 
 .jfx-progress-bar > .track {
     -fx-background-color: #424242;
+}
+
+.text-area {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, white, transparent, white;
+    -fx-text-box-border: transparent;
+}
+
+.text-area:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }

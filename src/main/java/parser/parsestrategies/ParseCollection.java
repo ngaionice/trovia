@@ -16,6 +16,12 @@ public class ParseCollection implements ParseStrategy{
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
+        // debugging
+        System.out.println("Parsing file " + absPath);
+        if (absPath.contains("dev_")) {
+            throw new ParseException(absPath + " is a dev mount and is likely to be buggy, skipping it.");
+        }
+
         // instantiate markers and variables
         Markers m = new Markers();
         String name = null, desc = null;
@@ -26,9 +32,13 @@ public class ParseCollection implements ParseStrategy{
         String rPath = absPath.substring(absPath.indexOf("prefabs\\") + 8, absPath.indexOf(m.endFile));
         rPath = rPath.replaceAll("\\\\", "/");
 
+        System.out.println("Identified relative path.");
+
         // identify name and desc
         int nameDescEnd = splitString.indexOf(m.endNameDesc);
         int nameDescStart = splitString.indexOf(m.prefab);
+
+        System.out.println("Identified name and desc.");
 
         // if either don't exist, then we don't know how to parse yet
         if (nameDescStart == -1 || nameDescEnd == -1) {
@@ -46,12 +56,16 @@ public class ParseCollection implements ParseStrategy{
             }
         }
 
+        System.out.println("Name parsed.");
+
         // parse the description
         int descStart = dirty.substring(1).indexOf(m.prefab); // shift by 1 to avoid finding the same marker
         if (descStart != -1) {
             String descHex = dirty.substring(1).substring(descStart);
             desc = Parser.hexToAscii(descHex);
         }
+
+        System.out.println("Desc parsed.");
 
         // identify abilities/properties
 
@@ -64,15 +78,24 @@ public class ParseCollection implements ParseStrategy{
             types.add(CollectionEnums.CollectionType.MOUNT);
         }
 
+        System.out.println("Identified mount property.");
+
         // wings
         if (splitString.contains(m.airSpeed) || splitString.contains(m.airSpeedA)) {
             int indexA = splitString.contains(m.airSpeed) ? splitString.indexOf(m.airSpeed) : splitString.indexOf(m.airSpeedA);
-            properties.put(CollectionEnums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA-6, indexA-1)));
-            types.add(CollectionEnums.CollectionType.WINGS);
-
             int indexGlide = splitString.indexOf(m.glide);
-            properties.put(CollectionEnums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide-6, indexGlide-1)));
+
+            if (indexA != -1 && indexGlide != -1) {
+                properties.put(CollectionEnums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA-6, indexA-1)));
+                types.add(CollectionEnums.CollectionType.WINGS);
+
+                properties.put(CollectionEnums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide-6, indexGlide-1)));
+            } else {
+                throw new ParseException("Incomplete wings property at this object.");
+            }
         }
+
+        System.out.println("Identified wings property.");
 
         // mag rider
         if (splitString.contains(m.mag)) {
@@ -80,6 +103,8 @@ public class ParseCollection implements ParseStrategy{
             properties.put(CollectionEnums.Property.MAG_MS, Parser.collectionH2D(splitString.substring(indexM+3, indexM+9)));
             types.add(CollectionEnums.CollectionType.MAG);
         }
+
+        System.out.println("Identified mag property.");
 
         // boat
         if (splitString.contains(m.waterSpeed)) {
@@ -95,16 +120,22 @@ public class ParseCollection implements ParseStrategy{
             properties.put(CollectionEnums.Property.ACCEL, Parser.collectionH2D(splitString.substring(indexAc + 9, indexAc + 15)));
         }
 
+        System.out.println("Identified boat property.");
+
         // dragon
         Map<CollectionEnums.Buff, Double> dragonBuffs = parseBuffs(splitString, m);
         if (!dragonBuffs.isEmpty() && types.contains(CollectionEnums.CollectionType.MOUNT)) {
             types.add(CollectionEnums.CollectionType.DRAGON);
         }
 
+        System.out.println("Identified dragon property.");
+
         // power rank
         if (splitString.contains(m.powerRank)) {
             properties.put(CollectionEnums.Property.POWER_RANK, 30.0);
         }
+
+        System.out.println("Identified PR property.");
 
         // form the collection object and return
         if (types.contains(CollectionEnums.CollectionType.DRAGON)) {

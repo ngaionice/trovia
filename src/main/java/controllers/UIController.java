@@ -61,25 +61,34 @@ public class UIController {
         return con.filterOutWithout(con.getPaths(con.getFiles(dirPath)), filter);
     }
 
-    public CheckBoxTreeItem<String> getFileTree(String dirPath, String filter) {
+    public CheckBoxTreeItem<String> getFileTree(String dirPath, String filter, boolean npcFilter) {
 
         CheckBoxTreeItem<String> rootItem = new CheckBoxTreeItem<>(dirPath);
         rootItem.setExpanded(false);
+        List<CheckBoxTreeItem<String>> nonDirectories = new ArrayList<>();
         for (String path : getPaths(dirPath, filter)) {
 
             // if directory, recursively call the method and add them all to root; note if the sub-directory has no valid files, it gets omitted
             if (new File(path).isDirectory()) {
-                CheckBoxTreeItem<String> subDir = getFileTree(path, filter);
+                CheckBoxTreeItem<String> subDir = getFileTree(path, filter, npcFilter);
                 
 
                 if (!subDir.isLeaf()) {
-                    rootItem.getChildren().add(getFileTree(path, filter));
+                    rootItem.getChildren().add(getFileTree(path, filter, npcFilter));
                 }
             }
 
-            // else, add path to root if it has the filter keyword
+            // else, add path to list if it has the filter keyword
             else {
-                if (path.contains(filter)) {
+
+                // npc filter for Collection parsing
+                boolean npcCheck = true;
+                if (npcFilter && path.contains("_npc")) {
+                    npcCheck = false;
+                }
+
+                // if npcCheck passes and contains filter word, we process the item
+                if (path.contains(filter) && npcCheck) {
                     CheckBoxTreeItem<String> item = new CheckBoxTreeItem<>(path);
 
                     // add items to selectedPaths to be parsed later
@@ -91,16 +100,24 @@ public class UIController {
                         }
 
                     });
-                    rootItem.getChildren().add(item);
+                    nonDirectories.add(item);
                 }
             }
         }
+
+        // add all the non-directories back in; this is done instead of adding the items in at processing time to show the directories first
+        rootItem.getChildren().addAll(nonDirectories);
         return rootItem;
     }
 
     public Task<Void> getParseTask(Parser.ObjectType type) {
         return new Task<Void>() {
-            @Override protected Void call() throws IOException, ParseException {
+            @Override protected Void call() throws IOException {
+
+                // clear out old failed paths
+                failedPaths.clear();
+
+                // begin parsing
                 int selectedPathsLength = selectedPaths.size();
                 for (int i = 0; i < selectedPathsLength; i++) {
                     updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
@@ -112,6 +129,8 @@ public class UIController {
                 }
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
+
+
                 return null;
             }
         };
@@ -169,12 +188,20 @@ public class UIController {
         return content;
     }
 
-    public void debugParse() throws IOException, ParseException {
+    public void debugParse() throws IOException {
         con.createObject("C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset\\languages\\en\\prefabs_item_aura.binfab", Parser.ObjectType.LANG_FILE);
+    }
+
+    public List<String> getSelectedPaths() {
+        return selectedPaths;
     }
 
     public List<String> getFailedPaths() {
         return failedPaths;
+    }
+
+    public void clearFailedPaths() {
+        failedPaths.clear();
     }
 
     public VBox getFailedContent() {

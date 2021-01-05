@@ -15,13 +15,16 @@ public class ParseLangPrefab implements ParseStrategy {
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
+        // for debugging
+        System.out.println("Processing " + absPath);
+
         // instantiate the identifiers and variables
         Markers m = new Markers();
         Map<String, String> pairs = new HashMap<>(1000);
         Pattern p = Pattern.compile(m.alphabetExtended);
 
         // trim the initial part, which is irrelevant, then split by "$prefab"
-        if (!splitString.contains("24 70")) {
+        if (!splitString.contains("24 70 72 65 66 61 62 73")) {
             throw new ParseException("Lang File parsing failed at " + absPath + "This is not a valid file.");
         }
         String trimmedString = splitString.substring(splitString.indexOf(" 24 70"));
@@ -33,6 +36,13 @@ public class ParseLangPrefab implements ParseStrategy {
             String[] itemNameList = pathsAndStrings[i].split(" 18 \\w\\w ");
             String stringPath = "24 70 72 65 66 61 62 73 " + itemNameList[0]; // add the "$prefab" back in since it was split
             Matcher m1 = p.matcher(itemNameList[1]);
+
+            // first check if there is a valid string: if there isn't, then skip over this object; done by looking at the first 3 'block's of itemNameList[1]
+            if (!itemNameList[1].substring(0,2).matches(m.alphabetExtended) ||
+                    !itemNameList[1].substring(3,5).matches(m.alphabetExtended) ||
+                    !itemNameList[1].substring(6,8).matches(m.alphabetExtended)) {
+                continue;
+            }
 
             // find the string, convert to ASCII, and put the array into the list, if no string is found, break the loop
             if (m1.find()) {
