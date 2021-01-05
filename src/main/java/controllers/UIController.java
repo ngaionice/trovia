@@ -23,6 +23,7 @@ public class UIController {
 
     LogicController con = new LogicController();
     List<String> selectedPaths = new ArrayList<>();
+    List<String> failedPaths = new ArrayList<>();
 
     public static class Searchable extends RecursiveTreeObject<Searchable> {
 
@@ -104,7 +105,10 @@ public class UIController {
                 for (int i = 0; i < selectedPathsLength; i++) {
                     updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
                     updateProgress(i, selectedPathsLength);
-                    con.createObject(selectedPaths.get(i), type);
+                    String output = con.createObject(selectedPaths.get(i), type);
+                    if (output != null) {
+                        failedPaths.add(output);
+                    }
                 }
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
@@ -169,5 +173,23 @@ public class UIController {
         con.createObject("C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset\\languages\\en\\prefabs_item_aura.binfab", Parser.ObjectType.LANG_FILE);
     }
 
+    public List<String> getFailedPaths() {
+        return failedPaths;
+    }
 
+    public VBox getFailedContent() {
+        VBox content = new VBox();
+        content.setSpacing(3);
+
+        content.getChildren().add(new Text("The following paths were not parsed:"));
+        content.getChildren().add(new TextArea(String.join(" \n", failedPaths)));
+
+        TextArea message = new TextArea("Note that this is normal, if files that have not been designed to be parsed were selected.");
+//        message.getStyleClass().add("text-field")
+        message.setWrapText(true);
+        message.setPrefHeight(50);
+        content.getChildren().add(message);
+
+        return content;
+    }
 }

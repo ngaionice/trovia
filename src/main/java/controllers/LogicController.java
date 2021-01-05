@@ -54,28 +54,50 @@ public class LogicController {
 
     // PARSING
 
-    void createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
+    String createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
         switch (type) {
             case ITEM:
-                itemM.addItem((Item) p.createObject(absPath, type));
-                pr.createSuccess(absPath, type);
-                break;
+                try {
+                    itemM.addItem((Item) p.createObject(absPath, type));
+                    pr.createSuccess(absPath, type);
+                    return null;
+                } catch (ParseException e) {
+                    return absPath;
+                }
             case BENCH:
             case PROFESSION:
-                benchM.addBench((Bench) p.createObject(absPath, type));
-                pr.createSuccess(absPath, type);
-                break;
+                try {
+                    benchM.addBench((Bench) p.createObject(absPath, type));
+                    pr.createSuccess(absPath, type);
+                    return null;
+                } catch(ParseException e) {
+                    return absPath;
+                }
             case RECIPE:
-                recM.addRecipe((Recipe) p.createObject(absPath, type));
-                pr.createSuccess(absPath, type);
-                break;
+                try {
+                    recM.addRecipe((Recipe) p.createObject(absPath, type));
+                    pr.createSuccess(absPath, type);
+                    return null;
+                } catch (ParseException e) {
+                    return absPath;
+                }
             case COLLECTION:
-                colM.addCollection((Collection) p.createObject(absPath, type));
-                pr.createSuccess(absPath, type);
-                break;
+                try {
+                    colM.addCollection((Collection) p.createObject(absPath, type));
+                    pr.createSuccess(absPath, type);
+                    return null;
+                } catch (ParseException e) {
+                    return absPath;
+                }
             case LANG_FILE:
-                langM.addLangFile((LangFile) p.createObject(absPath, type));
-                pr.createSuccess(absPath, type);
+                try {
+                    langM.addLangFile((LangFile) p.createObject(absPath, type));
+                    pr.createSuccess(absPath, type);
+                    return null;
+                } catch (ParseException e) {
+                    return absPath;
+                }
+            default: return absPath;
         }
     }
 

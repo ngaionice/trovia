@@ -21,6 +21,9 @@ public class ParseLangPrefab implements ParseStrategy {
         Pattern p = Pattern.compile(m.alphabetExtended);
 
         // trim the initial part, which is irrelevant, then split by "$prefab"
+        if (!splitString.contains("24 70")) {
+            throw new ParseException("Lang File parsing failed at " + absPath + "This is not a valid file.");
+        }
         String trimmedString = splitString.substring(splitString.indexOf(" 24 70"));
         String[] pathsAndStrings = trimmedString.split(m.prefabSpaced);
 //        System.out.println(pathsAndStrings.length); // used for troubleshooting
