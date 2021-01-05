@@ -19,7 +19,7 @@ public class ParseItem implements ParseStrategy {
      * @return an xyz.trovia.objects.Item object in a list, where the item is formed from the input string
      */
     @Override
-    public Article parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) throws ParseException {
 
         // instantiate the stuff needed to parse
         Markers m = new Markers();
@@ -37,7 +37,7 @@ public class ParseItem implements ParseStrategy {
             // if there is no name/desc end marker, which it should, then return an empty item
             if (!splitString.contains(" 68 00 80")) {
                 System.out.println("Item creation at " + absPath + " failed. Neither name nor description was found.");
-                return new Item(absPath);
+                throw new ParseException("Item creation at " + absPath + " failed. Neither name nor description was found.");
             }
 
             // otherwise, parse the string
@@ -62,7 +62,7 @@ public class ParseItem implements ParseStrategy {
 
         } else {
             System.out.println("Item creation at " + absPath + " failed.");
-            return new Item(absPath);
+            throw new ParseException("Item creation at " + absPath + " failed.");
         }
 
         // subset relative path

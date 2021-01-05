@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 public class ParseLangPrefab implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) throws ParseException {
 
         // instantiate the identifiers and variables
         Markers m = new Markers();
@@ -37,7 +37,7 @@ public class ParseLangPrefab implements ParseStrategy {
                 pairs.put(Parser.hexToAscii(stringPath).toLowerCase(), Parser.hexToAscii(string));
             } else {
                 System.out.println("Something is problematic, check " + pathsAndStrings[i] + " in " + absPath);
-                break;
+                throw new ParseException("Lang File parsing failed at " + absPath + ".\n" + pathsAndStrings[i] + "\n could not be converted to ASCII.");
             }
         }
 

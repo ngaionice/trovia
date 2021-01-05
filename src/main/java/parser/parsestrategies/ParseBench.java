@@ -10,7 +10,7 @@ import java.util.*;
 public class ParseBench implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) throws ParseException {
         Markers m = new Markers();
         List<List<String>> categoryList = new ArrayList<>();
         ParseHelper helper = new ParseHelper();
@@ -53,7 +53,7 @@ public class ParseBench implements ParseStrategy {
         // non-standard format, not handled by this function
         else {
             System.out.println("Less than 2 '$prefab's were found for" + absPath + ".");
-            return null;
+            throw new ParseException("Bench format not handled by ParseBench.");
         }
 
         // creating the Bench object
