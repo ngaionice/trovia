@@ -226,7 +226,12 @@ public class LogicController {
         // convert the string identifiers to their actual strings
         for (String[] entry: entryList) {
             if (entry.length != 0) {
-                entry[0] = langM.getString(entry[0]);
+                if (langM.getString(entry[0]) != null) {
+                    entry[0] = langM.getString(entry[0]);
+                } else {
+                    entry[0] = "Name not available";
+                }
+
             }
         }
 
@@ -276,5 +281,27 @@ public class LogicController {
             }
         } while (!confirmed);
         return text;
+    }
+
+    // RELAYING MODULES
+
+    String getItemDesc(String rPath) {
+        return langM.getString(itemM.getDesc(rPath).toLowerCase());
+    }
+
+    String getItemDescIdentifier(String rPath) {
+        return itemM.getDesc(rPath);
+    }
+
+    String getCollectionDesc(String rPath) {
+        return langM.getString(colM.getDesc(rPath).toLowerCase());
+    }
+
+    String getCollectionDescIdentifier(String rPath) {
+        return colM.getDesc(rPath);
+    }
+
+    List<String> getBenchRecipes(String rPath) {
+        return benchM.getAllRecipes(rPath);
     }
 }

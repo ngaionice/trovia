@@ -2,8 +2,11 @@ package ui;
 
 import com.jfoenix.controls.*;
 import controllers.UIController;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -384,6 +387,13 @@ public class Presenter {
         grid.setPadding(new Insets(80, 50, 70, 50));
         grid.setHgap(20);
 
+        // set up StackPane to hold dialog box and TableView
+        StackPane tablePane = new StackPane();
+
+        // set dialog
+        JFXDialogLayout dialogLayout = new JFXDialogLayout();
+        JFXDialog dialog = new JFXDialog(tablePane, dialogLayout, JFXDialog.DialogTransition.CENTER);
+
         // set table
         TableView<UIController.Searchable> table = new TableView<>();
         AtomicReference<ObservableList<UIController.Searchable>> articles = new AtomicReference<>(uiCon.getSearchableList(types, ""));
@@ -396,15 +406,50 @@ public class Presenter {
         TableColumn<UIController.Searchable, String> nameCol = new TableColumn<>("Name");
         TableColumn<UIController.Searchable, String> rPathCol = new TableColumn<>("Relative path");
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
-        nameCol.setResizable(false);
-        rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.6));
-        rPathCol.setResizable(false);
+//        nameCol.setResizable(false);
+        rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.5999));
+//        rPathCol.setResizable(false);
 
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         rPathCol.setCellValueFactory(new PropertyValueFactory<>("rPath"));
 
+        table.setRowFactory(view -> {
+            TableRow<UIController.Searchable> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+                    TablePosition pos = table.getSelectionModel().getSelectedCells().get(0);
+                    int selectedRow = pos.getRow();
+
+                    UIController.Searchable article = table.getItems().get(selectedRow);
+
+                    VBox content;
+                    if (article.getRPath().contains("item")) {
+                        content = uiCon.getItemContent(article.getRPath());
+                    } else if (article.getRPath().contains("collection")) {
+                        content = uiCon.getCollectionContent(article.getRPath());
+                    } else {
+                        content = uiCon.getBenchContent(article.getRPath());
+                    }
+
+
+                    JFXButton button = new JFXButton("Close");
+                    buttonSetup(button, 60);
+                    button.setOnAction(event1 -> dialog.close());
+
+                    dialogLayout.setHeading(new Text(article.getName()));
+                    dialogLayout.setBody(content);
+                    dialogLayout.setActions(button);
+                    dialog.show();
+                }
+            });
+            return row;
+        });
+
         table.setItems(articles.get());
         table.getColumns().setAll(nameCol, rPathCol);
+
+        tablePane.getChildren().add(table);
+        dialog.setDialogContainer(tablePane);
 
         // set header + search bar
         HBox headerBox = new HBox();
@@ -440,9 +485,10 @@ public class Presenter {
         headerBox.getChildren().addAll(Arrays.asList(header, spacer, searchField, searchButton));
 
 
+
         // add items to grid
         grid.add(headerBox, 0, 0);
-        grid.add(table, 0, 1);
+        grid.add(tablePane, 0, 1);
 
         GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
 
@@ -525,6 +571,8 @@ public class Presenter {
         button.setBackground(buttonBackground);
 
     }
+
+
 
 
 }

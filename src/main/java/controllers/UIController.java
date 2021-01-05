@@ -7,6 +7,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import parser.Parser;
 import parser.parsestrategies.ParseException;
 
@@ -114,7 +117,57 @@ public class UIController {
         selectedPaths.clear();
     }
 
+    public VBox getItemContent(String rPath) {
+        VBox content = new VBox();
+        content.setSpacing(3);
+
+        // will need to get more items from LogicController later as we add more properties
+        content.getChildren().add(new Text("Description:"));
+        content.getChildren().add(new Text(con.getItemDesc(rPath)));
+
+        content.getChildren().add(new Text("Description identifer:"));
+        content.getChildren().add(new Text(con.getItemDescIdentifier(rPath)));
+
+        content.getChildren().add(new Text("Relative path:"));
+        content.getChildren().add(new Text(rPath));
+
+        return content;
+    }
+
+    public VBox getCollectionContent(String rPath) {
+        VBox content = new VBox();
+        content.setSpacing(3);
+
+        content.getChildren().add(new Text("Description:"));
+        TextArea desc = new TextArea(con.getCollectionDesc(rPath));
+        content.getChildren().add(desc);
+
+        content.getChildren().add(new Text("Description identifer:"));
+        content.getChildren().add(new Text(con.getCollectionDescIdentifier(rPath)));
+
+        content.getChildren().add(new Text("Relative path:"));
+        content.getChildren().add(new Text(rPath));
+
+        return content;
+    }
+
+    public VBox getBenchContent(String rPath) {
+
+        VBox content = new VBox();
+        content.setSpacing(3);
+
+        content.getChildren().add(new Text("Recipes in bench:"));
+        content.getChildren().add(new TextArea(String.join(" \n", con.getBenchRecipes(rPath))));
+
+        content.getChildren().add(new Text("Relative path:"));
+        content.getChildren().add(new Text(rPath));
+
+        return content;
+    }
+
     public void debugParse() throws IOException, ParseException {
         con.createObject("C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset\\languages\\en\\prefabs_item_aura.binfab", Parser.ObjectType.LANG_FILE);
     }
+
+
 }

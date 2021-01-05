@@ -34,7 +34,7 @@ public class ParseLangPrefab implements ParseStrategy {
             // find the string, convert to ASCII, and put the array into the list, if no string is found, break the loop
             if (m1.find()) {
                 String string = itemNameList[1].substring(m1.start(), itemNameList[1].indexOf(" BE"));
-                pairs.put(Parser.hexToAscii(stringPath), Parser.hexToAscii(string));
+                pairs.put(Parser.hexToAscii(stringPath).toLowerCase(), Parser.hexToAscii(string));
             } else {
                 System.out.println("Something is problematic, check " + pathsAndStrings[i] + " in " + absPath);
                 break;
