@@ -268,29 +268,6 @@ public class LogicController {
     // GENERAL
 
     /**
-     * Prints out all the options that a user has, then prompts the user to select an option.
-     * Only returns when the user has selected a valid option.
-     *
-     * @param options options for the users
-     * @return user's choice as an integer
-     */
-    private int selectOption(List<String> options) {
-        System.out.println("Select an option:");
-        for (int i = 1; i < (options.size() + 1); i++) {
-            System.out.println(i + " - " + options.get(i - 1));
-        }
-        System.out.println("-1" + " - " + "Return to the previous page.");
-
-        String newInput = sc.nextLine();
-        String intRegex = "(-1)|[1-9]+";
-        while (!newInput.matches(intRegex) || -1 > Integer.parseInt(newInput) || options.size() < Integer.parseInt(newInput)) {
-            System.out.println("Please select a valid option.");
-            newInput = sc.nextLine();
-        }
-        return Integer.parseInt(newInput);
-    }
-
-    /**
      * Get string input from user.
      *
      * @return the string inputted by the user
@@ -321,7 +298,13 @@ public class LogicController {
     }
 
     String getCollectionDesc(String rPath) {
-        return langM.getString(colM.getDesc(rPath).toLowerCase());
+        if (colM.getDesc(rPath) != null) {
+            String desc = langM.getString(colM.getDesc(rPath).toLowerCase());
+            if (desc != null) {
+                return desc;
+            }
+        }
+        return "Not available.";
     }
 
     String getCollectionDescIdentifier(String rPath) {
@@ -330,5 +313,25 @@ public class LogicController {
 
     List<String> getBenchRecipes(String rPath) {
         return benchM.getAllRecipes(rPath);
+    }
+
+    Map<CollectionEnums.Property, Double> getCollectionProp(String rPath) {
+        return colM.getProperties(rPath);
+    }
+
+    Map<CollectionEnums.Buff, Double> getDragonBuffs(String rPath) {
+        return colM.getBuffs(rPath);
+    }
+
+    Integer[] getMastery(String rPath) {
+        return colM.getMastery(rPath);
+    }
+
+    List<String> getRecipes(String rPath) {
+        return colM.getRecipe(rPath);
+    }
+
+    List<String> getNotes(String rPath) {
+        return colM.getNotes(rPath);
     }
 }

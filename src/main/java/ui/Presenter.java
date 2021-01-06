@@ -2,16 +2,17 @@ package ui;
 
 import com.jfoenix.controls.*;
 import controllers.UIController;
+import javafx.beans.binding.DoubleBinding;
+import ui.searchables.Searchable;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
@@ -30,11 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Presenter {
 
     UIController uiCon = new UIController();
-    JFXTreeTableView<UIController.Searchable> articleView;
+    DesignProperties p = new DesignProperties();
     JFXTreeView<String> dirView;
-
-    Font sectionFont = Font.font("Roboto Medium", 15);
-    Font normalFont = Font.font("Roboto Regular", 12);
 
     String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
     String benchFilter = "_interactive";
@@ -50,8 +48,7 @@ public class Presenter {
     String profSubPath = "\\prefabs\\professions";
     String recSubPath = "\\prefabs\\recipes";
 
-    Background mainBackground = new Background(new BackgroundFill(Color.rgb(27, 27, 27), CornerRadii.EMPTY, Insets.EMPTY));
-    Background buttonBackground = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
+    // NAVIGATION BAR
 
     /**
      * Creates the navigation bar for the Create section of the UI.
@@ -96,36 +93,8 @@ public class Presenter {
         Button[] options = new Button[]{pBenchBtn, pColBtn, pItemBtn, pProfBtn, pRecBtn, pLangBtn, cGearBtn, settingsBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
 
-    }
-
-    void callModify(BorderPane root, VBox nav, VBox mainNav) {
-
-        // update center table
-        root.setCenter(modifyDisplaySetUp());
-
-        // remove previous nav
-        nav.getChildren().clear();
-
-        // make new nav
-        VBox typeNav = new VBox();
-        typeNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
-
-        // buttons
-        JFXButton benchBtn = new JFXButton("Modify Benches");
-        JFXButton colBtn = new JFXButton("Modify Collections");
-        JFXButton itemBtn = new JFXButton("Modify Items");
-
-        // button actions
-        benchBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        colBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        itemBtn.setOnAction(event -> root.setCenter(notImplemented()));
-
-        Button[] options = new Button[]{benchBtn, colBtn, itemBtn};
-
-        nav.getChildren().add(mainNav);
-        nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
     }
 
     void callView(BorderPane root, VBox nav, VBox mainNav) {
@@ -149,19 +118,19 @@ public class Presenter {
         List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
 
         searchBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        viewAllBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Articles")));
-        itemBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items")));
-        colBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections")));
-        recipeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches")));
+        viewAllBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false)));
+        itemBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true)));
+        colBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true)));
+        recipeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", false)));
         langBtn.setOnAction(event -> root.setCenter(notImplemented()));
 
         Button[] options = new Button[]{searchBtn, viewAllBtn, itemBtn, colBtn, recipeBtn, langBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
 
         // update center table
-        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles"));
+        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false));
     }
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
@@ -189,8 +158,10 @@ public class Presenter {
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(vBoxSetup(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
     }
+
+    // CREATE-RELATED
 
     GridPane setPaneCreateSettings() {
 
@@ -198,45 +169,38 @@ public class Presenter {
         uiCon.clearParseList();
 
         GridPane grid = new GridPane();
-        grid.setBackground(mainBackground);
+        grid.setBackground(p.backgroundMainPane);
         grid.setPadding(new Insets(80, 50, 70, 50));
         grid.setHgap(20);
 
-        Text settingsText = new Text("Parse Settings");
-        settingsText.setFont(sectionFont);
-        settingsText.setFill(Paint.valueOf("#fafafa"));
+        int textFieldWidth = 500;
 
-        Text dirText = new Text("Absolute path of main directory:");
-        JFXTextField dirField = new JFXTextField();
-        setUpTextField(dirText, dirField, "Current directory: ", dirPath);
+        Text settingsText = getTextHeader("Parse Settings", p.colorTextHeader);
 
-        Text benchText = new Text("Filter for bench parsing: (filters out files without the keyword)");
-        JFXTextField benchField = new JFXTextField();
-        setUpTextField(benchText, benchField, "Current filter: ", benchFilter);
+        Text dirText = getTextNormal("Absolute path of main directory:", p.colorTextNormal);
+        JFXTextField dirField = getTextField("Current directory: " + dirPath, textFieldWidth);
 
-        Text colText = new Text("Filter for collection parsing: ");
-        JFXTextField colField = new JFXTextField();
-        setUpTextField(colText, colField, "Current filter: ", colFilter);
+        Text benchText = getTextNormal("Filter for bench parsing: (filters out files without the keyword)", p.colorTextNormal);
+        JFXTextField benchField = getTextField("Current filter: " +  benchFilter, textFieldWidth);
 
-        Text itemText = new Text("Filter for item parsing: ");
-        JFXTextField itemField = new JFXTextField();
-        setUpTextField(itemText, itemField, "Current filter: ", itemFilter);
+        Text colText = getTextNormal("Filter for collection parsing: ", p.colorTextNormal);
+        JFXTextField colField = getTextField("Current filter: " + colFilter, textFieldWidth);
 
-        Text recText = new Text("Filter for recipe parsing: ");
-        JFXTextField recField = new JFXTextField();
-        setUpTextField(recText, recField, "Current filter: ", recFilter);
+        Text itemText = getTextNormal("Filter for item parsing: ", p.colorTextNormal);
+        JFXTextField itemField = getTextField("Current filter: " + itemFilter, textFieldWidth);
 
-        Text langText = new Text("Filter for language file parsing: ");
-        JFXTextField langField = new JFXTextField();
-        setUpTextField(langText, langField, "Current filter: ", langFilter);
+        Text recText = getTextNormal("Filter for recipe parsing: ", p.colorTextNormal);
+        JFXTextField recField = getTextField("Current filter: " + recFilter, textFieldWidth);
+
+        Text langText = getTextNormal("Filter for language file parsing: ", p.colorTextNormal);
+        JFXTextField langField = getTextField("Current filter: " + langFilter, textFieldWidth);
 
         // TODO: add custom sub-directory path editing
 
         HBox saveBox = new HBox();
         saveBox.setAlignment(Pos.CENTER_RIGHT);
 
-        JFXButton save = new JFXButton("Save");
-        buttonSetup(save, 60);
+        JFXButton save = getButton("Save", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
         saveBox.getChildren().add(save);
 
         save.setOnAction(event -> {
@@ -286,34 +250,240 @@ public class Presenter {
         return grid;
     }
 
-    private void setUpTextField(Text text, JFXTextField textField, String promptText, String defaultText) {
-        text.setFont(normalFont);
-        text.setFill(Paint.valueOf("#c7c7c7"));
+    GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
 
-        textField.setPrefWidth(500);
-        textField.setFocusColor(Paint.valueOf("#c7c7c7"));
-        textField.setPromptText(promptText + defaultText);
+        StackPane currPane = new StackPane();
+        currPane.setBackground(p.backgroundMainPane);
+
+        // clears previous saved paths
+        uiCon.clearParseList();
+
+        // update dirView to show the directory
+        boolean isCollection = type == Parser.ObjectType.COLLECTION;
+        dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter, isCollection));
+        dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
+        dirView.getStyleClass().add("dir-view");
+        dirView.setStyle("-fx-box-border: #1B1B1B;");
+        dirView.setEditable(true);
+        dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+
+        // put dirView into the StackPane
+        currPane.getChildren().add(dirView);
+
+        // create header
+        String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
+        Text headerText = getTextHeader("Parse " + type + plural, p.colorTextHeader);
+
+        // create progress bar and status text
+        JFXProgressBar progressBar = new JFXProgressBar();
+        progressBar.getStyleClass().add("jfx-progress-bar");
+        progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.6));
+        progressBar.setProgress(0);
+
+        final Text progressText = new Text("Status");
+        progressText.setFont(Font.font("Roboto Medium", 11));
+        progressText.setFill(Paint.valueOf(p.colorTextNormal));
+
+        VBox progressBox = new VBox();
+        progressBox.setAlignment(Pos.BOTTOM_LEFT);
+        progressBox.getChildren().add(progressText);
+        progressBox.getChildren().add(progressBar);
+        progressBox.prefHeightProperty().bind(root.heightProperty().multiply(0.005));
+
+        // create button to start parsing - needs to show dialog box when there are failed files
+        JFXButton startParse = getButton("Parse", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
+
+        startParse.setOnAction(event -> {
+
+            // add button
+            Task<Void> task = uiCon.getParseTask(type);
+            progressBar.progressProperty().bind(task.progressProperty());
+            progressText.textProperty().bind(task.messageProperty());
+
+            // adds background thread that runs the task, and shows the dialog box after the task is done
+            Thread thread = new Thread(() -> {
+                task.run();
+
+                Platform.runLater(() -> {
+                    if (!uiCon.getFailedPaths().isEmpty()) {
+                        JFXDialogLayout dialogLayout = new JFXDialogLayout();
+                        JFXDialog dialog = new JFXDialog(currPane, dialogLayout, JFXDialog.DialogTransition.CENTER);
+
+                        JFXButton button = getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
+                        button.setOnAction(event1 -> dialog.close());
+
+                        dialogLayout.setHeading(new Text("Incomplete parsing"));
+                        dialogLayout.setBody(uiCon.getFailedContent(dirPath));
+                        dialogLayout.setActions(button);
+
+                        dialog.show();
+                    }
+                });
+            });
+            thread.start();
+
+
+        });
+
+        VBox buttonBox = new VBox();
+        buttonBox.getChildren().add(startParse);
+        buttonBox.setPrefHeight(35);
+
+        // set up the grid
+        GridPane grid = new GridPane();
+        setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
+        setNodeGridPane(grid, Arrays.asList(headerText, currPane, buttonBox, progressBox));
+//        grid.setGridLinesVisible(true); // debug
+
+        GridPane.setMargin(currPane, new Insets(30, 30, 30, 0));
+        GridPane.setMargin(progressBox, new Insets(35, 30, 10, 0));
+
+        return grid;
     }
 
-    TableView<String> modifyDisplaySetUp() {
-        TableView<String> table = new TableView<>();
-        table.setBackground(mainBackground);
+    // VIEW-RELATED
 
-        return table;
+    GridPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
 
+        // set up grid
+        GridPane grid = new GridPane();
+        setPropGridPane(grid, new Insets(80, 50, 70, 50), 20);
+
+        // set up StackPane to hold dialog box and TableView
+        StackPane tablePane = new StackPane();
+
+        // set dialog
+        JFXDialogLayout dialogLayout = new JFXDialogLayout();
+        JFXDialog dialog = new JFXDialog(tablePane, dialogLayout, JFXDialog.DialogTransition.CENTER);
+
+        // set table
+        TableView<Searchable> table = new TableView<>();
+        AtomicReference<ObservableList<Searchable>> articles = new AtomicReference<>(uiCon.getSearchableList(types, ""));
+
+        table.setStyle("-fx-box-border: #1B1B1B;");
+        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        table.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+        table.getStyleClass().add("table-view");
+
+        TableColumn<Searchable, String> nameCol = new TableColumn<>("Name");
+        TableColumn<Searchable, String> rPathCol = new TableColumn<>("Relative path");
+
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        rPathCol.setCellValueFactory(new PropertyValueFactory<>("rPath"));
+
+        table.setRowFactory(view -> {
+            TableRow<Searchable> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+                    TablePosition pos = table.getSelectionModel().getSelectedCells().get(0);
+                    int selectedRow = pos.getRow();
+
+                    Searchable article = table.getItems().get(selectedRow);
+
+                    VBox content;
+                    if (article.getRPath().contains("item")) {
+                        content = uiCon.getItemContent(article.getRPath());
+                    } else if (article.getRPath().contains("collection")) {
+                        content = uiCon.getCollectionContent(article.getRPath());
+                    } else {
+                        content = uiCon.getBenchContent(article.getRPath());
+                    }
+
+
+                    JFXButton button = getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
+                    button.setOnAction(event1 -> dialog.close());
+
+                    dialogLayout.setHeading(new Text(article.getName()));
+                    dialogLayout.setBody(content);
+                    dialogLayout.setActions(button);
+                    dialog.show();
+                }
+            });
+            return row;
+        });
+
+        table.setItems(articles.get());
+
+        // if modifiable is true, add a checkbox column and track which items are selected for modification
+        if (modifiable) {
+            TableColumn<Searchable, Boolean> checkCol = new TableColumn<>("");
+            checkCol.setCellFactory(c -> new CheckBoxTableCell<>());
+            checkCol.setCellValueFactory(c -> {
+                Searchable cellValue = c.getValue();
+                BooleanProperty property = cellValue.isSelected;
+
+                property.addListener((observable, oldValue, newValue) -> {
+                    cellValue.setIsSelected(newValue);
+                    if (cellValue.getIsSelected()) {
+                        uiCon.addSelectedArticle(cellValue.getRPath());
+                        for (String item: uiCon.getAllSelectedArticles()) {
+                            System.out.println(item);
+                        }
+                    } else {
+                        uiCon.removeSelectedArticle(cellValue.getRPath());
+                    }
+                 });
+
+                return property;
+            });
+
+            nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+            rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.5));
+            checkCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+
+            table.getColumns().setAll(nameCol, rPathCol, checkCol);
+            table.setEditable(true);
+        } else {
+            nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+            rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.599));
+
+            table.getColumns().setAll(nameCol, rPathCol);
+        }
+
+
+        tablePane.getChildren().add(table);
+        dialog.setDialogContainer(tablePane);
+
+        // set header + search bar
+        HBox headerBox = new HBox();
+        headerBox.setBackground(p.backgroundMainPane);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Text header = new Text(headerText);
+        header.setFont(p.fontHeader);
+        header.setFill(Paint.valueOf("#fafafa"));
+
+        JFXTextField searchField = getTextField("Search by name", root.widthProperty().multiply(0.15));
+
+        JFXButton searchButton = getButton("Go", 35, 30, p.backgroundMainPane, p.colorTextMainButton);
+
+        searchButton.setOnAction(event -> {
+
+            articles.set(uiCon.getSearchableList(types, searchField.getText()));
+            table.setItems(articles.get());
+            table.refresh();
+        });
+
+        headerBox.getChildren().addAll(Arrays.asList(header, spacer, searchField, searchButton));
+
+        // add items to grid
+        setNodeGridPane(grid, Arrays.asList(headerBox, tablePane));
+
+        GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
+
+        return grid;
     }
 
-    TableView<String> viewDisplaySetUp() {
-        TableView<String> table = new TableView<>();
-        table.setBackground(mainBackground);
+    // HELPER/MISC
 
-        return table;
+    //
 
-    }
-
-    VBox vBoxSetup(VBox vBox, Button[] options, String buttonTextColor) {
+    VBox setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
         for (Button item : options) {
-            item.setFont(normalFont);
+            item.setFont(p.fontNormal);
             item.setTextFill(Paint.valueOf(buttonTextColor));
             item.setMinWidth(175);
             item.setMinHeight(35);
@@ -329,16 +499,56 @@ public class Presenter {
         return vBox;
     }
 
-    StackPane notImplemented() {
+    JFXButton getButton(String text, double width, double height, Background background, String textColor) {
+        JFXButton button = new JFXButton(text);
+        button.setPrefWidth(width);
+        button.setPrefHeight(height);
+        button.setAlignment(Pos.CENTER);
+        button.setBackground(background);
+        button.setTextFill(Paint.valueOf(textColor));
+        return button;
+    }
 
-        Text display = new Text("This feature is not yet implemented.");
-        display.setFill(Paint.valueOf("#c7c7c7"));
-        display.setFont(normalFont);
-        StackPane pane = new StackPane();
-        pane.setBackground(mainBackground);
-        pane.getChildren().add(display);
+    Text getTextHeader(String string, String color) {
+        Text text = new Text(string);
+        text.setFont(p.fontHeader);
+        text.setFill(Paint.valueOf(color));
+        return text;
+    }
 
-        return pane;
+    Text getTextNormal(String string, String color) {
+        Text text = new Text(string);
+        text.setFont(p.fontNormal);
+        text.setFill(Paint.valueOf(color));
+        return text;
+    }
+
+    void setPropGridPane(GridPane grid, Insets insets, double hGap) {
+        grid.setBackground(p.backgroundMainPane);
+        grid.setPadding(insets);
+        grid.setHgap(hGap);
+    }
+
+    JFXTextField getTextField(String promptText, double prefWidth) {
+        JFXTextField field = new JFXTextField();
+        field.setPromptText(promptText);
+        field.setPrefWidth(prefWidth);
+        field.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
+        return field;
+    }
+
+    JFXTextField getTextField(String promptText, DoubleBinding prefWidth) {
+        JFXTextField field = new JFXTextField();
+        field.setPromptText(promptText);
+        field.prefWidthProperty().bind(prefWidth);
+        field.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
+        return field;
+    }
+
+    void setNodeGridPane(GridPane grid, List<Node> nodes) {
+        for (int i = 0; i < nodes.size(); i++) {
+            grid.add(nodes.get(i), 0, i);
+        }
     }
 
     boolean saveCreateSettings(String dirInput, String benchInput, String colInput, String itemInput, String recInput, String langInput) {
@@ -380,231 +590,17 @@ public class Presenter {
         return alerted;
     }
 
-    GridPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText) {
+    StackPane notImplemented() {
 
-        // set grid
-        GridPane grid = new GridPane();
-        grid.setBackground(mainBackground);
-        grid.setPadding(new Insets(80, 50, 70, 50));
-        grid.setHgap(20);
+        Text display = new Text("This feature is not yet implemented.");
+        display.setFill(Paint.valueOf("#c7c7c7"));
+        display.setFont(p.fontNormal);
+        StackPane pane = new StackPane();
+        pane.setBackground(p.backgroundMainPane);
+        pane.getChildren().add(display);
 
-        // set up StackPane to hold dialog box and TableView
-        StackPane tablePane = new StackPane();
-
-        // set dialog
-        JFXDialogLayout dialogLayout = new JFXDialogLayout();
-        JFXDialog dialog = new JFXDialog(tablePane, dialogLayout, JFXDialog.DialogTransition.CENTER);
-
-        // set table
-        TableView<UIController.Searchable> table = new TableView<>();
-        AtomicReference<ObservableList<UIController.Searchable>> articles = new AtomicReference<>(uiCon.getSearchableList(types, ""));
-
-        table.setStyle("-fx-box-border: #1B1B1B;");
-        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
-        table.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
-        table.getStyleClass().add("table-view");
-
-        TableColumn<UIController.Searchable, String> nameCol = new TableColumn<>("Name");
-        TableColumn<UIController.Searchable, String> rPathCol = new TableColumn<>("Relative path");
-        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
-//        nameCol.setResizable(false);
-        rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.5999));
-//        rPathCol.setResizable(false);
-
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        rPathCol.setCellValueFactory(new PropertyValueFactory<>("rPath"));
-
-        table.setRowFactory(view -> {
-            TableRow<UIController.Searchable> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
-                    TablePosition pos = table.getSelectionModel().getSelectedCells().get(0);
-                    int selectedRow = pos.getRow();
-
-                    UIController.Searchable article = table.getItems().get(selectedRow);
-
-                    VBox content;
-                    if (article.getRPath().contains("item")) {
-                        content = uiCon.getItemContent(article.getRPath());
-                    } else if (article.getRPath().contains("collection")) {
-                        content = uiCon.getCollectionContent(article.getRPath());
-                    } else {
-                        content = uiCon.getBenchContent(article.getRPath());
-                    }
-
-
-                    JFXButton button = new JFXButton("Close");
-                    buttonSetup(button, 60);
-                    button.setOnAction(event1 -> dialog.close());
-
-                    dialogLayout.setHeading(new Text(article.getName()));
-                    dialogLayout.setBody(content);
-                    dialogLayout.setActions(button);
-                    dialog.show();
-                }
-            });
-            return row;
-        });
-
-        table.setItems(articles.get());
-        table.getColumns().setAll(nameCol, rPathCol);
-
-        tablePane.getChildren().add(table);
-        dialog.setDialogContainer(tablePane);
-
-        // set header + search bar
-        HBox headerBox = new HBox();
-        headerBox.setBackground(mainBackground);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Text header = new Text(headerText);
-        header.setFont(sectionFont);
-        header.setFill(Paint.valueOf("#fafafa"));
-
-        JFXTextField searchField = new JFXTextField();
-        searchField.setPromptText("Search by name");
-        searchField.prefWidthProperty().bind(root.widthProperty().multiply(0.15));
-        searchField.setFocusColor(Paint.valueOf("#c7c7c7"));
-
-        JFXButton searchButton =  new JFXButton();
-        searchButton.setText("Go");
-        searchButton.setPrefWidth(35);
-        searchButton.setPrefHeight(30);
-        searchButton.setAlignment(Pos.CENTER);
-        searchButton.setBackground(mainBackground);
-        searchButton.setTextFill(Paint.valueOf("#424242"));
-
-        searchButton.setOnAction(event -> {
-
-            articles.set(uiCon.getSearchableList(types, searchField.getText()));
-            table.setItems(articles.get());
-            table.refresh();
-        });
-
-        headerBox.getChildren().addAll(Arrays.asList(header, spacer, searchField, searchButton));
-
-
-
-        // add items to grid
-        grid.add(headerBox, 0, 0);
-        grid.add(tablePane, 0, 1);
-
-        GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
-
-        return grid;
+        return pane;
     }
-
-    GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
-
-        StackPane currPane = new StackPane();
-        currPane.setBackground(mainBackground);
-
-        // clears previous saved paths
-        uiCon.clearParseList();
-
-        // update dirView to show the directory
-        boolean isCollection = type == Parser.ObjectType.COLLECTION;
-        dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter, isCollection));
-        dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
-        dirView.getStyleClass().add("dir-view");
-        dirView.setStyle("-fx-box-border: #1B1B1B;");
-        dirView.setEditable(true);
-        dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
-        dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
-
-        // put dirView into the StackPane
-        currPane.getChildren().add(dirView);
-
-        // create header
-        String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
-        Text headerText = new Text("Parse " + type + plural);
-        headerText.setFont(sectionFont);
-        headerText.setFill(Paint.valueOf("#fafafa"));
-
-        // create progress bar and status text
-        JFXProgressBar progressBar = new JFXProgressBar();
-        progressBar.getStyleClass().add("jfx-progress-bar");
-        progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.6));
-        progressBar.setProgress(0);
-
-        final Text progressText = new Text("Status");
-        progressText.setFont(Font.font("Roboto Medium", 11));
-        progressText.setFill(Paint.valueOf("#C7C7C7"));
-
-        VBox progressBox = new VBox();
-        progressBox.setAlignment(Pos.BOTTOM_LEFT);
-        progressBox.getChildren().add(progressText);
-        progressBox.getChildren().add(progressBar);
-        progressBox.prefHeightProperty().bind(root.heightProperty().multiply(0.005));
-
-        // create button to start parsing - needs to show dialog box when there are failed files
-        JFXButton startParse = new JFXButton("Parse");
-        buttonSetup(startParse, 60);
-        startParse.setOnAction(event -> {
-
-            // add button
-            Task<Void> task = uiCon.getParseTask(type);
-            progressBar.progressProperty().bind(task.progressProperty());
-            progressText.textProperty().bind(task.messageProperty());
-
-            // adds background thread that runs the task, and shows the dialog box after the task is done
-            Thread thread = new Thread(() -> {
-                task.run();
-
-                Platform.runLater(() -> {
-                    if (!uiCon.getFailedPaths().isEmpty()) {
-                        JFXDialogLayout dialogLayout = new JFXDialogLayout();
-                        JFXDialog dialog = new JFXDialog(currPane, dialogLayout, JFXDialog.DialogTransition.CENTER);
-
-                        JFXButton button = new JFXButton("Close");
-                        buttonSetup(button, 60);
-                        button.setOnAction(event1 -> dialog.close());
-
-                        dialogLayout.setHeading(new Text("Incomplete parsing"));
-                        dialogLayout.setBody(uiCon.getFailedContent());
-                        dialogLayout.setActions(button);
-
-                        dialog.show();
-                    }
-                });
-            });
-            thread.start();
-
-
-        });
-
-        VBox buttonBox = new VBox();
-        buttonBox.getChildren().add(startParse);
-        buttonBox.setPrefHeight(35);
-
-        // set up the grid
-        GridPane grid = new GridPane();
-//        grid.setGridLinesVisible(true); // debug
-        grid.setBackground(mainBackground);
-        grid.setPadding(new Insets(80, 50, 20, 50));
-
-        grid.add(headerText, 0, 0);
-        grid.add(currPane, 0, 1);
-        grid.add(buttonBox, 0, 2);
-        grid.add(progressBox, 0, 3);
-
-        GridPane.setMargin(currPane, new Insets(30, 30, 30, 0));
-        GridPane.setMargin(progressBox, new Insets(35, 30, 10, 0));
-
-        return grid;
-    }
-
-    void buttonSetup(JFXButton button, int buttonWidth) {
-        button.setPrefWidth(buttonWidth);
-        button.setPrefHeight(35);
-        button.setAlignment(Pos.CENTER);
-        button.setBackground(buttonBackground);
-
-    }
-
-
 
 
 }

@@ -79,19 +79,17 @@ public class View extends Application {
         mainNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
 
         JFXButton createBtn = new JFXButton("Create");
-        JFXButton modifyBtn = new JFXButton("Modify");
-        JFXButton viewBtn = new JFXButton("View");
+        JFXButton viewBtn = new JFXButton("View/Modify");
         JFXButton syncBtn = new JFXButton("Synchronize");
 
-        Button[] options = new Button[] {createBtn, modifyBtn, viewBtn, syncBtn};
+        Button[] options = new Button[] {createBtn, viewBtn, syncBtn};
 
-        pr.vBoxSetup(mainNav, options, "#fafafa");
+        pr.setPropVBox(mainNav, options, "#fafafa");
 
         // sub-VBox 2
         VBox typeNav = new VBox();
 
         createBtn.setOnAction(event -> pr.callCreate(root, nav, mainNav));
-        modifyBtn.setOnAction(event -> pr.callModify(root, nav, mainNav));
         viewBtn.setOnAction(event -> pr.callView(root, nav, mainNav));
         syncBtn.setOnAction(event -> pr.callSync(root, nav, mainNav));
 
