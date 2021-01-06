@@ -153,7 +153,7 @@ public class Presenter {
         // button actions
         addBtn.setOnAction(event -> root.setCenter(notImplemented()));
         removeBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        syncBtn.setOnAction(event -> root.setCenter(notImplemented()));
+        syncBtn.setOnAction(event -> root.setCenter(setSyncPane(root)));
 
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
 
@@ -344,7 +344,7 @@ public class Presenter {
 
     // VIEW-RELATED
 
-    GridPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
+    StackPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
 
         // set up grid
         GridPane grid = new GridPane();
@@ -441,8 +441,6 @@ public class Presenter {
             table.getColumns().setAll(nameCol, rPathCol);
         }
 
-
-        tablePane.getChildren().add(table);
         dialog.setDialogContainer(tablePane);
 
         // set header + search bar
@@ -452,9 +450,7 @@ public class Presenter {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Text header = new Text(headerText);
-        header.setFont(p.fontHeader);
-        header.setFill(Paint.valueOf("#fafafa"));
+        Text header = getTextHeader(headerText, p.colorTextHeader);
 
         JFXTextField searchField = getTextField("Search by name", root.widthProperty().multiply(0.15));
 
@@ -470,9 +466,25 @@ public class Presenter {
         headerBox.getChildren().addAll(Arrays.asList(header, spacer, searchField, searchButton));
 
         // add items to grid
-        setNodeGridPane(grid, Arrays.asList(headerBox, tablePane));
+        setNodeGridPane(grid, Arrays.asList(headerBox, table));
 
         GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
+
+        tablePane.getChildren().add(grid);
+
+        return tablePane;
+    }
+
+    // SYNC-RELATED
+
+    GridPane setSyncPane(BorderPane root) {
+        GridPane grid = new GridPane();
+        setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
+
+        JFXButton button = getButton("Serialize", 100, 100, p.backgroundMainButton, p.colorTextMainButton);
+        button.setOnAction(e -> uiCon.save());
+
+        grid.add(button, 0, 0);
 
         return grid;
     }
@@ -602,5 +614,7 @@ public class Presenter {
         return pane;
     }
 
-
+    public void initSetUp() {
+        uiCon.initSetUp();
+    }
 }

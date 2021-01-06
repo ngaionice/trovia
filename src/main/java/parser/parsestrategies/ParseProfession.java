@@ -10,7 +10,7 @@ import java.util.*;
 public class ParseProfession implements ParseStrategy{
 
     @Override
-    public Article parseObject(String splitString, String absPath) {
+    public Article parseObject(String splitString, String absPath) throws ParseException {
 
         Markers m = new Markers();
 

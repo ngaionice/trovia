@@ -1,5 +1,6 @@
 package controllers;
 
+import gateways.SerGateway;
 import managers.*;
 import objects.*;
 import objects.Collection;
@@ -14,13 +15,14 @@ import java.util.stream.Collectors;
 public class LogicController {
 
     Scanner sc = new Scanner(System.in);
-    BenchManager benchM = new BenchManager();
-    CollectionManager colM = new CollectionManager();
-    ItemManager itemM = new ItemManager();
-    LanguageManager langM = new LanguageManager();
-    RecipeManager recM = new RecipeManager();
+    BenchManager benchM;
+    CollectionManager colM;
+    ItemManager itemM;
+    LanguageManager langM;
+    RecipeManager recM;
     Parser p = new Parser();
     TextPresenter pr = new TextPresenter();
+    SerGateway gateway = new SerGateway();
 
     // create objects:
 
@@ -333,5 +335,21 @@ public class LogicController {
 
     List<String> getNotes(String rPath) {
         return colM.getNotes(rPath);
+    }
+
+    void save() {
+        gateway.exportManager("bench.ser", benchM);
+        gateway.exportManager("collection.ser", colM);
+        gateway.exportManager("item.ser", itemM);
+        gateway.exportManager("language.ser", langM);
+        gateway.exportManager("recipe.ser", recM);
+    }
+
+    void setManagers() {
+        benchM = (BenchManager) gateway.importManager("bench.ser");
+        colM = (CollectionManager) gateway.importManager("collection.ser");
+        itemM = (ItemManager) gateway.importManager("item.ser");
+        langM = (LanguageManager) gateway.importManager("language.ser");
+        recM = (RecipeManager) gateway.importManager("recipe.ser");
     }
 }

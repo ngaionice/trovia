@@ -11,6 +11,7 @@ public class ParseBench implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
+        System.out.println("Parsing " + absPath);
         Markers m = new Markers();
         List<List<String>> categoryList = new ArrayList<>();
         ParseHelper helper = new ParseHelper();
@@ -23,16 +24,23 @@ public class ParseBench implements ParseStrategy {
         if (occ == 2) {
             int rangeStart = splitString.indexOf(m.prefab);
             int rangeEnd = splitString.substring(rangeStart + 24).indexOf(m.prefab)+rangeStart;
+
             String substring = splitString.substring(rangeStart, rangeEnd);
             String dirtyStationName = splitString.substring(rangeEnd);
+
             if (dirtyStationName.contains("20")) {
                 String stationNameUntrimmed = dirtyStationName.substring(0, dirtyStationName.indexOf("20"));
+                if (!stationNameUntrimmed.contains("24 70 72")) {
+                    throw new ParseException("Bench name at " + absPath + " has a non-standard format.");
+                }
                 String stationNameTrimmed = stationNameUntrimmed.substring(stationNameUntrimmed.indexOf("24 70 72"));
                 categoryList.add(Collections.singletonList(Parser.hexToAscii(stationNameTrimmed)));
             } else {
                 System.out.println("No crafting station name was found for "+absPath+".");
             }
+
             categoryList.add(helper.parseHelper(substring, absPath, m.prefab));
+
         }
 
         // more than 1 category
@@ -52,8 +60,7 @@ public class ParseBench implements ParseStrategy {
 
         // non-standard format, not handled by this function
         else {
-            System.out.println("Less than 2 '$prefab's were found for" + absPath + ".");
-            throw new ParseException("Bench format not handled by ParseBench.");
+            throw new ParseException("Less than 2 '$prefab's were found for" + absPath + ".");
         }
 
         // creating the Bench object
@@ -68,7 +75,7 @@ public class ParseBench implements ParseStrategy {
             }
 
             String[] categoryName = new String[] {Integer.toString(i), currCat.get(0)};
-            List<String> recipes = currCat.subList(1,currCat.size());
+            List<String> recipes = new ArrayList<>(currCat.subList(1,currCat.size()));
 
             categories.put(categoryName, recipes);
         }

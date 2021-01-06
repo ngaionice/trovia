@@ -354,4 +354,12 @@ public class UIController {
     Text[] switchHelper(String desc, String value, VBox box) {
         return new Text[] {createSubHeaderText(desc, box), createContentText(value, box)};
     }
+
+    public void initSetUp() {
+        con.setManagers();
+    }
+
+    public void save() {
+        con.save();
+    }
 }

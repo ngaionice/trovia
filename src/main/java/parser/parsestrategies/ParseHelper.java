@@ -15,7 +15,7 @@ public class ParseHelper {
      * @param unparsed substring containing category name and recipe names
      * @return a list of strings, with index 0 being the category name and all other indices being recipe file paths
      */
-    List<String> parseHelper(String unparsed, String path, String catMarker) {
+    List<String> parseHelper(String unparsed, String path, String catMarker) throws ParseException {
         Markers m = new Markers();
         List<String> recipes = new ArrayList<>();
 
@@ -64,12 +64,12 @@ public class ParseHelper {
                     }
                     recipes.set(i, processing.substring(0, lastIndex));
                 } else {
-                    System.out.println("Recipe clean-up failed at "+path+".");
+                    throw new ParseException("Recipe clean-up failed at "+path+".");
                 }
             }
 
         } else {
-            System.out.println("No end character was identified at " + path + ".");
+            throw new ParseException("No end character was identified at " + path + ".");
         }
         return recipes;
     }
