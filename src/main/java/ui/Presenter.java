@@ -8,10 +8,12 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.css.CssMetaData;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import ui.searchables.Searchable;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -675,7 +677,7 @@ public class Presenter {
         JFXButton recipe = new JFXButton("Get recipes");
 
         // collections only
-        JFXButton mastery = new JFXButton("Edit mastery");
+        JFXButton mastery = new JFXButton("Set mastery");
 
         // items only
         JFXButton lootbox = new JFXButton("Add lootbox content");
@@ -696,8 +698,14 @@ public class Presenter {
 
         // button configs
         selected.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths)));
+
         notes.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddNotes(rPaths)));
         recipe.setOnAction(e -> dialogRoot.setCenter(getDialogPaneMatchRecipes()));
+
+        mastery.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetMastery(rPaths)));
+
+        name.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetBench(rPaths)));
+
 
         // control the pane based on buttons pressed
         dialogRoot.setLeft(getEditSideBar(root, options));
@@ -726,34 +734,51 @@ public class Presenter {
 
     GridPane getDialogPaneSelectedObjects(List<String> rPaths) {
         GridPane grid = new GridPane();
-        grid.setPadding(new Insets(0, 0, 0, 10));
 
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(10);
+        grid.setMinWidth(500);
+
+        Text header = getTextSubHeader("Currently selected objects:", p.colorTextDialogButton);
         Text texts = new Text(String.join("\n", rPaths));
-        grid.add(texts, 0, 0);
-        grid.setMinWidth(500);
+        grid.add(header, 0, 0);
+        grid.add(texts, 0, 1);
 
         return grid;
     }
 
-    GridPane getDialogPaneAddNotes(List<String> rPaths) {
+    StackPane getDialogPaneAddNotes(List<String> rPaths) {
+        StackPane root = new StackPane();
+        AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
+        anchor.getChildren().add(grid);
+
         grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(15);
+        grid.setVgap(10);
         grid.setMinWidth(500);
 
-        JFXTextField noteField = getTextField("Enter note here", 350);
-        JFXButton save = getButton("Save", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
+        JFXTextField noteField = getTextField("e.g. Hexion needs these", 350);
+        JFXButton save = new JFXButton("Save");
         save.setOnAction(e -> uiCon.addNotes(rPaths, noteField.getText()));
+        save.getStyleClass().add("animated-option-button");
 
+        grid.add(getTextSubHeader("Note to be added:", p.colorTextDialogButton), 0, 0);
+        grid.add(noteField, 0, 1);
+        grid.add(getTextNormal("Note that this note is added to every selected object.", p.colorTextDialogButton), 0, 2);
 
-        grid.add(getTextSubHeader("Add notes to selected objects", p.colorTextDialog), 0, 0);
-        grid.add(getTextNormal("Note that this note is added to every selected object.", p.colorTextDialog), 0, 1);
-        grid.add(noteField, 0, 2);
-        grid.add(save, 0, 3);
+        JFXNodesList fab = new JFXNodesList();
+        fab.addAnimatedNode(save);
 
-        return grid;
+        anchor.getChildren().add(fab);
+        AnchorPane.setRightAnchor(fab, 25.0);
+        AnchorPane.setBottomAnchor(fab, 15.0);
+
+        root.getChildren().add(anchor);
+
+        return root;
     }
 
+    // TODO: add button to start instead of starting directly; or move it elsewhere
     GridPane getDialogPaneMatchRecipes() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(0, 0, 0, 10));
@@ -770,6 +795,175 @@ public class Presenter {
         grid.setMinWidth(500);
 
         return grid;
+    }
+
+    StackPane getDialogPaneSetMastery(List<String> rPaths) {
+        StackPane root = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = new GridPane();
+        anchor.getChildren().add(grid);
+
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(10);
+        grid.setMinWidth(500);
+
+        JFXTextField trove = getTextField("Example: 250", 250);
+        JFXTextField geode = getTextField("Leave blank if not applicable", 250);
+
+        grid.add(getTextSubHeader("Trove Mastery:", p.colorTextDialogButton), 0, 0);
+        grid.add(trove, 0, 1);
+        grid.add(getTextSubHeader("Geode Mastery:", p.colorTextDialogButton), 0, 2);
+        grid.add(geode, 0, 3);
+        grid.add(getTextNormal("Note that input have to be positive integers; leave blank if not applicable.", p.colorTextDialogButton), 0 ,4);
+
+        JFXButton save = new JFXButton("Save");
+        JFXSnackbar confirm = new JFXSnackbar(root);
+
+        save.setOnAction(e -> {
+
+            // behavior: save when all inputs are valid
+            boolean status = true;
+            String intRegex = "\\d+";
+            if (((!trove.getText().isEmpty() && trove.getText().matches(intRegex)) || trove.getText().isEmpty()) &&
+                    ((!geode.getText().isEmpty() && geode.getText().matches(intRegex)) || geode.getText().isEmpty())) {
+                for (String collection: rPaths) {
+                    if (!trove.getText().isEmpty()) {
+                        uiCon.setTroveMastery(collection, Integer.parseInt(trove.getText()));
+                    }
+                    if (!geode.getText().isEmpty()) {
+                        uiCon.setGeodeMastery(collection, Integer.parseInt(geode.getText()));
+                    }
+                }
+                trove.clear();
+                geode.clear();
+            } else {
+                if (!trove.getText().isEmpty() && !trove.getText().matches(intRegex)) {
+                    trove.setUnFocusColor(Paint.valueOf(p.colorTextFieldError));
+                }
+                if (!geode.getText().isEmpty() && !geode.getText().matches(intRegex)) {
+                    geode.setUnFocusColor(Paint.valueOf(p.colorTextFieldError));
+                }
+                status = false;
+            }
+
+            String text = status ? "Saved" : "Invalid input(s), try again";
+
+            HBox textBox = new HBox();
+            textBox.getChildren().add(getTextSubHeader(text, p.colorTextDialogButton));
+            textBox.setAlignment(Pos.CENTER_LEFT);
+            textBox.setMinWidth(300);
+            textBox.setMinHeight(35);
+            textBox.setPadding(new Insets(0, 20, 0, 20));
+
+            JFXSnackbar.SnackbarEvent confirmEvent = new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
+            confirm.enqueue(confirmEvent);
+        });
+        save.getStyleClass().add("animated-option-button");
+
+        JFXNodesList fab = new JFXNodesList();
+        fab.addAnimatedNode(save);
+
+        anchor.getChildren().add(fab);
+        AnchorPane.setRightAnchor(fab, 25.0);
+        AnchorPane.setBottomAnchor(fab, 15.0);
+
+        root.getChildren().add(anchor);
+
+        return root;
+    }
+
+    StackPane getDialogPaneSetBench(List<String> rPaths) {
+        StackPane root = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = new GridPane();
+        anchor.getChildren().add(grid);
+
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(10);
+        grid.setMinWidth(500);
+
+        JFXComboBox<String> choices = new JFXComboBox<>();
+        TextField field = choices.getEditor();
+
+        choices.setEditable(true);
+        choices.setPrefWidth(300);
+        choices.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
+
+        JFXAutoCompletePopup<String> autoCompletePopup = new JFXAutoCompletePopup<>();
+        autoCompletePopup.setPrefWidth(300);
+        autoCompletePopup.setFixedCellSize(32);
+//        for (CssMetaData item: choices.getCssMetaData()) {
+//            System.out.println(item);
+//        }
+
+        Map<String, String> benchEntries = uiCon.getALlStringsFromFile("languages/en/prefabs_placeable_crafting");
+        List<String> keys = benchEntries.keySet().stream().filter(value -> value.contains("name")).collect(Collectors.toList());
+
+        // TODO: optimize code here to remove items from map instead of copying?
+        Map<String, String> benchNames = new HashMap<>(200);
+        for (String key: benchEntries.keySet()) {
+            if (keys.contains(key)) {
+                benchNames.put(key, benchEntries.get(key));
+            }
+        }
+
+        // set up auto-complete
+        autoCompletePopup.setSelectionHandler(event -> choices.setValue(event.getObject()));
+        field.textProperty().addListener(observable -> {
+            autoCompletePopup.filter(string -> string.toLowerCase().contains(field.getText().toLowerCase()));
+            if (autoCompletePopup.getFilteredSuggestions().isEmpty() || choices.showingProperty().get() || !choices.focusedProperty().get()) {
+                autoCompletePopup.hide();
+            } else {
+                autoCompletePopup.show(field);
+            }
+        });
+
+        // add values to auto-complete and combobox
+        autoCompletePopup.getSuggestions().addAll(benchNames.values());
+        choices.getItems().addAll(benchNames.values());
+
+        // set up save button
+        JFXButton save = new JFXButton("Save");
+        JFXSnackbar confirm = new JFXSnackbar(root);
+        save.setOnAction(event -> {
+            String identifier = benchEntries.entrySet().stream()
+                    .filter(e -> e.getValue().equals(field.getText()))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(null);
+
+            // can't be null, since we are picking from combo box
+            for (String rPath: rPaths) {
+                uiCon.setBenchName(rPath, identifier);
+            }
+
+            HBox textBox = new HBox();
+            textBox.getChildren().add(getTextSubHeader("Saved", p.colorTextDialogButton));
+            textBox.setAlignment(Pos.CENTER_LEFT);
+            textBox.setMinWidth(300);
+            textBox.setMinHeight(35);
+            textBox.setPadding(new Insets(0, 20, 0, 20));
+
+            JFXSnackbar.SnackbarEvent confirmEvent = new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
+            confirm.enqueue(confirmEvent);
+
+        });
+
+        save.getStyleClass().add("animated-option-button");
+
+        JFXNodesList fab = new JFXNodesList();
+        fab.addAnimatedNode(save);
+
+        anchor.getChildren().add(fab);
+        AnchorPane.setRightAnchor(fab, 25.0);
+        AnchorPane.setBottomAnchor(fab, 15.0);
+
+        grid.add(getTextSubHeader("Add name to bench", p.colorTextDialogButton), 0, 0);
+        grid.add(choices, 0, 1);
+
+        root.getChildren().add(anchor);
+
+        return root;
     }
 
 }

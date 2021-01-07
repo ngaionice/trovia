@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 public class LogicController {
 
-    Scanner sc = new Scanner(System.in);
     BenchManager benchM;
     CollectionManager colM;
     ItemManager itemM;
@@ -137,6 +136,10 @@ public class LogicController {
         }
     }
 
+    void setBenchName(String rPath, String identifier) {
+        benchM.setName(rPath, identifier);
+    }
+
     /**
      * Match all newly-added Recipes to their respective Items and Collections. Returns a list of failed recipes, or null if all recipes were matched.
      */
@@ -171,6 +174,14 @@ public class LogicController {
         } else {
             return failed;
         }
+    }
+
+    void setTroveMastery(String rPath, int mastery) {
+        colM.setTroveMR(rPath, mastery);
+    }
+
+    void setGeodeMastery(String rPath, int mastery) {
+        colM.setGeodeMR(rPath, mastery);
     }
 
     // FILE MANAGEMENT
@@ -269,28 +280,6 @@ public class LogicController {
         return entryList;
     }
 
-    // GENERAL
-
-    /**
-     * Get string input from user.
-     *
-     * @return the string inputted by the user
-     */
-    private String getInput() {
-        pr.promptInput("new note");
-        boolean confirmed = false;
-        String text;
-        do {
-            text = sc.nextLine();
-            pr.confirmInput(text);
-            String confirm = sc.nextLine();
-            if (confirm.equals("y")) {
-                confirmed = true;
-            }
-        } while (!confirmed);
-        return text;
-    }
-
     // RELAYING MODULES
 
     String getItemDesc(String rPath) {
@@ -331,7 +320,7 @@ public class LogicController {
         return benchM.getAllRecipes(rPath);
     }
 
-    Map<CollectionEnums.Property, Double> getCollectionProp(String rPath) {
+    Map<CollectionEnums.Property, Double> getCollectionProperties(String rPath) {
         return colM.getProperties(rPath);
     }
 
@@ -339,7 +328,7 @@ public class LogicController {
         return colM.getBuffs(rPath);
     }
 
-    Integer[] getMastery(String rPath) {
+    Integer[] getCollectionMastery(String rPath) {
         return colM.getMastery(rPath);
     }
 
@@ -382,4 +371,9 @@ public class LogicController {
         }
         return "Not available.";
     }
+
+    Map<String, String> getAllStringsFromFile(String rPath) {
+         return langM.getAllFileStrings(rPath);
+    }
+
 }

@@ -1,5 +1,6 @@
 package controllers;
 
+import com.jfoenix.controls.JFXTextArea;
 import objects.CollectionEnums;
 import ui.DesignProperties;
 import ui.searchables.Searchable;
@@ -168,7 +169,7 @@ public class UIController {
         content.getChildren().add(createSubHeaderText("Relative path:", content));
         content.getChildren().add(createContentText(rPath, content));
 
-        Map<CollectionEnums.Property, Double> colProp = con.getCollectionProp(rPath);
+        Map<CollectionEnums.Property, Double> colProp = con.getCollectionProperties(rPath);
         Map<CollectionEnums.Buff, Double> buffs = con.getDragonBuffs(rPath);
 
         if (!colProp.isEmpty()) {
@@ -187,7 +188,7 @@ public class UIController {
             }
         }
 
-        Integer[] mastery = con.getMastery(rPath);
+        Integer[] mastery = con.getCollectionMastery(rPath);
         content.getChildren().add(createSubHeaderText("Trove Mastery: ", content));
         content.getChildren().add(createContentText(mastery[0].toString(), content));
 
@@ -218,7 +219,7 @@ public class UIController {
         VBox content = getContentBox();
 
         content.getChildren().add(createSubHeaderText("Recipes in bench:", content));
-        content.getChildren().add(new TextArea(String.join(" \n", con.getBenchRecipes(rPath))));
+        content.getChildren().add(new JFXTextArea(String.join(" \n", con.getBenchRecipes(rPath))));
 
         content.getChildren().add(createSubHeaderText("Relative path:", content));
         content.getChildren().add(createContentText(rPath, content));
@@ -396,5 +397,21 @@ public class UIController {
             return output;
         }
         return null;
+    }
+
+    public void setTroveMastery(String rPath, int mastery) {
+        con.setTroveMastery(rPath, mastery);
+    }
+
+    public void setGeodeMastery(String rPath, int mastery) {
+        con.setGeodeMastery(rPath, mastery);
+    }
+
+    public void setBenchName(String rPath, String identifier) {
+        con.setBenchName(rPath, identifier);
+    }
+
+    public Map<String, String> getALlStringsFromFile(String rPath) {
+        return con.getAllStringsFromFile(rPath);
     }
 }

@@ -150,6 +150,14 @@
     -fx-background-color: #424242;
 }
 
+.jfx-snackbar-content {
+    -fx-background-color: #EEEEEE;
+}
+
+.jfx-snackbar-toast {
+    -fx-text-fill: #000000;
+}
+
 .text-area {
     -fx-background-insets: 0;
     -fx-background-color: transparent, white, transparent, white;
@@ -159,4 +167,33 @@
 .text-area:focused {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
+}
+
+.animated-option-button {
+    -fx-background-color: #FF9800;
+    -fx-background-radius: 50px;
+    -fx-pref-height: 50px;
+    -fx-pref-width: 50px;
+    -fx-min-width: -fx-pref-width;
+    -fx-max-width: -fx-pref-width;
+    -fx-min-height: -fx-pref-height;
+    -fx-max-height: -fx-pref-height;
+    -jfx-button-type: RAISED;
+
+}
+.animated-option-button .jfx-rippler{
+    -jfx-rippler-fill: rgb(113, 118, 114);
+}
+
+.combo-box .list-cell:filled:hover {
+    -fx-background-color: #FF9800;
+}
+
+.jfx-autocomplete-popup .list-cell:filled:selected {
+    -fx-background-color: #FF9800;
+}
+
+/*Change cells of autocomplete popup*/
+.jfx-autocomplete-popup .list-cell {
+    -fx-background-color: #FFFFFF;
 }

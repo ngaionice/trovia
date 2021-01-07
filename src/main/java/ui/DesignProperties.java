@@ -27,6 +27,7 @@ public class DesignProperties {
     public String colorTextDialogButton = "#1B1B1B";
 
     public String colorTextFieldFocus = "#FF9800";
+    public String colorTextFieldError = "#F44336";
 
     // BACKGROUNDS
 

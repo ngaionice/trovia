@@ -81,6 +81,10 @@ public class LanguageManager implements Manager, Serializable {
         return null;
     }
 
+    public Map<String, String> getAllFileStrings(String rPath) {
+        return langFileMap.get(rPath).getStrings();
+    }
+
     public Map<String, String> getAllStrings() {
         return stringsMap;
     }
