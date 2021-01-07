@@ -1,7 +1,5 @@
 package controllers;
 
-import com.jfoenix.controls.JFXTreeView;
-import managers.*;
 import objects.CollectionEnums;
 import ui.DesignProperties;
 import ui.searchables.Searchable;
@@ -19,13 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class UIController {
 
     LogicController con = new LogicController();
-    DesignProperties dp = new DesignProperties();
+    DesignProperties dp;
 
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
@@ -33,6 +30,10 @@ public class UIController {
     List<String> selectedArticles = new ArrayList<>();
 
     // CREATE-RELATED
+
+    public UIController(DesignProperties p) {
+        this.dp = p;
+    }
 
     public List<String> getPaths(String dirPath, String filter) {
         return con.filterOutWithout(con.getPaths(con.getFiles(dirPath)), filter);
@@ -123,17 +124,34 @@ public class UIController {
         VBox content = getContentBox();
 
         // will need to get more items from LogicController later as we add more properties
-        content.getChildren().add(new Text("Description:"));
-        TextArea desc = new TextArea(con.getItemDesc(rPath));
-        desc.setWrapText(true);
-        desc.setPrefHeight(content.getHeight()*0.2);
-        content.getChildren().add(desc);
+        content.getChildren().add(createSubHeaderText("Description:", content));
+        if (con.getItemDesc(rPath) != null) {
+            content.getChildren().add(createContentText(con.getItemDesc(rPath), content));
+        } else {
+            content.getChildren().add(createContentText("Not available.", content));
+        }
 
-        content.getChildren().add(new Text("Description identifer:"));
-        content.getChildren().add(new Text(con.getItemDescIdentifier(rPath)));
 
-        content.getChildren().add(new Text("Relative path:"));
-        content.getChildren().add(new Text(rPath));
+        content.getChildren().add(createSubHeaderText("Description identifer:", content));
+        content.getChildren().add(createContentText(con.getItemDescIdentifier(rPath), content));
+
+        content.getChildren().add(createSubHeaderText("Relative path:", content));
+        content.getChildren().add(createContentText(rPath, content));
+
+        if (con.getItemRecipes(rPath) != null) {
+            content.getChildren().add(createSubHeaderText("Recipes: ", content));
+            for (String item: con.getItemRecipes(rPath)) {
+                content.getChildren().add(createContentText(item, content));
+            }
+        }
+
+        if (!con.getItemNotes(rPath).isEmpty()) {
+            content.getChildren().add(new Text("Notes:"));
+            for (String identifier: con.getItemNotes(rPath)) {
+                content.getChildren().add(new Text(con.getString(identifier)));
+            }
+        }
+
 
         return content;
     }
@@ -176,17 +194,17 @@ public class UIController {
         content.getChildren().add(createSubHeaderText("Geode Mastery: ", content));
         content.getChildren().add(createContentText(mastery[1].toString(), content));
 
-        if (con.getRecipes(rPath) != null) {
+        if (con.getCollectionRecipes(rPath) != null) {
             content.getChildren().add(createSubHeaderText("Recipes: ", content));
-            for (String item: con.getRecipes(rPath)) {
+            for (String item: con.getCollectionRecipes(rPath)) {
                 content.getChildren().add(createContentText(item, content));
             }
         }
 
-        if (con.getNotes(rPath) != null) {
+        if (con.getCollectionNotes(rPath) != null) {
             content.getChildren().add(createSubHeaderText("Notes: ", content));
-            for (String item: con.getNotes(rPath)) {
-                content.getChildren().add(createContentText(item, content));
+            for (String identifier: con.getCollectionNotes(rPath)) {
+                content.getChildren().add(createContentText(con.getString(identifier), content));
             }
         }
 
@@ -361,5 +379,11 @@ public class UIController {
 
     public void save() {
         con.save();
+    }
+
+    public void addNotes(List<String> rPaths, String note) {
+        for (String item: rPaths) {
+            con.addNotes(item, note);
+        }
     }
 }

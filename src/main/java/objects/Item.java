@@ -79,15 +79,6 @@ public class Item implements Article, Serializable {
     }
 
     /**
-     * Sets isLootbox to the input value.
-     *
-     * @param bool true if this item is a lootbox
-     */
-    public void setLootbox(boolean bool) {
-        this.isLootbox = bool;
-    }
-
-    /**
      * Sets recipe to the input string.
      *
      * @param recipe the file name of the recipe associated to this item
@@ -164,6 +155,13 @@ public class Item implements Article, Serializable {
 
     public String getRPath() {
         return rPath;
+    }
+
+    public List<String> getNotes() {
+        if (notes == null) {
+            return new ArrayList<>();
+        }
+        return notes;
     }
 
     /**

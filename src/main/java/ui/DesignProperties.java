@@ -30,6 +30,9 @@ public class DesignProperties {
 
     // BACKGROUNDS
 
+    public Background backgroundMainSidebar = new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY));
+    public Background backgroundDialogSidebar = new Background(new BackgroundFill(Color.rgb(109,109,109), CornerRadii.EMPTY, Insets.EMPTY));
+
     public Background backgroundMainPane = new Background(new BackgroundFill(Color.rgb(27, 27, 27), CornerRadii.EMPTY, Insets.EMPTY));
     public Background backgroundMainButton = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
 

@@ -34,6 +34,23 @@
     -fx-padding: 1;
 }
 
+.dir-view .check-box:selected > .box {
+    -fx-background-color: #C77800;
+}
+
+.dir-view .check-box:default > .box {
+    -fx-background-color: #EEEEEE;
+}
+
+.dir-view .check-box:selected > .box > .mark,
+.dir-view .check-box:indeterminate  > .box > .mark {
+    -fx-background-color: #EEEEEE;
+}
+
+.table-view {
+    -fx-base: #1B1B1B;
+}
+
 .table-view .column-header,
 .table-view .column-header .filler,
 .table-view .column-header-background .filler {
@@ -47,6 +64,8 @@
 
 .table-view .table-row-cell {
     -fx-background-color: #1B1B1B ;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: #424242;
 }
 
 .table-view:focused {
@@ -64,6 +83,12 @@
 .table-view .column-header .filler,
 .table-view .column-header-background .filler {
     -fx-background-color: #1B1B1B;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-insets: 0 10 1 0;
 }
 
 .table-view:focused .table-row-cell:focused {

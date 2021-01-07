@@ -23,13 +23,14 @@ public class View extends Application {
     int navButtonWidth = 75;
     int viewButtonWidth = 150;
 
-    Presenter pr = new Presenter();
+    DesignProperties p = new DesignProperties();
+    Presenter pr = new Presenter(p);
 
     @Override
     public void start(Stage primaryStage) {
 
-        StackPane root = new StackPane();
-        BorderPane layout = new BorderPane();
+
+        BorderPane root = new BorderPane();
 
         JFXDecorator decorator = new JFXDecorator(primaryStage, root);
         decorator.setCustomMaximize(true);
@@ -37,8 +38,8 @@ public class View extends Application {
 
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        sceneInitSetUp(root, layout);
-        root.getChildren().add(layout);
+        sceneInitSetUp(root);
+
 
         primaryStage.setTitle("Trovia - Database Management");
         primaryStage.setScene(scene);
@@ -49,8 +50,8 @@ public class View extends Application {
         launch(args);
     }
 
-    void sceneInitSetUp(StackPane root, BorderPane layout) {
-        layout.setLeft(navInitSetUp(root, layout));
+    void sceneInitSetUp(BorderPane root) {
+        root.setLeft(navInitSetUp(root));
 
         // set up landing screen
         Text start = new Text("Select an option on the navigation bar to begin.");
@@ -61,24 +62,24 @@ public class View extends Application {
         startPane.setBackground(new Background(new BackgroundFill(Color.rgb(27,27,27), CornerRadii.EMPTY, Insets.EMPTY)));
         startPane.getChildren().add(start);
 
-        layout.setCenter(startPane);
+        root.setCenter(startPane);
 
         // set up dynamic resizing
-        layout.autosize();
+        root.autosize();
     }
 
-    VBox navInitSetUp(StackPane root, BorderPane layout) {
+    VBox navInitSetUp(BorderPane root) {
 
         // the overarching VBox
-        VBox nav = new VBox(70);
-        nav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
-        nav.setPadding(new Insets(70, 0,0,0));
+        VBox nav = new VBox(80);
+        nav.setBackground(p.backgroundMainSidebar);
+        nav.setPadding(new Insets(80, 0,0,0));
 //        nav.prefWidthProperty().bind(root.widthProperty().multiply(0.155));
 
 
         // sub-VBox 1
         VBox mainNav = new VBox();
-        mainNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
+        mainNav.setBackground(p.backgroundMainSidebar);
 
         JFXButton createBtn = new JFXButton("Create");
         JFXButton viewBtn = new JFXButton("View/Modify");
@@ -92,9 +93,9 @@ public class View extends Application {
         // sub-VBox 2
         VBox typeNav = new VBox();
 
-        createBtn.setOnAction(event -> pr.callCreate(layout, nav, mainNav));
-        viewBtn.setOnAction(event -> pr.callView(root, layout, nav, mainNav));
-        syncBtn.setOnAction(event -> pr.callSync(layout, nav, mainNav));
+        createBtn.setOnAction(event -> pr.callCreate(root, nav, mainNav));
+        viewBtn.setOnAction(event -> pr.callView(root, nav, mainNav));
+        syncBtn.setOnAction(event -> pr.callSync(root, nav, mainNav));
 
         // add the VBoxes to the main VBox
         nav.getChildren().addAll(Arrays.asList(mainNav, typeNav));

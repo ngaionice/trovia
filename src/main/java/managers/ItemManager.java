@@ -52,6 +52,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
      * @return language file path of this item's description
      */
     public String getDesc(String rPath) {
+//        if ()
         return itemMap.get(rPath).getDesc();
     }
 
@@ -98,7 +99,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
     }
 
     /**
-     * Returns relative paths of the recipe for crafting this item, and the quantity of the item crafted by recipe. If no such recipe exists, returns null.
+     * Returns relative paths of the recipe for crafting this item. If no such recipe exists, returns null.
      *
      * @param rPath relative path of the item
      * @return relative path of the recipe
@@ -166,9 +167,6 @@ public class ItemManager implements Manager, SearchManager, Serializable {
 
     public void addLootBoxCommon(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
-        if (!item.isLootbox()) {
-            item.setLootbox(true);
-        }
         for (String[] lootable: loot) {
             item.addLootboxCommon(lootable[0], Integer.parseInt(lootable[1]));
         }
@@ -177,9 +175,6 @@ public class ItemManager implements Manager, SearchManager, Serializable {
 
     public void addLootBoxUncommon(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
-        if (!item.isLootbox()) {
-            item.setLootbox(true);
-        }
         for (String[] lootable: loot) {
             item.addLootboxUncommon(lootable[0], Integer.parseInt(lootable[1]));
         }
@@ -188,9 +183,6 @@ public class ItemManager implements Manager, SearchManager, Serializable {
 
     public void addLootBoxRare(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
-        if (!item.isLootbox()) {
-            item.setLootbox(true);
-        }
         for (String[] lootable: loot) {
             item.addLootboxRare(lootable[0], Integer.parseInt(lootable[1]));
         }
@@ -201,5 +193,9 @@ public class ItemManager implements Manager, SearchManager, Serializable {
         Item item = itemMap.get(rPath);
         item.addNotes(notesRPath);
         addMap.put(item.getRPath(), item);
+    }
+
+    public List<String> getNotes(String rPath) {
+        return itemMap.get(rPath).getNotes();
     }
 }

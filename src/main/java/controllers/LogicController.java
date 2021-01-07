@@ -124,12 +124,11 @@ public class LogicController {
      *
      * @param rPath relative path of the item
      */
-    private void addNotes(String rPath) {
+    void addNotes(String rPath, String value) {
         String notesLangFile = "languages/en/prefabs_notes";
 
         // format: $prefab_item_aura_music_01_1
         String key = "$prefab_" + rPath.replaceAll("/", "_") + "_" + langM.getLangFileLength(notesLangFile);
-        String value = getInput();
         langM.addString(notesLangFile, key, value);
         if (rPath.contains("item")) {
             itemM.addNotes(rPath, key);
@@ -141,7 +140,7 @@ public class LogicController {
     /**
      * Match all newly-added Recipes to their respective Items and Collections.
      */
-    private void matchNewRecipes() {
+    void matchNewRecipes() {
         boolean allMatched = true;
         List<String> failed = new ArrayList<>();
         for (String rPath: recM.getNewRPaths()) {
@@ -341,12 +340,20 @@ public class LogicController {
         return colM.getMastery(rPath);
     }
 
-    List<String> getRecipes(String rPath) {
+    List<String> getCollectionRecipes(String rPath) {
         return colM.getRecipe(rPath);
     }
 
-    List<String> getNotes(String rPath) {
+    List<String> getCollectionNotes(String rPath) {
         return colM.getNotes(rPath);
+    }
+
+    List<String> getItemRecipes(String rPath) {
+        return itemM.getRecipe(rPath);
+    }
+
+    List<String> getItemNotes(String rPath) {
+        return itemM.getNotes(rPath);
     }
 
     void save() {
@@ -363,5 +370,13 @@ public class LogicController {
         itemM = (ItemManager) gateway.importManager("item.ser");
         langM = (LanguageManager) gateway.importManager("language.ser");
         recM = (RecipeManager) gateway.importManager("recipe.ser");
+    }
+
+    String getString(String identifier) {
+        String string = langM.getString(identifier);
+        if (string != null && !string.equals("")) {
+            return string;
+        }
+        return "Not available.";
     }
 }

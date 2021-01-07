@@ -7,8 +7,10 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 import ui.searchables.Searchable;
 import javafx.application.Platform;
@@ -35,8 +37,8 @@ import java.util.stream.Collectors;
 
 public class Presenter {
 
-    UIController uiCon = new UIController();
-    DesignProperties p = new DesignProperties();
+    DesignProperties p;
+    UIController uiCon;
     JFXTreeView<String> dirView;
 
     String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
@@ -52,6 +54,11 @@ public class Presenter {
     String langSubPath = "\\languages\\en";
     String profSubPath = "\\prefabs\\professions";
     String recSubPath = "\\prefabs\\recipes";
+
+    public Presenter(DesignProperties p) {
+        this.p = p;
+        uiCon = new UIController(p);
+    }
 
     // NAVIGATION BAR
 
@@ -102,7 +109,7 @@ public class Presenter {
 
     }
 
-    void callView(StackPane root, BorderPane layout, VBox nav, VBox mainNav) {
+    void callView(BorderPane root, VBox nav, VBox mainNav) {
 
         // remove previous nav
         nav.getChildren().clear();
@@ -112,30 +119,28 @@ public class Presenter {
         typeNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
 
         // buttons
-        JFXButton searchBtn = new JFXButton("Search");
-        JFXButton viewAllBtn = new JFXButton("View all");
-        JFXButton itemBtn = new JFXButton("View items");
-        JFXButton colBtn = new JFXButton("View collections");
-        JFXButton recipeBtn = new JFXButton("View benches");
-        JFXButton langBtn = new JFXButton("View language files");
+        JFXButton articles = new JFXButton("All");
+        JFXButton items = new JFXButton("Items");
+        JFXButton collections = new JFXButton("Collections");
+        JFXButton benches = new JFXButton("Benches");
+        JFXButton languages = new JFXButton("Language files");
 
         // button actions
         List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
 
-        searchBtn.setOnAction(event -> layout.setCenter(notImplemented()));
-        viewAllBtn.setOnAction(event -> layout.setCenter(setPaneViewFiles(root, layout, allArticles, "All Articles", false)));
-        itemBtn.setOnAction(event -> layout.setCenter(setPaneViewFiles(root, layout, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true)));
-        colBtn.setOnAction(event -> layout.setCenter(setPaneViewFiles(root, layout, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true)));
-        recipeBtn.setOnAction(event -> layout.setCenter(setPaneViewFiles(root, layout, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", false)));
-        langBtn.setOnAction(event -> layout.setCenter(notImplemented()));
+        articles.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Entries", false)));
+        items.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true)));
+        collections.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true)));
+        benches.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", true)));
+        languages.setOnAction(event -> root.setCenter(notImplemented()));
 
-        Button[] options = new Button[]{searchBtn, viewAllBtn, itemBtn, colBtn, recipeBtn, langBtn};
+        Button[] options = new Button[]{articles, items, collections, benches, languages};
 
         nav.getChildren().add(mainNav);
         nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
 
         // update center table
-        layout.setCenter(setPaneViewFiles(root, layout, allArticles, "All Articles", false));
+        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false));
     }
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
@@ -151,14 +156,14 @@ public class Presenter {
         typeNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
 
         // buttons
-        JFXButton addBtn = new JFXButton("Review new Articles");
-        JFXButton removeBtn = new JFXButton("Review deleted Articles");
+        JFXButton addBtn = new JFXButton("Review new entries");
+        JFXButton removeBtn = new JFXButton("Review deleted entries");
         JFXButton syncBtn = new JFXButton("Update database");
 
         // button actions
         addBtn.setOnAction(event -> root.setCenter(notImplemented()));
         removeBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        syncBtn.setOnAction(event -> root.setCenter(setSyncPane(root)));
+        syncBtn.setOnAction(event -> root.setCenter(setSyncPane()));
 
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
 
@@ -350,15 +355,16 @@ public class Presenter {
 
     // VIEW-RELATED
 
-    StackPane setPaneViewFiles(StackPane root, BorderPane layout, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
+    StackPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
 
         // set up StackPane to hold dialog box and TableView
         StackPane tablePane = new StackPane();
 
         // set up dialog
-        JFXDialogLayout dialogLayout = new JFXDialogLayout();
-        JFXDialog dialog = new JFXDialog(tablePane, dialogLayout, JFXDialog.DialogTransition.CENTER);
-        dialog.setDialogContainer(tablePane);
+        JFXDialogLayout dialogInfoLayout = new JFXDialogLayout();
+        JFXDialog dialogInfo = new JFXDialog(tablePane, dialogInfoLayout, JFXDialog.DialogTransition.CENTER);
+        dialogInfo.setDialogContainer(tablePane);
+        dialogInfo.setStyle("-fx-background-color: #1B1B1BBB");
 
         // set up table and map of selected items
         TableView<Searchable> table = new TableView<>();
@@ -366,9 +372,9 @@ public class Presenter {
 
         table.setEditable(true);
         table.setStyle("-fx-box-border: #1B1B1B;");
-        table.setFixedCellSize(35);
-        table.prefWidthProperty().bind(layout.widthProperty().multiply(0.7));
-        table.prefHeightProperty().bind(layout.heightProperty().multiply(0.7));
+        table.setFixedCellSize(40);
+        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        table.prefHeightProperty().bind(root.heightProperty().multiply(0.7));
 
         // set up listener: remove filtered items from map
         table.getItems().addListener((Change<? extends Searchable> c) -> {
@@ -405,12 +411,12 @@ public class Presenter {
                     }
 
                     JFXButton button = getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
-                    button.setOnAction(event1 -> dialog.close());
+                    button.setOnAction(event1 -> dialogInfo.close());
 
-                    dialogLayout.setHeading(new Text(article.getName()));
-                    dialogLayout.setBody(content);
-                    dialogLayout.setActions(button);
-                    dialog.show();
+                    dialogInfoLayout.setHeading(new Text(article.getName()));
+                    dialogInfoLayout.setBody(content);
+                    dialogInfoLayout.setActions(button);
+                    dialogInfo.show();
                 }
             });
             return row;
@@ -446,8 +452,11 @@ public class Presenter {
             AtomicReference<List<String>> rPathsToEdit = new AtomicReference<>(new ArrayList<>());
             edit.setOnAction(evt -> {
                 rPathsToEdit.set(checkedRows.entrySet().stream().filter(e -> e.getValue().get()).map(Map.Entry::getKey)
-                        .map(Searchable::getName).collect(Collectors.toList()));
+                        .map(Searchable::getRPath).collect(Collectors.toList()));
                 rPathsToEdit.get().forEach(System.out::println);
+                JFXDialog dialogEdit = getEditPane(tablePane, rPathsToEdit.get(), types.get(0));
+
+                dialogEdit.show();
             });
         } else {
             table.getColumns().setAll(Arrays.asList(nameCol, rPathCol));
@@ -455,16 +464,20 @@ public class Presenter {
 
         // get and set content
         ObservableList<Searchable> articles = uiCon.getSearchableList(types, "");
-        FilteredList<Searchable> filtered = new FilteredList<>(articles, p -> true);
+        FilteredList<Searchable> filtered = new FilteredList<>(articles, p -> true);    // allows filtering
+        SortedList<Searchable> sortable = new SortedList<>(filtered);
 
         // set up search
-        JFXTextField searchField = getTextField("Search by name", layout.widthProperty().multiply(0.6));
+        String currType = types.size() != 1 ? "entries" : types.get(0).toString().toLowerCase();
+        String plural = currType.equals("entries") ? "" : currType.equals("bench") ? "es" : "s";
+        JFXTextField searchField = getTextField("Search " + articles.size() + " " + currType + plural + " by name", root.widthProperty().multiply(0.6));
         searchField.setOnKeyReleased(keyEvent ->
             filtered.setPredicate(p -> p.getName().toLowerCase().contains(searchField.getText().toLowerCase().trim()))
         );
 
         // set content
-        table.setItems(filtered);
+        table.setItems(sortable);
+        sortable.comparatorProperty().bind(table.comparatorProperty());
 
         // set header + search bar
         HBox headerBox = new HBox();
@@ -496,7 +509,7 @@ public class Presenter {
 
     // SYNC-RELATED
 
-    GridPane setSyncPane(BorderPane root) {
+    GridPane setSyncPane() {
         GridPane grid = new GridPane();
         setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
 
@@ -509,8 +522,6 @@ public class Presenter {
     }
 
     // HELPER/MISC
-
-    //
 
     VBox setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
         for (Button item : options) {
@@ -550,6 +561,13 @@ public class Presenter {
     Text getTextNormal(String string, String color) {
         Text text = new Text(string);
         text.setFont(p.fontNormal);
+        text.setFill(Paint.valueOf(color));
+        return text;
+    }
+
+    Text getTextSubHeader(String string, String color) {
+        Text text = new Text(string);
+        text.setFont(p.fontSubHeader);
         text.setFill(Paint.valueOf(color));
         return text;
     }
@@ -637,20 +655,102 @@ public class Presenter {
         uiCon.initSetUp();
     }
 
-    JFXDialog getEditPane(StackPane root, List<String> rPaths) {
-        return null;
+    JFXDialog getEditPane(StackPane root, List<String> rPaths, Parser.ObjectType type) {
+
+        // create the dialog
+        JFXDialogLayout dialogLayout = new JFXDialogLayout();
+        JFXDialog dialog = new JFXDialog(root, dialogLayout, JFXDialog.DialogTransition.CENTER);
+        dialog.setStyle("-fx-background-color: #1B1B1BBB");
+
+        BorderPane dialogRoot = new BorderPane();
+        dialogRoot.prefWidthProperty().bind(root.widthProperty());
+
+        // set buttons
+
+        // all types
+        JFXButton selected = new JFXButton("Selected objects");
+
+        // items and collections
+        JFXButton notes = new JFXButton("Add notes");
+        JFXButton recipe = new JFXButton("Get recipes");
+
+        // collections only
+        JFXButton mastery = new JFXButton("Edit mastery");
+
+        // items only
+        JFXButton lootbox = new JFXButton("Add lootbox content");
+        JFXButton decons = new JFXButton("Add deconstruction output");
+
+        // benches only
+        JFXButton name = new JFXButton("Set bench name");
+        JFXButton match = new JFXButton("Match recipes");
+
+        Button[] options;
+        if (type == Parser.ObjectType.ITEM) {
+            options = new Button[] {selected, decons, lootbox, notes, recipe};
+        } else if (type == Parser.ObjectType.COLLECTION) {
+            options = new Button[] {selected, mastery, notes, recipe};
+        } else {
+            options = new Button[] {selected, name, match};
+        }
+
+        // button configs
+        selected.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths)));
+        notes.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddNotes(rPaths)));
+
+        // control the pane based on buttons pressed
+        dialogRoot.setLeft(getEditSideBar(root, options));
+        dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths));
+
+        dialogLayout.setHeading(getTextHeader("Editing " + rPaths.size() + " objects", p.colorTextDialog));
+        dialogLayout.setBody(dialogRoot);
+
+        return dialog;
     }
 
-//    TableView<Searchable> getTable(BorderPane layout, StackPane tablePane, boolean modifiable, AtomicReference<ObservableList<Searchable>> articles, List<Parser.ObjectType> types) {
-//
-//        return table;
-//    }
+    VBox getEditSideBar(StackPane root, Button[] options) {
+        // the overarching VBox
+        VBox nav = new VBox();
+        nav.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
 
-//        table.setStyle("-fx-box-border: #1B1B1B;");
-//        table.prefWidthProperty().bind(layout.widthProperty().multiply(0.7));
-//        table.prefHeightProperty().bind(layout.heightProperty().multiply(0.6));
-//        table.getStyleClass().add("table-view");
+        for (Button button: options) {
+            button.setPrefHeight(35);
+            button.setPrefWidth(175);
+            button.setAlignment(Pos.CENTER_LEFT);
+        }
 
-//            nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
-//            rPathCol.prefWidthProperty().bind(table.widthProperty().multiply(0.599));
+        nav.getChildren().addAll(options);
+        return nav;
+    }
+
+    GridPane getDialogPaneSelectedObjects(List<String> rPaths) {
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(0, 0, 0, 10));
+
+        Text texts = new Text(String.join("\n", rPaths));
+        grid.add(texts, 0, 0);
+        grid.setMinWidth(500);
+
+        return grid;
+    }
+
+    GridPane getDialogPaneAddNotes(List<String> rPaths) {
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(15);
+        grid.setMinWidth(500);
+
+        JFXTextField noteField = getTextField("Enter note here", 350);
+        JFXButton save = getButton("Save", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
+        save.setOnAction(e -> uiCon.addNotes(rPaths, noteField.getText()));
+
+
+        grid.add(getTextSubHeader("Add notes to selected objects", p.colorTextDialog), 0, 0);
+        grid.add(getTextNormal("Note that this note is added to every selected object.", p.colorTextDialog), 0, 1);
+        grid.add(noteField, 0, 2);
+        grid.add(save, 0, 3);
+
+        return grid;
+    }
+
 }
