@@ -16,21 +16,11 @@
 }
 
 .label {
-    -fx-font-family: 'Roboto Light';
+    -fx-font-family: 'Roboto Medium';
 }
 
 .button .text {
     -fx-font-size: 13;
-}
-
-/*.button {*/
-/*    -fx-background-color: transparent;*/
-/*}*/
-
-.table-view .column-header,
-.table-view .column-header .filler,
-.table-view .column-header-background .filler {
-    -fx-background-color: #1B1B1B;
 }
 
 .dir-view .tree-cell {
@@ -44,9 +34,19 @@
     -fx-padding: 1;
 }
 
+.table-view .column-header,
+.table-view .column-header .filler,
+.table-view .column-header-background .filler {
+    -fx-background-color: #1B1B1B;
+}
+
 .table-view .table-cell {
-    -fx-background-color: #6D6D6D ;
+    -fx-font-family: Roboto Regular;
     -fx-text-fill: #eeeeee ;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #1B1B1B ;
 }
 
 .table-view:focused {
@@ -63,21 +63,49 @@
 .table-view .column-header,
 .table-view .column-header .filler,
 .table-view .column-header-background .filler {
-    -fx-background-color: #424242;
+    -fx-background-color: #1B1B1B;
 }
 
 .table-view:focused .table-row-cell:focused {
-    -fx-border-color: derive(-fx-base, 20%);
     -fx-background-insets: 0 0 0 0;
 }
 
 .table-view:focused .table-row-cell:selected {
-    -fx-background-color: derive(-fx-base, 20%);
+    /*-fx-background-color: #C77800;*/
+    -fx-background-color: #C25E00;
     -fx-background-insets: 0 0 0 0;
 }
 
-.table-row-cell:selected {
-    -fx-background-color: #FF9800;
+.text-col,
+.text-col .label {
+    -fx-alignment: center-left;
+}
+
+.checkbox-col,
+.checkbox-col .label {
+    -fx-alignment: center;
+}
+
+/*.table-row-cell:selected {*/
+/*    -fx-background-color: #FF9800;*/
+/*}*/
+
+.j-checkbox {
+    -jfx-checked-color: #C77800;
+    -jfx-unchecked-color: #EEEEEE;
+}
+
+.check-box:selected > .box {
+    -fx-background-color: #C77800;
+}
+
+.check-box:default > .box {
+    -fx-background-color: #EEEEEE;
+}
+
+.check-box:selected > .box > .mark,
+.check-box:indeterminate  > .box > .mark {
+    -fx-background-color: #EEEEEE;
 }
 
 .table-row-cell {

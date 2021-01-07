@@ -22,8 +22,9 @@ public class DesignProperties {
     public String colorTextHeader = "#FAFAFA";
     public String colorTextNormal = "#C7C7C7";
 
-    public String colorTextDialogButton = "#FF9800";
+    public String colorTextDialog = "#6D6D6D";
     public String colorTextMainButton = "#424242";
+    public String colorTextDialogButton = "#1B1B1B";
 
     public String colorTextFieldFocus = "#FF9800";
 
@@ -31,5 +32,7 @@ public class DesignProperties {
 
     public Background backgroundMainPane = new Background(new BackgroundFill(Color.rgb(27, 27, 27), CornerRadii.EMPTY, Insets.EMPTY));
     public Background backgroundMainButton = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
-    public Background backgroundDialogButton = new Background(new BackgroundFill(Color.rgb(109, 109, 109), new CornerRadii(3), Insets.EMPTY));
+
+    public Background backgroundDialog = new Background(new BackgroundFill(Color.rgb(238, 238, 238), new CornerRadii(3), Insets.EMPTY));
+    public Background backgroundDialogButton = new Background(new BackgroundFill(Color.rgb(255, 152, 0), new CornerRadii(3), Insets.EMPTY));
 }

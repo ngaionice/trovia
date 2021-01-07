@@ -1,5 +1,6 @@
 package controllers;
 
+import com.jfoenix.controls.JFXTreeView;
 import managers.*;
 import objects.CollectionEnums;
 import ui.DesignProperties;
@@ -236,9 +237,8 @@ public class UIController {
         content.getChildren().add(new Text("The following paths were not parsed:"));
         content.getChildren().add(new TextArea(failedPathsJoined));
 
-        TextArea message = new TextArea("Note that this is normal, if files that have not been designed to be parsed were selected.");
-        message.setWrapText(true);
-        message.setPrefHeight(50);
+        Text message = new Text("Note that this is normal, if files that have not been designed to be parsed were selected.");
+        message.setWrappingWidth(350);
         content.getChildren().add(message);
 
         return content;

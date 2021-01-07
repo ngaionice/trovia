@@ -292,11 +292,20 @@ public class LogicController {
     // RELAYING MODULES
 
     String getItemDesc(String rPath) {
-        return langM.getString(itemM.getDesc(rPath).toLowerCase());
+        if (itemM.getDesc(rPath) != null) {
+            String desc = langM.getString(itemM.getDesc(rPath).toLowerCase());
+            if (desc != null) {
+                return desc;
+            }
+        }
+        return "Not available.";
     }
 
     String getItemDescIdentifier(String rPath) {
-        return itemM.getDesc(rPath);
+        if (itemM.getDesc(rPath) != null && !itemM.getDesc(rPath).equals("")) {
+            return itemM.getDesc(rPath);
+        }
+        return "Not available.";
     }
 
     String getCollectionDesc(String rPath) {
@@ -310,7 +319,10 @@ public class LogicController {
     }
 
     String getCollectionDescIdentifier(String rPath) {
-        return colM.getDesc(rPath);
+        if (colM.getDesc(rPath) != null && !colM.getDesc(rPath).equals("")) {
+            return colM.getDesc(rPath);
+        }
+        return "Not available.";
     }
 
     List<String> getBenchRecipes(String rPath) {

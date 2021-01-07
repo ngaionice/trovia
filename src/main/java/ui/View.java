@@ -28,7 +28,8 @@ public class View extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        BorderPane root = new BorderPane();
+        StackPane root = new StackPane();
+        BorderPane layout = new BorderPane();
 
         JFXDecorator decorator = new JFXDecorator(primaryStage, root);
         decorator.setCustomMaximize(true);
@@ -36,7 +37,8 @@ public class View extends Application {
 
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        sceneInitSetUp(root);
+        sceneInitSetUp(root, layout);
+        root.getChildren().add(layout);
 
         primaryStage.setTitle("Trovia - Database Management");
         primaryStage.setScene(scene);
@@ -47,8 +49,8 @@ public class View extends Application {
         launch(args);
     }
 
-    void sceneInitSetUp(BorderPane root) {
-        root.setLeft(navInitSetUp(root));
+    void sceneInitSetUp(StackPane root, BorderPane layout) {
+        layout.setLeft(navInitSetUp(root, layout));
 
         // set up landing screen
         Text start = new Text("Select an option on the navigation bar to begin.");
@@ -59,13 +61,13 @@ public class View extends Application {
         startPane.setBackground(new Background(new BackgroundFill(Color.rgb(27,27,27), CornerRadii.EMPTY, Insets.EMPTY)));
         startPane.getChildren().add(start);
 
-        root.setCenter(startPane);
+        layout.setCenter(startPane);
 
         // set up dynamic resizing
-        root.autosize();
+        layout.autosize();
     }
 
-    VBox navInitSetUp(BorderPane root) {
+    VBox navInitSetUp(StackPane root, BorderPane layout) {
 
         // the overarching VBox
         VBox nav = new VBox(70);
@@ -90,9 +92,9 @@ public class View extends Application {
         // sub-VBox 2
         VBox typeNav = new VBox();
 
-        createBtn.setOnAction(event -> pr.callCreate(root, nav, mainNav));
-        viewBtn.setOnAction(event -> pr.callView(root, nav, mainNav));
-        syncBtn.setOnAction(event -> pr.callSync(root, nav, mainNav));
+        createBtn.setOnAction(event -> pr.callCreate(layout, nav, mainNav));
+        viewBtn.setOnAction(event -> pr.callView(root, layout, nav, mainNav));
+        syncBtn.setOnAction(event -> pr.callSync(layout, nav, mainNav));
 
         // add the VBoxes to the main VBox
         nav.getChildren().addAll(Arrays.asList(mainNav, typeNav));

@@ -91,7 +91,6 @@ public class Collection implements Article, Serializable {
      */
     public Map<CollectionEnums.Buff, Double> getBuffs() {
         if (buffs == null) {
-            System.out.println("This either isn't a dragon, or is a primordial dragon, so there are no buffs specified.");
             return null;
         } else {
             return buffs;

@@ -34,7 +34,7 @@ public class ParseProfession implements ParseStrategy{
                 currCat.set(j, Parser.hexToAscii(currCat.get(j)));
             }
 
-            categories.put(new String[] {currCat.get(0), Integer.toString(i)}, currCat.subList(1, currCat.size()));
+            categories.put(new String[] {currCat.get(0), Integer.toString(i)}, new ArrayList<>(currCat.subList(1, currCat.size())));
         }
 
         // creating the Bench object
