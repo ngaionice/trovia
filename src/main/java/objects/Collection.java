@@ -132,6 +132,9 @@ public class Collection implements Article, Serializable {
     }
 
     public void addRecipe(String recipeRPath) {
+        if (recipes == null) {
+            recipes = new ArrayList<>();
+        }
         recipes.add(recipeRPath);
     }
 

@@ -138,13 +138,14 @@ public class LogicController {
     }
 
     /**
-     * Match all newly-added Recipes to their respective Items and Collections.
+     * Match all newly-added Recipes to their respective Items and Collections. Returns a list of failed recipes, or null if all recipes were matched.
      */
-    void matchNewRecipes() {
+    List<String> matchNewRecipes() {
         boolean allMatched = true;
         List<String> failed = new ArrayList<>();
         for (String rPath: recM.getNewRPaths()) {
             String outputRPath = recM.getOutput(rPath)[0];
+            System.out.println("Target rPath:" + outputRPath);
 
             // consider switching to a switch statement when placeables get implemented too
             if (outputRPath.contains("item")) {
@@ -154,19 +155,21 @@ public class LogicController {
                 } else {
                     itemM.addRecipe(outputRPath, rPath);
                 }
-            } else {
+            } else if (outputRPath.contains("collection")){
                 if (colM.getName(outputRPath) == null) {
                     allMatched = false;
                     failed.add(outputRPath);
                 }
                 colM.addRecipe(outputRPath, rPath);
+            } // currently ignores placeables
+            else {
+                System.out.println("Ignored " + outputRPath);
             }
         }
         if (allMatched) {
-            pr.matchRecipeSuccess();
+            return null;
         } else {
-            pr.matchRecipeFailure(failed);
-            // TODO: log these rPaths somewhere
+            return failed;
         }
     }
 

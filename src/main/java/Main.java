@@ -22,10 +22,11 @@ public class Main {
 //        for (String rec: bench.getAllRecipes()) {
 //            System.out.println(rec);
 //        }
-        Item item = (Item) parser.createObject(var.testItem, Parser.ObjectType.ITEM);
+        Recipe item = (Recipe) parser.createObject(var.testRecipe, Parser.ObjectType.RECIPE);
         System.out.println(item.getName());
-        System.out.println(item.getDesc());
+//        System.out.println(item.getDesc());
         System.out.println(item.getRPath());
+        System.out.println(item.getOutput()[0]);
 
         System.out.println(Parser.recipeH2D("32", "yes"));
         // Collection testing

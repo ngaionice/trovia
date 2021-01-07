@@ -103,6 +103,7 @@ public class CollectionManager implements Manager, SearchManager, Serializable {
     }
 
     public void addRecipe(String rPath, String recipeRPath) {
+        System.out.println(collectionMap.get(rPath).getName());
         collectionMap.get(rPath).addRecipe(recipeRPath);
         addMap.put(rPath, collectionMap.get(rPath));
     }

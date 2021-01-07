@@ -24,9 +24,8 @@ public class ParseRecipe implements ParseStrategy {
         rPath = rPath.replaceAll("\\\\", "/");
 
         // instantiate identifiers
-        String hexAlphabetPrefab = "[6][0-9A-F]|[7][0-9A]|5F|[3][0-9]"; // for identifying name and desc; lowercase alphabet, digits, underscore
         String itemIdentifier = " 28 00 AE 03 00 01 18 00 28 00 1E 40 00 1E ";
-        Pattern p = Pattern.compile(hexAlphabetPrefab);
+        Pattern p = Pattern.compile(m.alphabetRecipeRPath);
 
         // instantiate variables
         List<String[]> parsedList = new ArrayList<>();
@@ -57,7 +56,7 @@ public class ParseRecipe implements ParseStrategy {
         String[] lastStringArray = lastString.split(" ");
         int lastValidCharacter = 0;
         for (String hex: lastStringArray) {
-            if (hex.matches(hexAlphabetPrefab)) {
+            if (hex.matches(m.alphabetRecipeRPath)) {
                 lastValidCharacter++;
             } else {
                 break;
@@ -71,10 +70,20 @@ public class ParseRecipe implements ParseStrategy {
         parsedList.get(lastIndex-1)[0] = newLastString.toString();
 
         // convert the hex strings/numbers to ascii/decimals
+        Pattern pLC = Pattern.compile(m.alphabetLowerCase);
+
         for (String[] item : parsedList) {
+            // clean up stray matching characters that are not lowercase letters, as any rPath must start with lowercase
+            Matcher mLC = pLC.matcher(item[0]);
+            if (mLC.find()) {
+                item[0] = item[0].substring(mLC.start());
+            }
+
             item[0] = Parser.hexToAscii(item[0]);
             item[1] = Integer.toString(Parser.recipeH2D(item[1], item[0]));
         }
+
+
 
         // create the object
         String[] product = parsedList.get(lastIndex-1);

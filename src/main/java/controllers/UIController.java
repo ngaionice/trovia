@@ -386,4 +386,15 @@ public class UIController {
             con.addNotes(item, note);
         }
     }
+
+    public List<String> matchNewRecipes(String dirPath) {
+        List<String> output = con.matchNewRecipes();
+        if (output != null) {
+            for (int i = 0; i < output.size(); i++) {
+                output.set(i, output.get(i).replace(dirPath, ""));
+            }
+            return output;
+        }
+        return null;
+    }
 }

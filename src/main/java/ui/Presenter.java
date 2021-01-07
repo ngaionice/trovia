@@ -427,8 +427,8 @@ public class Presenter {
         if (modifiable) {
             TableColumn<Searchable, Void> checkCol = new TableColumn<>();
 
-            JFXCheckBox checkAll = new JFXCheckBox();
-            checkAll.getStyleClass().add("j-checkbox");
+            CheckBox checkAll = new CheckBox();
+//            checkAll.getStyleClass().add("j-checkbox");
             checkAll.setOnAction(e -> {
                 if (checkAll.isSelected()) {
                     table.getItems().forEach(p ->
@@ -697,6 +697,7 @@ public class Presenter {
         // button configs
         selected.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths)));
         notes.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddNotes(rPaths)));
+        recipe.setOnAction(e -> dialogRoot.setCenter(getDialogPaneMatchRecipes()));
 
         // control the pane based on buttons pressed
         dialogRoot.setLeft(getEditSideBar(root, options));
@@ -749,6 +750,24 @@ public class Presenter {
         grid.add(getTextNormal("Note that this note is added to every selected object.", p.colorTextDialog), 0, 1);
         grid.add(noteField, 0, 2);
         grid.add(save, 0, 3);
+
+        return grid;
+    }
+
+    GridPane getDialogPaneMatchRecipes() {
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(0, 0, 0, 10));
+
+        List<String> failed = uiCon.matchNewRecipes(dirPath);
+        Text texts;
+        if (failed != null) {
+            texts = getTextNormal(String.join("\n", failed), p.colorTextDialog);
+        } else {
+            texts = getTextNormal("All recipes matched.", p.colorTextDialog);
+        }
+
+        grid.add(texts, 0, 0);
+        grid.setMinWidth(500);
 
         return grid;
     }
