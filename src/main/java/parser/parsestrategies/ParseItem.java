@@ -21,6 +21,8 @@ public class ParseItem implements ParseStrategy {
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
+        System.out.println("Parsing " + absPath);
+
         // instantiate the stuff needed to parse
         Markers m = new Markers();
         String prefabMarker = "24 70 72 65 66 61 62 "; // $prefabs; changed from $prefabs_item for more flexibility
@@ -83,16 +85,18 @@ public class ParseItem implements ParseStrategy {
             String currString = splitString.substring(colIndex);
 
             while (currString.contains(m.collection)) {
+                int index = currString.indexOf(" 28 00");
+                collection.add(Parser.hexToAscii(currString.substring(0, index)));
+                System.out.println(Parser.hexToAscii(currString.substring(0, index)));
 
-                // parse string
-                for (int i = 0; i < currString.length(); i += 3) {
-                    if (!currString.substring(i, i+2).matches(m.alphabetCollection)) {
-                        collection.add(Parser.hexToAscii(currString.substring(0, i)));
-                        currString = currString.substring(i); // chop off the previous part
-                        break;
-                    }
+                // go to next collection
+                if (currString.substring(index).contains(m.collection)) {
+                    currString = currString.substring(currString.indexOf(m.collection, index));
+                } else {
+                    break;
                 }
             }
+
             unlocks = collection.toArray(new String[0]);
         }
 
