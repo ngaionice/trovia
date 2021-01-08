@@ -2,7 +2,6 @@ package ui;
 
 import com.jfoenix.controls.*;
 import controllers.UIController;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
@@ -19,16 +18,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import parser.Parser;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,14 +34,9 @@ public class Presenter {
 
     DesignProperties p;
     UIController uiCon;
+    PresenterElementHelper elements;
+    PresenterLogicHelper logic = new PresenterLogicHelper();
     JFXTreeView<String> dirView;
-
-    String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
-    String benchFilter = "_interactive";
-    String colFilter = "";
-    String itemFilter = "";
-    String langFilter = "prefabs_";
-    String recFilter = "";
 
     String benchSubPath = "\\prefabs\\placeable\\crafting";
     String colSubPath = "\\prefabs\\collections";
@@ -57,6 +48,7 @@ public class Presenter {
     public Presenter(DesignProperties p) {
         this.p = p;
         uiCon = new UIController(p);
+        elements = new PresenterElementHelper(p);
     }
 
     // NAVIGATION BAR
@@ -92,11 +84,11 @@ public class Presenter {
 
         // button actions
         cGearBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, colSubPath, colFilter, Parser.ObjectType.COLLECTION)));
-        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, benchFilter, Parser.ObjectType.BENCH)));
-        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, itemFilter, Parser.ObjectType.ITEM)));
-        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, recFilter, Parser.ObjectType.RECIPE)));
-        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, langFilter, Parser.ObjectType.LANG_FILE)));
+        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, colSubPath, logic.getColFilter(), Parser.ObjectType.COLLECTION)));
+        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, logic.getBenchFilter(), Parser.ObjectType.BENCH)));
+        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, logic.getItemFilter(), Parser.ObjectType.ITEM)));
+        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, logic.getRecFilter(), Parser.ObjectType.RECIPE)));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, logic.getLangFilter(), Parser.ObjectType.LANG_FILE)));
         pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 
@@ -104,7 +96,7 @@ public class Presenter {
         Button[] options = new Button[]{pBenchBtn, pColBtn, pItemBtn, pProfBtn, pRecBtn, pLangBtn, cGearBtn, settingsBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(elements.setPropVBox(typeNav, options, "#c7c7c7"));
 
     }
 
@@ -136,7 +128,7 @@ public class Presenter {
         Button[] options = new Button[]{articles, items, collections, benches, languages};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(elements.setPropVBox(typeNav, options, "#c7c7c7"));
 
         // update center table
         root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false));
@@ -152,7 +144,7 @@ public class Presenter {
 
         // make new nav
         VBox typeNav = new VBox();
-        typeNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
+        typeNav.setBackground(p.backgroundMainSidebar);
 
         // buttons
         JFXButton addBtn = new JFXButton("Review new entries");
@@ -167,96 +159,75 @@ public class Presenter {
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(setPropVBox(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(elements.setPropVBox(typeNav, options, "#c7c7c7"));
     }
 
     // CREATE-RELATED
 
-    GridPane setPaneCreateSettings() {
+    AnchorPane setPaneCreateSettings() {
 
         // clears previous saved paths
         uiCon.clearParseList();
 
         GridPane grid = new GridPane();
-        grid.setBackground(p.backgroundMainPane);
-        grid.setPadding(new Insets(80, 50, 70, 50));
-        grid.setHgap(20);
+        elements.setPropGridPane(grid, new Insets(80, 50, 70, 50), 20);
 
         int textFieldWidth = 500;
 
-        Text settingsText = getTextHeader("Parse Settings", p.colorTextHeader);
+        Text settingsText = elements.getTextH1("Parse Settings", p.colorTextHeader);
 
-        Text dirText = getTextNormal("Absolute path of main directory:", p.colorTextNormal);
-        JFXTextField dirField = getTextField("Current directory: " + dirPath, textFieldWidth);
+        Text dirText = elements.getTextH3("Absolute path of main directory:", p.colorTextNormal);
+        JFXTextField dirField = elements.getTextField("Current directory: " + logic.getDirPath(), textFieldWidth);
 
-        Text benchText = getTextNormal("Filter for bench parsing: (filters out files without the keyword)", p.colorTextNormal);
-        JFXTextField benchField = getTextField("Current filter: " +  benchFilter, textFieldWidth);
+        // bench, col, item, rec, lang
+        List<Text> subheaders = new ArrayList<>();
+        List<JFXTextField> fields = new ArrayList<>();
 
-        Text colText = getTextNormal("Filter for collection parsing: ", p.colorTextNormal);
-        JFXTextField colField = getTextField("Current filter: " + colFilter, textFieldWidth);
+        List<String> vars = Arrays.asList("Filter for bench parsing: (filters out files without the keyword)",
+                "Filter for collection parsing: ",
+                "Filter for item parsing: ",
+                "Filter for recipe parsing:",
+                "Filter for language file parsing: ");
+        AtomicReference<List<String>> filters = new AtomicReference<>(Arrays.asList(logic.getBenchFilter(), logic.getColFilter(), logic.getItemFilter(), logic.getRecFilter(), logic.getLangFilter()));
+        
+        // get subheaders and text fields
+        for (int i = 0; i < vars.size(); i++) {
+            subheaders.add(elements.getTextH3(vars.get(i), p.colorTextNormal));
+            fields.add(elements.getTextField("Current filter: " + filters.get().get(i), textFieldWidth));
+        }
 
-        Text itemText = getTextNormal("Filter for item parsing: ", p.colorTextNormal);
-        JFXTextField itemField = getTextField("Current filter: " + itemFilter, textFieldWidth);
-
-        Text recText = getTextNormal("Filter for recipe parsing: ", p.colorTextNormal);
-        JFXTextField recField = getTextField("Current filter: " + recFilter, textFieldWidth);
-
-        Text langText = getTextNormal("Filter for language file parsing: ", p.colorTextNormal);
-        JFXTextField langField = getTextField("Current filter: " + langFilter, textFieldWidth);
-
-        // TODO: add custom sub-directory path editing
-
-        HBox saveBox = new HBox();
-        saveBox.setAlignment(Pos.CENTER_RIGHT);
-
-        JFXButton save = getButton("Save", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
-        saveBox.getChildren().add(save);
+        JFXButton save = elements.getButton("Save", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
 
         save.setOnAction(event -> {
-            boolean clearDir = saveCreateSettings(dirField.getText(), benchField.getText(), colField.getText(), itemField.getText(), recField.getText(), langField.getText());
+            boolean saved = logic.saveParseSettings(dirField.getText(), fields.get(0).getText(), fields.get(1).getText(), fields.get(2).getText(), fields.get(3).getText(), fields.get(4).getText());
 
-            if (clearDir) {
+            if (saved) {
                 dirField.clear();
-                dirField.setPromptText("Current directory: " + dirPath);
+                dirField.setPromptText("Current directory: " + logic.getDirPath());
             }
-            benchField.clear();
-            colField.clear();
-            itemField.clear();
-            recField.clear();
-            langField.clear();
 
-            benchField.setPromptText("Current filter: " + benchFilter);
-            colField.setPromptText("Current filter: " + colFilter);
-            itemField.setPromptText("Current filter: " + itemFilter);
-            recField.setPromptText("Current filter: " + recFilter);
-            langField.setPromptText("Current filter: " + langFilter);
+            filters.set(Arrays.asList(logic.getBenchFilter(), logic.getColFilter(), logic.getItemFilter(), logic.getRecFilter(), logic.getLangFilter()));
+            for (int i = 0; i < fields.size(); i++) {
+                fields.get(i).setPromptText("Current filter: " + filters.get().get(i));
+                fields.get(i).clear();
+            }
         });
 
-        List<Node> gridItems = Arrays.asList(settingsText,
-                dirText, dirField,
-                benchText, benchField,
-                colText, colField,
-                itemText, itemField,
-                recText, recField,
-                langText, langField,
-                save);
+        List<Node> gridItems = new ArrayList<>(Arrays.asList(settingsText, dirText, dirField));
+        for (int i = 0; i < fields.size(); i++) {
+            gridItems.add(subheaders.get(i));
+            gridItems.add(fields.get(i));
+        }
 
         // add normal items
-        for (int i = 0; i < gridItems.size() - 1; i++) {
+        for (int i = 0; i < gridItems.size(); i++) {
             grid.add(gridItems.get(i), 0, i);
             RowConstraints con = new RowConstraints();
-            // Here we set the pref height of the row, but you could also use .setPercentHeight(double) if you don't know much space you will need for each label.
             con.setPrefHeight(30);
             grid.getRowConstraints().add(con);
         }
 
-        // add save button
-        grid.add(save, 0, gridItems.size());
-        RowConstraints con = new RowConstraints();
-        con.setPrefHeight(35);
-        grid.getRowConstraints().add(con);
-
-        return grid;
+        return elements.getAnchorPane(grid, save, false);
     }
 
     GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
@@ -267,41 +238,24 @@ public class Presenter {
         // clears previous saved paths
         uiCon.clearParseList();
 
-        // update dirView to show the directory
+        // update dirView to show the directory, and put it into the StackPane
         boolean isCollection = type == Parser.ObjectType.COLLECTION;
-        dirView = new JFXTreeView<>(uiCon.getFileTree(dirPath + subPath, filter, isCollection));
-        dirView.setCellFactory(CheckBoxTreeCell.forTreeView());
-        dirView.getStyleClass().add("dir-view");
-        dirView.setStyle("-fx-box-border: #1B1B1B;");
-        dirView.setEditable(true);
-        dirView.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
-        dirView.prefHeightProperty().bind(root.heightProperty().multiply(0.6));
+        CheckBoxTreeItem<String> content = uiCon.getFileTree(logic.getDirPath() + subPath, filter, isCollection);
+        content.setExpanded(true);
 
-        // put dirView into the StackPane
+        dirView = elements.getTreeView(root, content);
         currPane.getChildren().add(dirView);
 
-        // create header
+        // create header and progress indicators
         String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
-        Text headerText = getTextHeader("Parse " + type + plural, p.colorTextHeader);
+        Text headerText = elements.getTextH1("Parse " + type + plural, p.colorTextHeader);
 
-        // create progress bar and status text
         JFXProgressBar progressBar = new JFXProgressBar();
-        progressBar.getStyleClass().add("jfx-progress-bar");
-        progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.6));
-        progressBar.setProgress(0);
-
         final Text progressText = new Text("Status");
-        progressText.setFont(Font.font("Roboto Medium", 11));
-        progressText.setFill(Paint.valueOf(p.colorTextNormal));
-
-        VBox progressBox = new VBox();
-        progressBox.setAlignment(Pos.BOTTOM_LEFT);
-        progressBox.getChildren().add(progressText);
-        progressBox.getChildren().add(progressBar);
-        progressBox.prefHeightProperty().bind(root.heightProperty().multiply(0.005));
+        VBox progressBox = elements.getProgressBox(root, progressText, progressBar);
 
         // create button to start parsing - needs to show dialog box when there are failed files
-        JFXButton startParse = getButton("Parse", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
+        JFXButton startParse = elements.getButton("Parse", 60, 35, p.backgroundMainButton, p.colorTextMainButton);
 
         startParse.setOnAction(event -> {
 
@@ -316,17 +270,10 @@ public class Presenter {
 
                 Platform.runLater(() -> {
                     if (!uiCon.getFailedPaths().isEmpty()) {
-                        JFXDialogLayout dialogLayout = new JFXDialogLayout();
-                        JFXDialog dialog = new JFXDialog(currPane, dialogLayout, JFXDialog.DialogTransition.CENTER);
-                        dialogLayout.setBackground(p.backgroundDialog);
+                        JFXButton button = elements.getButton("Close", 60, 35, p.backgroundDialog, p.colorTextDialog);
+                        JFXDialog dialog = elements.getDialog(currPane, new Text("Incomplete parsing"), uiCon.getFailedContent(logic.getDirPath()), button);
 
-                        JFXButton button = getButton("Close", 60, 35, p.backgroundDialog, p.colorTextDialog);
                         button.setOnAction(event1 -> dialog.close());
-
-                        dialogLayout.setHeading(new Text("Incomplete parsing"));
-                        dialogLayout.setBody(uiCon.getFailedContent(dirPath));
-                        dialogLayout.setActions(button);
-
                         dialog.show();
                     }
                 });
@@ -342,9 +289,8 @@ public class Presenter {
 
         // set up the grid
         GridPane grid = new GridPane();
-        setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
-        setNodeGridPane(grid, Arrays.asList(headerText, currPane, buttonBox, progressBox));
-//        grid.setGridLinesVisible(true); // debug
+        elements.setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
+        elements.setNodeGridPane(grid, Arrays.asList(headerText, currPane, buttonBox, progressBox));
 
         GridPane.setMargin(currPane, new Insets(30, 30, 30, 0));
         GridPane.setMargin(progressBox, new Insets(35, 30, 10, 0));
@@ -358,22 +304,14 @@ public class Presenter {
 
         // set up StackPane to hold dialog box and TableView
         StackPane tablePane = new StackPane();
+        GridPane grid = new GridPane();
 
         // set up dialog
-        JFXDialogLayout dialogInfoLayout = new JFXDialogLayout();
-        JFXDialog dialogInfo = new JFXDialog(tablePane, dialogInfoLayout, JFXDialog.DialogTransition.CENTER);
-        dialogInfo.setDialogContainer(tablePane);
-        dialogInfo.setStyle("-fx-background-color: #1B1B1BBB");
+        AtomicReference<JFXDialog> dialogInfo = new AtomicReference<>(new JFXDialog());
 
         // set up table and map of selected items
-        TableView<Searchable> table = new TableView<>();
+        TableView<Searchable> table = elements.getTableView(root);
         Map<Searchable, BooleanProperty> checkedRows = new HashMap<>();
-
-        table.setEditable(true);
-        table.setStyle("-fx-box-border: #1B1B1B;");
-        table.setFixedCellSize(40);
-        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
-        table.prefHeightProperty().bind(root.heightProperty().multiply(0.7));
 
         // set up listener: remove filtered items from map
         table.getItems().addListener((Change<? extends Searchable> c) -> {
@@ -388,46 +326,34 @@ public class Presenter {
 
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         rPathCol.setCellValueFactory(new PropertyValueFactory<>("rPath"));
-        nameCol.getStyleClass().add("text-col");
-        rPathCol.getStyleClass().add("text-col");
+        {nameCol.getStyleClass().add("text-col");
+        rPathCol.getStyleClass().add("text-col");}
 
         // set up row
         table.setRowFactory(view -> {
             TableRow<Searchable> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+
                     int selectedRow = table.getSelectionModel().getSelectedCells().get(0).getRow();
-
                     Searchable article = table.getItems().get(selectedRow);
+                    VBox content = logic.getContent(article.getRPath(), uiCon);
 
-                    VBox content;
-                    if (article.getRPath().contains("item")) {
-                        content = uiCon.getItemContent(article.getRPath());
-                    } else if (article.getRPath().contains("collection")) {
-                        content = uiCon.getCollectionContent(article.getRPath());
-                    } else {
-                        content = uiCon.getBenchContent(article.getRPath());
-                    }
+                    JFXButton button = elements.getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
+                    button.setOnAction(event1 -> dialogInfo.get().close());
 
-                    JFXButton button = getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
-                    button.setOnAction(event1 -> dialogInfo.close());
-
-                    dialogInfoLayout.setHeading(new Text(article.getName()));
-                    dialogInfoLayout.setBody(content);
-                    dialogInfoLayout.setActions(button);
-                    dialogInfo.show();
+                    dialogInfo.set(elements.getDialog(tablePane, new Text(article.getName()), content, button));
+                    dialogInfo.get().show();
                 }
             });
             return row;
         });
 
         // if modifiable is true, add the checkbox column and the edit button
-        JFXButton edit = null;
         if (modifiable) {
             TableColumn<Searchable, Void> checkCol = new TableColumn<>();
 
             CheckBox checkAll = new CheckBox();
-//            checkAll.getStyleClass().add("j-checkbox");
             checkAll.setOnAction(e -> {
                 if (checkAll.isSelected()) {
                     table.getItems().forEach(p ->
@@ -447,17 +373,23 @@ public class Presenter {
             table.getColumns().setAll(Arrays.asList(checkCol, nameCol, rPathCol));
 
             // set up edit button
-            edit = getButton("Edit", 50, 30, p.backgroundMainButton, p.colorTextMainButton);
+            JFXButton edit = new JFXButton("Edit");
+            AnchorPane anchor = elements.getAnchorPane(grid, edit, false);
+            tablePane.getChildren().add(anchor);
+
             AtomicReference<List<String>> rPathsToEdit = new AtomicReference<>(new ArrayList<>());
+
             edit.setOnAction(evt -> {
                 rPathsToEdit.set(checkedRows.entrySet().stream().filter(e -> e.getValue().get()).map(Map.Entry::getKey)
                         .map(Searchable::getRPath).collect(Collectors.toList()));
                 JFXDialog dialogEdit = getEditPane(tablePane, rPathsToEdit.get(), types.get(0));
+                dialogEdit.setStyle("-fx-background-color: #1B1B1BBB");
 
                 dialogEdit.show();
             });
         } else {
             table.getColumns().setAll(Arrays.asList(nameCol, rPathCol));
+            tablePane.getChildren().add(grid);
         }
 
         // get and set content
@@ -468,7 +400,7 @@ public class Presenter {
         // set up search
         String currType = types.size() != 1 ? "entries" : types.get(0).toString().toLowerCase();
         String plural = currType.equals("entries") ? "" : currType.equals("bench") ? "es" : "s";
-        JFXTextField searchField = getTextField("Search " + articles.size() + " " + currType + plural + " by name", root.widthProperty().multiply(0.6));
+        JFXTextField searchField = elements.getTextField("Search " + articles.size() + " " + currType + plural + " by name", root.widthProperty().multiply(0.6));
         searchField.setOnKeyReleased(keyEvent ->
             filtered.setPredicate(p -> p.getName().toLowerCase().contains(searchField.getText().toLowerCase().trim()))
         );
@@ -485,22 +417,14 @@ public class Presenter {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Text header = getTextHeader(headerText, p.colorTextHeader);
-
-        if (modifiable) {
-            headerBox.getChildren().addAll(Arrays.asList(header, searchField, edit));
-        } else {
-            headerBox.getChildren().addAll(Arrays.asList(header, searchField));
-        }
+        Text header = elements.getTextH1(headerText, p.colorTextHeader);
+        headerBox.getChildren().addAll(Arrays.asList(header, searchField));
 
         // set up grid
-        GridPane grid = new GridPane();
-        setPropGridPane(grid, new Insets(80, 50, 70, 50), 20);
-        setNodeGridPane(grid, Arrays.asList(headerBox, table));
+        elements.setPropGridPane(grid, new Insets(80, 50, 70, 50), 20);
+        elements.setNodeGridPane(grid, Arrays.asList(headerBox, table));
 
         GridPane.setMargin(headerBox, new Insets(0, 0, 10, 0));
-
-        tablePane.getChildren().add(grid);
 
         return tablePane;
     }
@@ -509,9 +433,9 @@ public class Presenter {
 
     GridPane setSyncPane() {
         GridPane grid = new GridPane();
-        setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
+        elements.setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
 
-        JFXButton button = getButton("Serialize", 100, 100, p.backgroundMainButton, p.colorTextMainButton);
+        JFXButton button = elements.getButton("Serialize", 100, 100, p.backgroundMainButton, p.colorTextMainButton);
         button.setOnAction(e -> uiCon.save());
 
         grid.add(button, 0, 0);
@@ -521,127 +445,16 @@ public class Presenter {
 
     // HELPER/MISC
 
-    VBox setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
-        for (Button item : options) {
-            item.setFont(p.fontNormal);
-            item.setTextFill(Paint.valueOf(buttonTextColor));
-            item.setMinWidth(175);
-            item.setMinHeight(35);
-            item.setPadding(new Insets(0, 0, 0, 25));
-            item.setAlignment(Pos.BASELINE_LEFT);
-        }
-
-        for (Button option : options) {
-            vBox.getChildren().add(option);
-        }
-        vBox.setAlignment(Pos.CENTER_LEFT);
-
-        return vBox;
-    }
-
-    JFXButton getButton(String text, double width, double height, Background background, String textColor) {
-        JFXButton button = new JFXButton(text);
-        button.setPrefWidth(width);
-        button.setPrefHeight(height);
-        button.setAlignment(Pos.CENTER);
-        button.setBackground(background);
-        button.setTextFill(Paint.valueOf(textColor));
-        return button;
-    }
-
-    Text getTextHeader(String string, String color) {
-        Text text = new Text(string);
-        text.setFont(p.fontHeader);
-        text.setFill(Paint.valueOf(color));
-        return text;
-    }
-
-    Text getTextNormal(String string, String color) {
-        Text text = new Text(string);
-        text.setFont(p.fontNormal);
-        text.setFill(Paint.valueOf(color));
-        return text;
-    }
-
-    Text getTextSubHeader(String string, String color) {
-        Text text = new Text(string);
-        text.setFont(p.fontSubHeader);
-        text.setFill(Paint.valueOf(color));
-        return text;
-    }
-
-    void setPropGridPane(GridPane grid, Insets insets, double hGap) {
-        grid.setBackground(p.backgroundMainPane);
-        grid.setPadding(insets);
-        grid.setHgap(hGap);
-    }
-
-    JFXTextField getTextField(String promptText, double prefWidth) {
-        JFXTextField field = new JFXTextField();
-        field.setPromptText(promptText);
-        field.setPrefWidth(prefWidth);
-        field.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
-        return field;
-    }
-
-    JFXTextField getTextField(String promptText, DoubleBinding prefWidth) {
-        JFXTextField field = new JFXTextField();
-        field.setPromptText(promptText);
-        field.prefWidthProperty().bind(prefWidth);
-        field.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
-        return field;
-    }
-
-    void setNodeGridPane(GridPane grid, List<Node> nodes) {
-        for (int i = 0; i < nodes.size(); i++) {
-            grid.add(nodes.get(i), 0, i);
-        }
-    }
-
-    boolean saveCreateSettings(String dirInput, String benchInput, String colInput, String itemInput, String recInput, String langInput) {
-
-        boolean alerted = false;
-        // set directory path
-        if (!dirInput.isEmpty() && dirInput.contains("\\") && new File(dirInput).isDirectory()) {
-            dirPath = dirInput;
-        } else if (!dirInput.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.ERROR, "The input directory was invalid, so the current directory path was not updated.");
-            alert.showAndWait();
-            alerted = true;
-        }
-
-        // set benchFilter
-        if (!benchInput.isEmpty()) {
-            benchFilter = benchInput;
-        }
-
-        // set colFilter
-        if (!colInput.isEmpty()) {
-            colFilter = colInput;
-        }
-
-        // set itemFilter
-        if (!itemInput.isEmpty()) {
-            itemFilter = itemInput;
-        }
-
-        // set recFilter
-        if (!recInput.isEmpty()) {
-            recFilter = recInput;
-        }
-
-        // set langFilter
-        if (!langInput.isEmpty()) {
-            langFilter = langInput;
-        }
-        return alerted;
+    // exists for view to use only
+    void setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
+        elements.setPropVBox(vBox, options, buttonTextColor);
     }
 
     StackPane notImplemented() {
 
         Text display = new Text("This feature is not yet implemented.");
-        display.setFill(Paint.valueOf("#c7c7c7"));
-        display.setFont(p.fontNormal);
+        display.setFill(Paint.valueOf(p.colorTextHeader));
+        display.setFont(p.fontH2);
         StackPane pane = new StackPane();
         pane.setBackground(p.backgroundMainPane);
         pane.getChildren().add(display);
@@ -658,12 +471,9 @@ public class Presenter {
         // create the dialog
         JFXDialogLayout dialogLayout = new JFXDialogLayout();
         JFXDialog dialog = new JFXDialog(root, dialogLayout, JFXDialog.DialogTransition.CENTER);
-        dialog.setStyle("-fx-background-color: #1B1B1BBB");
 
         BorderPane dialogRoot = new BorderPane();
         dialogRoot.prefWidthProperty().bind(root.widthProperty());
-
-        // set buttons
 
         // all types
         JFXButton selected = new JFXButton("Selected objects");
@@ -683,14 +493,10 @@ public class Presenter {
         JFXButton name = new JFXButton("Set bench name");
         JFXButton match = new JFXButton("Match recipes");
 
-        Button[] options;
-        if (type == Parser.ObjectType.ITEM) {
-            options = new Button[] {selected, decons, lootbox, notes, recipe};
-        } else if (type == Parser.ObjectType.COLLECTION) {
-            options = new Button[] {selected, mastery, notes, recipe};
-        } else {
-            options = new Button[] {selected, name, match};
-        }
+        Button[] options =
+                type == Parser.ObjectType.ITEM ? new Button[] {selected, decons, lootbox, notes, recipe} :
+                type == Parser.ObjectType.COLLECTION ? new Button[] {selected, mastery, notes, recipe} :
+                        new Button[] {selected, name, match};
 
         // button configs
         selected.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths)));
@@ -700,8 +506,8 @@ public class Presenter {
 
         mastery.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetMastery(rPaths)));
 
-        lootbox.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddLootbox(rPaths, true)));
-        decons.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddLootbox(rPaths, false)));
+        lootbox.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddItemProperty(rPaths, true)));
+        decons.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddItemProperty(rPaths, false)));
 
         name.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetBench(rPaths)));
         match.setOnAction(e -> dialogRoot.setCenter(getDialogPaneMatchBenchRecipes(rPaths)));
@@ -712,7 +518,7 @@ public class Presenter {
         dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths));
 
         String plural = rPaths.size() != 1 ? "s" : "";
-        dialogLayout.setHeading(getTextHeader("Editing " + rPaths.size() + " object" + plural, p.colorTextDialog));
+        dialogLayout.setHeading(elements.getTextH2("Editing " + rPaths.size() + " object" + plural, p.colorTextDialog));
         dialogLayout.setBody(dialogRoot);
 
         return dialog;
@@ -740,7 +546,7 @@ public class Presenter {
         grid.setVgap(10);
         grid.setMinWidth(500);
 
-        Text header = getTextSubHeader("Currently selected objects:", p.colorTextDialogButton);
+        Text header = elements.getTextH3("Currently selected objects:", p.colorTextDialogButton);
         Text texts = new Text(String.join("\n", rPaths));
         grid.add(header, 0, 0);
         grid.add(texts, 0, 1);
@@ -749,78 +555,67 @@ public class Presenter {
     }
 
     AnchorPane getDialogPaneAddNotes(List<String> rPaths) {
-        AnchorPane anchor = new AnchorPane();
-        GridPane grid = new GridPane();
-        anchor.getChildren().add(grid);
+        GridPane grid = elements.getDialogGrid();
 
-        grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(10);
-        grid.setMinWidth(500);
-
-        JFXTextField noteField = getTextField("e.g. Hexion needs these", 350);
+        JFXTextField noteField = elements.getTextField("e.g. Hexion needs these", 350);
         JFXButton save = new JFXButton("Save");
-        save.setOnAction(e -> uiCon.addNotes(rPaths, noteField.getText()));
-        save.getStyleClass().add("animated-option-button");
+        AnchorPane anchor = elements.getAnchorPane(grid, save, true);
+        JFXSnackbar notif = new JFXSnackbar(anchor);
 
-        grid.add(getTextSubHeader("Note to be added:", p.colorTextDialogButton), 0, 0);
-        grid.add(noteField, 0, 1);
-        grid.add(getTextNormal("Note that this note is added to every selected object.", p.colorTextDialogButton), 0, 2);
+        save.setOnAction(e -> {
+            uiCon.addNotes(rPaths, noteField.getText());
+            JFXSnackbar.SnackbarEvent status = elements.getSnackbarEvent("Note saved");
+            notif.enqueue(status);
+        });
 
-        JFXNodesList fab = new JFXNodesList();
-        fab.addAnimatedNode(save);
-
-        anchor.getChildren().add(fab);
-        AnchorPane.setRightAnchor(fab, 25.0);
-        AnchorPane.setBottomAnchor(fab, 15.0);
+        grid.add(elements.getTextH3("Note to be added:", p.colorTextDialogButton), 0, 0);
+        grid.add(elements.getTextNormal("Note that this note is added to every selected object.", p.colorTextDialogButton), 0, 1);
+        grid.add(noteField, 0, 2);
 
         return anchor;
     }
 
-    // TODO: add button to start instead of starting directly; or move it elsewhere
-    GridPane getDialogPaneMatchRecipes() {
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(0, 0, 0, 10));
+    AnchorPane getDialogPaneMatchRecipes() {
+        GridPane grid = elements.getDialogGrid();
 
-        List<String> failed = uiCon.matchNewRecipes(dirPath);
-        Text texts;
-        if (failed != null) {
-            texts = getTextNormal(String.join("\n", failed), p.colorTextDialog);
-        } else {
-            texts = getTextNormal("All recipes matched.", p.colorTextDialog);
-        }
+        JFXButton match = new JFXButton("Go");
+        AnchorPane anchor = elements.getAnchorPane(grid, match, true);
+        JFXSnackbar notif = new JFXSnackbar(anchor);
+        match.setOnAction(e -> {
+            List<String> failed = uiCon.matchNewRecipes(logic.getDirPath());
+            Text texts = failed != null ? elements.getTextNormal(String.join("\n", failed), p.colorTextDialog) :
+                    elements.getTextNormal("All recipes matched.", p.colorTextDialog);
+            grid.add(texts, 0, 1);
 
-        grid.add(texts, 0, 0);
-        grid.setMinWidth(500);
+            String text = failed == null ? "All recipes matched" : "Some recipes were not matched";
+            JFXSnackbar.SnackbarEvent status = elements.getSnackbarEvent(text);
+            notif.enqueue(status);
+        });
 
-        return grid;
+        grid.add(elements.getTextH3("Match newly added recipes", p.colorTextDialogButton), 0, 0);
+        return anchor;
     }
 
     AnchorPane getDialogPaneSetMastery(List<String> rPaths) {
-        AnchorPane anchor = new AnchorPane();
-        GridPane grid = new GridPane();
-        anchor.getChildren().add(grid);
+        GridPane grid = elements.getDialogGrid();
 
-        grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(10);
-        grid.setMinWidth(500);
+        JFXTextField trove = elements.getTextField("Example: 250", 250);
+        JFXTextField geode = elements.getTextField("Leave blank if not applicable", 250);
+        List<Node> nodes = Arrays.asList(elements.getTextH3("Trove Mastery:", p.colorTextDialogButton), trove,
+                elements.getTextH3("Geode Mastery:", p.colorTextDialogButton), geode,
+                elements.getTextNormal("Note that input have to be positive integers; leave blank if not applicable.", p.colorTextDialogButton));
 
-        JFXTextField trove = getTextField("Example: 250", 250);
-        JFXTextField geode = getTextField("Leave blank if not applicable", 250);
-
-        grid.add(getTextSubHeader("Trove Mastery:", p.colorTextDialogButton), 0, 0);
-        grid.add(trove, 0, 1);
-        grid.add(getTextSubHeader("Geode Mastery:", p.colorTextDialogButton), 0, 2);
-        grid.add(geode, 0, 3);
-        grid.add(getTextNormal("Note that input have to be positive integers; leave blank if not applicable.", p.colorTextDialogButton), 0 ,4);
+        elements.setNodeGridPane(grid, nodes);
 
         JFXButton save = new JFXButton("Save");
+        AnchorPane anchor = elements.getAnchorPane(grid, save, true);
         JFXSnackbar confirm = new JFXSnackbar(anchor);
 
-        save.setOnAction(e -> {
-
-            // behavior: save when all inputs are valid
+        save.setOnAction(e -> { // behavior: save when all inputs are valid
             boolean status = true;
             String intRegex = "\\d+";
+
+            // TODO: factor out this logic to logic helper
             if (((!trove.getText().isEmpty() && trove.getText().matches(intRegex)) || trove.getText().isEmpty()) &&
                     ((!geode.getText().isEmpty() && geode.getText().matches(intRegex)) || geode.getText().isEmpty())) {
                 for (String collection: rPaths) {
@@ -843,27 +638,16 @@ public class Presenter {
                 status = false;
             }
 
-            String text = status ? "Saved" : "Invalid input(s), try again";
-
-            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
+            String text = status ? "Mastery set" : "Invalid input(s), try again";
+            JFXSnackbar.SnackbarEvent confirmEvent = elements.getSnackbarEvent(text);
             confirm.enqueue(confirmEvent);
         });
-        save.getStyleClass().add("animated-option-button");
-
-        JFXNodesList fab = new JFXNodesList();
-        fab.addAnimatedNode(save);
-
-        anchor.getChildren().add(fab);
-        AnchorPane.setRightAnchor(fab, 25.0);
-        AnchorPane.setBottomAnchor(fab, 15.0);
 
         return anchor;
     }
 
     AnchorPane getDialogPaneSetBench(List<String> rPaths) {
-        AnchorPane anchor = new AnchorPane();
-        GridPane grid = getDialogGrid();
-        anchor.getChildren().add(grid);
+        GridPane grid = elements.getDialogGrid();
 
         // get options for combo box
         Map<String, String> benchEntries = uiCon.getALlStringsFromFile("languages/en/prefabs_placeable_crafting");
@@ -871,7 +655,6 @@ public class Presenter {
                 .filter(value -> value.contains("interactive"))
                 .filter((value -> !value.contains("category")))
                 .collect(Collectors.toList());
-
 
         // TODO: optimize code here to remove items from map instead of copying?
         Map<String, String> benchNames = new HashMap<>(200);
@@ -881,13 +664,15 @@ public class Presenter {
             }
         }
 
-        JFXComboBox<String> choices = getComboBox(benchNames.values(), "Name");
-        JFXAutoCompletePopup<String> autoCompletePopup = getAutoCompletePopup(benchNames.values(), choices);
-        TextField field = getComboBoxEditor(choices, autoCompletePopup);
+        JFXComboBox<String> choices = elements.getComboBox(benchNames.values(), "Name", 300.0);
+        JFXAutoCompletePopup<String> autoCompletePopup = elements.getAutoCompletePopup(benchNames.values(), choices);
+        TextField field = elements.getComboBoxEditor(choices, autoCompletePopup);
 
         // set up save button
         JFXButton save = new JFXButton("Save");
+        AnchorPane anchor = elements.getAnchorPane(grid, save, true);
         JFXSnackbar confirm = new JFXSnackbar(anchor);
+
         save.setOnAction(event -> {
             String identifier = benchEntries.entrySet().stream()
                     .filter(e -> e.getValue().equals(field.getText()))
@@ -896,47 +681,34 @@ public class Presenter {
                     .orElse(null);
 
             // even though it's a combo box, people can hit save because the combo box is editable
-
             if (identifier != null) {
                 for (String rPath: rPaths) {
                     uiCon.setBenchName(rPath, identifier);
                 }
             }
 
-            String text = identifier != null ? "Saved" : "Invalid input, try again";
-
-            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
+            String text = identifier != null ? "Bench name set" : "Invalid input, try again";
+            JFXSnackbar.SnackbarEvent confirmEvent = elements.getSnackbarEvent(text);
             confirm.enqueue(confirmEvent);
-
         });
 
-        save.getStyleClass().add("animated-option-button");
-
-        JFXNodesList fab = new JFXNodesList();
-        fab.addAnimatedNode(save);
-
-        anchor.getChildren().add(fab);
-        AnchorPane.setRightAnchor(fab, 25.0);
-        AnchorPane.setBottomAnchor(fab, 15.0);
-
-        grid.add(getTextSubHeader("Add name to bench", p.colorTextDialogButton), 0, 0);
+        grid.add(elements.getTextH3("Add name to bench", p.colorTextDialogButton), 0, 0);
         grid.add(choices, 0, 1);
 
         return anchor;
     }
 
     AnchorPane getDialogPaneMatchBenchRecipes(List<String> rPaths) {
-        AnchorPane anchor = new AnchorPane();
-        GridPane grid = getDialogGrid();
-        anchor.getChildren().add(grid);
 
-        grid.add(getTextSubHeader("Match recipes for the selected benches", p.colorTextDialogButton), 0, 0);
+        GridPane grid = elements.getDialogGrid();
+        grid.add(elements.getTextH3("Match recipes for the selected benches", p.colorTextDialogButton), 0, 0);
 
         for (int i = 0; i < rPaths.size(); i++) {
-            grid.add(getTextNormal(uiCon.getName(rPaths.get(i)) + " - " + uiCon.getBenchRecipeNumber(rPaths.get(i)) + " recipes", p.colorTextDialogButton), 0, i + 1);
+            grid.add(elements.getTextNormal(uiCon.getName(rPaths.get(i)) + " - " + uiCon.getBenchRecipeNumber(rPaths.get(i)) + " recipes", p.colorTextDialogButton), 0, i + 1);
         }
 
         JFXButton match = new JFXButton("Go");
+        AnchorPane anchor = elements.getAnchorPane(grid, match, true);
         JFXSnackbar confirm = new JFXSnackbar(anchor);
 
         match.setOnAction(e -> {
@@ -948,34 +720,20 @@ public class Presenter {
             grid.getChildren().clear();
 
             String outputHeader = unmatched.isEmpty() ? "All recipes matched" : "Unmatched recipes:";
-            grid.add(getTextSubHeader(outputHeader, p.colorTextDialogButton), 0, 0);
-            grid.add(getTextNormal(String.join("\n", unmatched), p.colorTextDialogButton), 0, 1);
+            grid.add(elements.getTextH3(outputHeader, p.colorTextDialogButton), 0, 0);
+            grid.add(elements.getTextNormal(String.join("\n", unmatched), p.colorTextDialogButton), 0, 1);
 
             String text = "Matching complete";
 
-            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
+            JFXSnackbar.SnackbarEvent confirmEvent = elements.getSnackbarEvent(text);
             confirm.enqueue(confirmEvent);
         });
-
-        match.getStyleClass().add("animated-option-button");
-
-        JFXNodesList fab = new JFXNodesList();
-        fab.addAnimatedNode(match);
-
-        anchor.getChildren().add(fab);
-        AnchorPane.setRightAnchor(fab, 25.0);
-        AnchorPane.setBottomAnchor(fab, 15.0);
 
         return anchor;
     }
 
-    AnchorPane getDialogPaneAddLootbox(List<String> rPaths, boolean lootbox) {
-
-        // if loot = true, lootbox, else is decon
-
-        AnchorPane anchor = new AnchorPane();
-        GridPane grid = getDialogGrid();
-        anchor.getChildren().add(grid);
+    AnchorPane getDialogPaneAddItemProperty(List<String> rPaths, boolean lootbox) {
+        GridPane grid = elements.getDialogGrid();
         grid.setHgap(10);
 
         AtomicInteger items = new AtomicInteger(1);
@@ -983,20 +741,13 @@ public class Presenter {
         // set up header
         String headerType = lootbox ? "Add lootbox" : "Set deconstruction";
 
-        Text headerText = getTextSubHeader(headerType + " content", p.colorTextDialogButton);
+        Text headerText = elements.getTextH3(headerType + " content", p.colorTextDialogButton);
         HBox headerBox = new HBox();
 
-        JFXComboBox<String> rarity = new JFXComboBox<>();
-        rarity.setPrefWidth(125);
-        rarity.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
-        rarity.getItems().setAll(Arrays.asList("Common", "Uncommon", "Rare"));
+        JFXComboBox<String> rarity = elements.getComboBox(Arrays.asList("Common", "Uncommon", "Rare"), "Rarity", 125);
+        JFXButton add = elements.getButton("Add field", 75, 30, p.backgroundDialogButton, p.colorTextDialogButton);
 
-        JFXButton add = getButton("Add field", 75, 30, p.backgroundDialogButton, p.colorTextDialogButton);
-        if (lootbox) {
-            headerBox.getChildren().setAll(Arrays.asList(headerText, rarity, add));
-        } else {
-            headerBox.getChildren().setAll(Arrays.asList(headerText, add));
-        }
+        headerBox.getChildren().setAll(lootbox ? Arrays.asList(headerText, rarity, add) : Arrays.asList(headerText, add));
 
         headerBox.setSpacing(20);
         headerBox.setAlignment(Pos.CENTER_LEFT);
@@ -1013,158 +764,54 @@ public class Presenter {
         List<JFXAutoCompletePopup<String>> autoCompletePopups = new ArrayList<>();
         List<TextField> fields = new ArrayList<>();
 
-        List<JFXTextField> values = new ArrayList<>();
+        List<JFXTextField> quantities = new ArrayList<>();
 
-        comboBoxes.add(getComboBox(itemNames, "Item"));
-        values.add(getTextField("Quantity", 50));
-        autoCompletePopups.add(getAutoCompletePopup(itemNames, comboBoxes.get(0)));
-        fields.add(getComboBoxEditor(comboBoxes.get(0), autoCompletePopups.get(0)));
+        comboBoxes.add(elements.getComboBox(itemNames, "Item", 300.0));
+        quantities.add(elements.getTextField("Quantity", 50));
+        autoCompletePopups.add(elements.getAutoCompletePopup(itemNames, comboBoxes.get(0)));
+        fields.add(elements.getComboBoxEditor(comboBoxes.get(0), autoCompletePopups.get(0)));
 
         // set up save button
         JFXButton save = new JFXButton("Save");
+        AnchorPane anchor = elements.getAnchorPane(grid, save, true);
         JFXSnackbar confirm = new JFXSnackbar(anchor);
+
         save.setOnAction(event -> {
+            boolean status = logic.itemPropertyInputValidation(comboBoxes, itemNames, quantities, items.get(), lootbox);
+            if (status) {
+                String lootboxRarity = rarity.getValue().toLowerCase();
+                logic.itemPropertyInsert(comboBoxes, rPaths, quantities, items.get(), lootbox, lootboxRarity, uiCon);
+            }
 
-                // data validation
-                boolean status = true;
-                for (int i = 0; i < items.get(); i++) {
-                    if (!itemNames.contains(comboBoxes.get(i).getValue())) {
-                        status = false;
-                        break;
-                    }
+            String text = status ? "Saved" : "Invalid input, try again";
+            JFXSnackbar.SnackbarEvent confirmEvent = elements.getSnackbarEvent(text);
+            confirm.enqueue(confirmEvent);
+        });
 
-                    String intRegex = lootbox ? "\\d*[-]?\\d+" : "\\d+";
-                    if (!values.get(i).getText().matches(intRegex)) {
-                        status = false;
-                        break;
-                    }
-                }
-
-                // data insertion, if data is valid
-                if (status) {
-
-                    // get the rPaths
-                    List<String[]> loot = new ArrayList<>();
-                    for (int i = 0; i < items.get(); i++) {
-                        String item = comboBoxes.get(i).getValue();
-                        String quantity = values.get(i).getText();
-
-                        String itemRPath = item.split(" - ")[1];
-                        loot.add(new String[]{itemRPath, quantity});
-                    }
-
-                    // add the loot
-                    String lootboxRarity = rarity.getValue();
-
-                    // if lootbox, add to lootbox, else add to decons
-                    if (lootbox) {
-                        for (String rPath: rPaths) {
-                            uiCon.addLootboxContent(rPath, lootboxRarity.toLowerCase(), loot);
-                        }
-                    } else {
-                        for (String rPath: rPaths) {
-                            uiCon.addDeconContent(rPath, loot);
-                        }
-                    }
-
-                }
-
-                String text = status ? "Saved" : "Invalid input, try again";
-
-                JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
-                confirm.enqueue(confirmEvent);
-            });
-
-
-        // set up additional fields
         add.setOnAction(e -> {
             if (items.get() < 7) {
                 items.getAndIncrement();
 
-                comboBoxes.add(getComboBox(itemNames, "Item"));
-                values.add(getTextField("Quantity", 50));
-                autoCompletePopups.add(getAutoCompletePopup(itemNames, comboBoxes.get(items.get() - 1)));
-                fields.add(getComboBoxEditor(comboBoxes.get(items.get() - 1), autoCompletePopups.get(items.get() - 1)));
+                comboBoxes.add(elements.getComboBox(itemNames, "Item", 300.0));
+                quantities.add(elements.getTextField("Quantity", 50));
+                autoCompletePopups.add(elements.getAutoCompletePopup(itemNames, comboBoxes.get(items.get() - 1)));
+                fields.add(elements.getComboBoxEditor(comboBoxes.get(items.get() - 1), autoCompletePopups.get(items.get() - 1)));
 
                 grid.add(comboBoxes.get(items.get() - 1), 0, items.get());
-                grid.add(values.get(items.get() - 1), 1, items.get());
+                grid.add(quantities.get(items.get() - 1), 1, items.get());
             }
-
         });
-
-
-        save.getStyleClass().add("animated-option-button");
-
-        JFXNodesList fab = new JFXNodesList();
-        fab.addAnimatedNode(save);
-
-        anchor.getChildren().add(fab);
-        AnchorPane.setRightAnchor(fab, 25.0);
-        AnchorPane.setBottomAnchor(fab, 15.0);
 
         grid.add(headerBox, 0, 0, 2, 1);
         grid.add(comboBoxes.get(0), 0, 1);
-        grid.add(values.get(0), 1, 1);
+        grid.add(quantities.get(0), 1, 1);
 
         return anchor;
     }
 
-    JFXSnackbar.SnackbarEvent getSnackbarEvent(String text) {
-        HBox textBox = new HBox();
-        textBox.getChildren().add(getTextSubHeader(text, p.colorTextDialogButton));
-        textBox.setAlignment(Pos.CENTER_LEFT);
-        textBox.setMinWidth(300);
-        textBox.setMinHeight(35);
-        textBox.setPadding(new Insets(0, 20, 0, 20));
 
-        return new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
-    }
 
-    JFXComboBox<String> getComboBox(Collection<String> content, String promptText) {
-        JFXComboBox<String> options = new JFXComboBox<>();
-        options.setEditable(true);
-        options.setPrefWidth(300);
-        options.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
-        options.setPromptText(promptText);
+    
 
-        options.getItems().setAll(content);
-
-        return options;
-    }
-
-    JFXAutoCompletePopup<String> getAutoCompletePopup(Collection<String> content, ComboBox<String> choices) {
-        JFXAutoCompletePopup<String> autoCompletePopup = new JFXAutoCompletePopup<>();
-        autoCompletePopup.setPrefWidth(300);
-        autoCompletePopup.setFixedCellSize(32);
-        autoCompletePopup.setStyle("-fx-focus-color: #6D6D6D ; -fx-faint-focus-color: -fx-control-inner-background ;");
-
-        autoCompletePopup.setSelectionHandler(event -> choices.setValue(event.getObject()));
-
-        autoCompletePopup.getSuggestions().setAll(content);
-        return autoCompletePopup;
-    }
-
-    TextField getComboBoxEditor(ComboBox<String> comboBox, JFXAutoCompletePopup<String> autoCompletePopup) {
-        TextField field = comboBox.getEditor();
-        field.textProperty().addListener(observable -> {
-            autoCompletePopup.filter(string -> string.toLowerCase().contains(field.getText().toLowerCase()));
-            if (autoCompletePopup.getFilteredSuggestions().isEmpty() || comboBox.showingProperty().get() || !comboBox.focusedProperty().get()) {
-                autoCompletePopup.hide();
-            } else {
-                autoCompletePopup.show(field);
-            }
-        });
-
-        return field;
-    }
-
-    GridPane getDialogGrid() {
-        GridPane grid = new GridPane();
-
-        grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(10);
-        grid.setMinWidth(500);
-
-        return grid;
-    }
+    
 }

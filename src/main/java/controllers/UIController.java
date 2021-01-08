@@ -1,6 +1,7 @@
 package controllers;
 
 import com.jfoenix.controls.JFXTextArea;
+import javafx.scene.paint.Paint;
 import objects.CollectionEnums;
 import ui.DesignProperties;
 import ui.searchables.Searchable;
@@ -8,7 +9,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import parser.Parser;
@@ -18,12 +18,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class UIController {
 
-    LogicController con = new LogicController();
+    ModelController con = new ModelController();
     DesignProperties dp;
 
     List<String> selectedPaths = new ArrayList<>();
@@ -36,7 +35,7 @@ public class UIController {
     }
 
     public List<String> getPaths(String dirPath, String filter) {
-        return con.filterOutWithout(con.getPaths(con.getFiles(dirPath)), filter);
+        return con.getPathsWithFilter(dirPath, filter);
     }
 
     public CheckBoxTreeItem<String> getFileTree(String dirPath, String filter, boolean npcFilter) {
@@ -123,7 +122,7 @@ public class UIController {
     public VBox getItemContent(String rPath) {
         VBox content = getContentBox();
 
-        // will need to get more items from LogicController later as we add more properties
+        // will need to get more items from ModelController later as we add more properties
         content.getChildren().add(createSubHeaderText("Description:", content));
         if (con.getItemDesc(rPath) != null) {
             content.getChildren().add(createContentText(con.getItemDesc(rPath), content));
@@ -209,7 +208,7 @@ public class UIController {
         content.getChildren().add(createContentText(rPath, content));
 
         Map<CollectionEnums.Property, Double> colProp = con.getCollectionProperties(rPath);
-        Map<CollectionEnums.Buff, Double> buffs = con.getDragonBuffs(rPath);
+        Map<CollectionEnums.Buff, Double> buffs = con.getCollectionBuffs(rPath);
 
         if (!colProp.isEmpty()) {
             for (Map.Entry<CollectionEnums.Property, Double> item: colProp.entrySet()) {
@@ -290,7 +289,11 @@ public class UIController {
         String failedPathsJoined = String.join(" \n", failedPaths);
 
         content.getChildren().add(new Text("The following paths were not parsed:"));
-        content.getChildren().add(new JFXTextArea(failedPathsJoined));
+        JFXTextArea failed = new JFXTextArea(failedPathsJoined);
+        failed.setFocusColor(Paint.valueOf(dp.colorBackgroundDialog));
+        failed.setUnFocusColor(Paint.valueOf(dp.colorBackgroundDialog));
+        failed.setBackground(dp.backgroundDialog);
+        content.getChildren().add(failed);
 
         Text message = new Text("Note that this is normal, if files that have not been designed to be parsed were selected.");
         message.setWrappingWidth(350);
@@ -323,7 +326,7 @@ public class UIController {
 
     Text createSubHeaderText(String text, VBox box) {
         Text newText = new Text(text);
-        newText.setFont(dp.fontSubHeader);
+        newText.setFont(dp.fontH3);
         newText.wrappingWidthProperty().bind(box.widthProperty().multiply(0.9));
         return newText;
     }
@@ -395,11 +398,11 @@ public class UIController {
     }
 
     public void initSetUp() {
-        con.setManagers();
+        con.importDataLocal();
     }
 
     public void save() {
-        con.save();
+        con.exportDataLocal();
     }
 
     public void addNotes(List<String> rPaths, String note) {
@@ -436,23 +439,15 @@ public class UIController {
     }
 
     public List<String> matchBenchRecipe(String rPath) {
-        return con.matchBenchRecipes(rPath);
+        return con.matchBenchToRecipes(rPath);
     }
 
     public int getBenchRecipeNumber(String rPath) {
-        return con.getBenchRecipeNumber(rPath);
+        return con.getBenchRecipes(rPath).size();
     }
 
     public String getName(String rPath) {
         return con.getName(rPath);
-    }
-
-    public Set<String> getAllLangFileNames() {
-        return con.getAllLangFileNames();
-    }
-
-    public String getString(String identifier) {
-        return con.getString(identifier);
     }
 
     public void addLootboxContent(String rPath, String rarity, List<String[]> loot) {

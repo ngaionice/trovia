@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LogicController {
+public class ModelController {
 
     BenchManager benchM;
     CollectionManager colM;
@@ -23,38 +23,11 @@ public class LogicController {
     TextPresenter pr = new TextPresenter();
     SerGateway gateway = new SerGateway();
 
-    // create objects:
-
-    // create gear listings
-    // create upgrade trees eventually?
-
-    // modify objects:
-
-    // add/change mastery to items (batch and individual)
-    // add lootbox stuff to items
-    // add decon stuff to items
-
     // HELPER?
-
-    /**
-     * Returns the name of the object referred to by the input relative path.
-     *
-     * @param rPath relative path of the object to be searched for
-     * @return the name of the object, obtained from a LangFile
-     */
-    String getName(String rPath) {
-        List<SearchManager> searchables = Arrays.asList(benchM, colM, itemM);
-        for (SearchManager manager: searchables) {
-            if (manager.getName(rPath) != null) {
-                return langM.getString(manager.getName(rPath));
-            }
-        }
-        return null;
-    }
 
     // PARSING
 
-    String createObject(String absPath, Parser.ObjectType type) throws IOException {
+    public String createObject(String absPath, Parser.ObjectType type) throws IOException {
         switch (type) {
             case ITEM:
                 try {
@@ -106,9 +79,13 @@ public class LogicController {
         }
     }
 
-    // MODIFY
+    // SETTERS - BENCH & RECIPE
 
-    List<String> matchBenchRecipes(String rPath) {
+    public void setBenchName(String rPath, String identifier) {
+        benchM.setName(rPath, identifier);
+    }
+
+    public List<String> matchBenchToRecipes(String rPath) {
         List<String> recipes = benchM.getAllRecipes(rPath);
         List<String> unmatched = new ArrayList<>();
         String benchName = benchM.getName(rPath);
@@ -123,31 +100,9 @@ public class LogicController {
     }
 
     /**
-     * Add notes to an Item or a Collection. Also adds the note to language file "languages/en/prefabs_notes".
-     *
-     * @param rPath relative path of the item
-     */
-    void addNotes(String rPath, String value) {
-        String notesLangFile = "languages/en/prefabs_notes";
-
-        // format: $prefab_item_aura_music_01_1
-        String key = "$prefab_" + rPath.replaceAll("/", "_") + "_" + langM.getLangFileLength(notesLangFile);
-        langM.addString(notesLangFile, key, value);
-        if (rPath.contains("item")) {
-            itemM.addNotes(rPath, key);
-        } else {
-            colM.addNotes(rPath, key);
-        }
-    }
-
-    void setBenchName(String rPath, String identifier) {
-        benchM.setName(rPath, identifier);
-    }
-
-    /**
      * Match all newly-added Recipes to their respective Items and Collections. Returns a list of failed recipes, or null if all recipes were matched.
      */
-    List<String> matchNewRecipes() {
+    public List<String> matchNewRecipes() {
         boolean allMatched = true;
         List<String> failed = new ArrayList<>();
         for (String rPath: recM.getNewRPaths()) {
@@ -180,57 +135,97 @@ public class LogicController {
         }
     }
 
-    void setTroveMastery(String rPath, int mastery) {
+    // SETTERS - ITEM & COLLECTION
+
+    /**
+     * Add notes to an Item or a Collection. Also adds the note to language file "languages/en/prefabs_notes".
+     *
+     * @param rPath relative path of the item
+     */
+    public void addNotes(String rPath, String value) {
+        String notesLangFile = "languages/en/prefabs_notes";
+
+        // format: $prefab_item_aura_music_01_1
+        String key = "$prefab_" + rPath.replaceAll("/", "_") + "_" + langM.getLangFileLength(notesLangFile);
+        langM.addString(notesLangFile, key, value);
+        if (rPath.contains("item")) {
+            itemM.addNotes(rPath, key);
+        } else {
+            colM.addNotes(rPath, key);
+        }
+    }
+
+    public void addLootboxCommon(String rPath, List<String[]> loot) {
+        itemM.addLootBoxCommon(rPath, loot);
+    }
+
+    public void addLootboxUncommon(String rPath, List<String[]> loot) {
+        itemM.addLootBoxUncommon(rPath, loot);
+    }
+
+    public void addLootboxRare(String rPath, List<String[]> loot) {
+        itemM.addLootBoxRare(rPath, loot);
+    }
+
+    public void addDeconContent(String rPath, List<String[]> loot) {
+        Map<String, Integer> map = new HashMap<>(5);
+        for (String[] item: loot) {
+            map.put(item[0], Integer.parseInt(item[1]));
+        }
+        itemM.setDecon(rPath, map);
+    }
+
+    public void setTroveMastery(String rPath, int mastery) {
         colM.setTroveMR(rPath, mastery);
     }
 
-    void setGeodeMastery(String rPath, int mastery) {
+    public void setGeodeMastery(String rPath, int mastery) {
         colM.setGeodeMR(rPath, mastery);
     }
 
-    // FILE MANAGEMENT
+    // GETTERS - GENERAL
 
     /**
-     * Returns all Files in a directory given by the input absolute path. Returns null if the input path is null.
+     * Returns the name of the object referred to by the input relative path. Returns null if not found.
      *
-     * @param absPath absolute path of the directory
-     * @return  array of File
+     * @param rPath relative path of the object to be searched for
+     * @return the name of the object, obtained from a LangFile
      */
-    File[] getFiles(String absPath) {
+    public String getName(String rPath) {
+        List<SearchManager> searchables = Arrays.asList(benchM, colM, itemM);
+        for (SearchManager manager: searchables) {
+            if (manager.getName(rPath) != null) {
+                return langM.getString(manager.getName(rPath));
+            }
+        }
+        return null;
+    }
+
+    public String getString(String identifier) {
+        String string = langM.getString(identifier);
+        if (string != null && !string.equals("")) {
+            return string;
+        }
+        return "Not available.";
+    }
+
+    /**
+     * Returns all file paths in the input directory that contains the input filter.
+     *
+     * @param absPath   absolute path of the directory
+     * @param filter    the string to filter by
+     * @return          list of paths containing the filter
+     */
+    public List<String> getPathsWithFilter(String absPath, String filter) {
         if (absPath == null) {
             return null;
         }
 
-        // since presenter checks that the input path is a directory, we can assume that here
-        File dir = new File(absPath);
-        return dir.listFiles();
-    }
-
-    /**
-     * Returns a list of Strings, which is a list of path names from the input File array.
-     *
-     * @param files array of File
-     * @return list of Strings converted from the array
-     */
-    List<String> getPaths(File[] files) {
-        return Arrays.stream(files).map(File::getPath).collect(Collectors.toList());
-    }
-
-    /**
-     * Returns a list of Strings, where the Strings are from the input list and contain the input filter string.
-     *
-     * @param paths   list of Strings
-     * @param filter  the string to filter by
-     * @return        list of Strings, keeping only the strings from the input list containing the filter string
-     */
-    List<String> filterOutWithout(List<String> paths, String filter) {
-        List<String> newList = new ArrayList<>();
-        for (String item: paths) {
-            if (item.contains(filter)) {
-                newList.add(item);
-            }
-        }
-        return newList;
+        File dir = new File(absPath);   // since presenter checks that the input path is a directory, we can assume that here
+        List<String> paths = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+                .map(File::getPath)
+                .collect(Collectors.toList());
+        return paths.stream().filter(value -> value.contains(filter)).collect(Collectors.toList());
     }
 
     /**
@@ -240,7 +235,7 @@ public class LogicController {
      * @param artTypes list of Article types in strings
      * @return         list of string arrays
      */
-     List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes) {
+    public List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes) {
 
         // the ArrayList that will hold the entries
         List<SearchManager> managers = new ArrayList<>();
@@ -284,9 +279,9 @@ public class LogicController {
         return entryList;
     }
 
-    // RELAYING MODULES
+    // GETTERS - ITEM
 
-    String getItemDesc(String rPath) {
+    public String getItemDesc(String rPath) {
         if (itemM.getDesc(rPath) != null) {
             String desc = langM.getString(itemM.getDesc(rPath).toLowerCase());
             if (desc != null) {
@@ -296,14 +291,32 @@ public class LogicController {
         return "Not available.";
     }
 
-    String getItemDescIdentifier(String rPath) {
+    public String getItemDescIdentifier(String rPath) {
         if (itemM.getDesc(rPath) != null && !itemM.getDesc(rPath).equals("")) {
             return itemM.getDesc(rPath);
         }
         return "Not available.";
     }
 
-    String getCollectionDesc(String rPath) {
+    public List<String> getItemRecipes(String rPath) {
+        return itemM.getRecipe(rPath);
+    }
+
+    public List<String> getItemNotes(String rPath) {
+        return itemM.getNotes(rPath);
+    }
+
+    public Map<String, Integer> getDecons(String rPath) {
+        return itemM.getDecons(rPath);
+    }
+
+    public Map<String, Map<String, String>> getLootbox(String rPath) {
+        return itemM.getLootbox(rPath);
+    }
+
+    // GETTERS - COLLECTION
+
+    public String getCollectionDesc(String rPath) {
         if (colM.getDesc(rPath) != null) {
             String desc = langM.getString(colM.getDesc(rPath).toLowerCase());
             if (desc != null) {
@@ -313,46 +326,48 @@ public class LogicController {
         return "Not available.";
     }
 
-    String getCollectionDescIdentifier(String rPath) {
+    public String getCollectionDescIdentifier(String rPath) {
         if (colM.getDesc(rPath) != null && !colM.getDesc(rPath).equals("")) {
             return colM.getDesc(rPath);
         }
         return "Not available.";
     }
 
-    List<String> getBenchRecipes(String rPath) {
-        return benchM.getAllRecipes(rPath);
-    }
-
-    Map<CollectionEnums.Property, Double> getCollectionProperties(String rPath) {
+    public Map<CollectionEnums.Property, Double> getCollectionProperties(String rPath) {
         return colM.getProperties(rPath);
     }
 
-    Map<CollectionEnums.Buff, Double> getDragonBuffs(String rPath) {
+    public Map<CollectionEnums.Buff, Double> getCollectionBuffs(String rPath) {
         return colM.getBuffs(rPath);
     }
 
-    Integer[] getCollectionMastery(String rPath) {
+    public Integer[] getCollectionMastery(String rPath) {
         return colM.getMastery(rPath);
     }
 
-    List<String> getCollectionRecipes(String rPath) {
+    public List<String> getCollectionRecipes(String rPath) {
         return colM.getRecipe(rPath);
     }
 
-    List<String> getCollectionNotes(String rPath) {
+    public List<String> getCollectionNotes(String rPath) {
         return colM.getNotes(rPath);
     }
 
-    List<String> getItemRecipes(String rPath) {
-        return itemM.getRecipe(rPath);
+    // GETTERS - BENCH
+
+    public List<String> getBenchRecipes(String rPath) {
+        return benchM.getAllRecipes(rPath);
     }
 
-    List<String> getItemNotes(String rPath) {
-        return itemM.getNotes(rPath);
+    // GETTERS - LANG FILE
+
+    public Map<String, String> getAllStringsFromFile(String rPath) {
+        return langM.getAllFileStrings(rPath);
     }
 
-    void save() {
+    // FILE STORAGE
+
+    void exportDataLocal() {
         gateway.exportManager("bench.ser", benchM);
         gateway.exportManager("collection.ser", colM);
         gateway.exportManager("item.ser", itemM);
@@ -360,7 +375,7 @@ public class LogicController {
         gateway.exportManager("recipe.ser", recM);
     }
 
-    void setManagers() {
+    void importDataLocal() {
         benchM = (BenchManager) gateway.importManager("bench.ser");
         colM = (CollectionManager) gateway.importManager("collection.ser");
         itemM = (ItemManager) gateway.importManager("item.ser");
@@ -368,54 +383,11 @@ public class LogicController {
         recM = (RecipeManager) gateway.importManager("recipe.ser");
     }
 
-    String getString(String identifier) {
-        String string = langM.getString(identifier);
-        if (string != null && !string.equals("")) {
-            return string;
-        }
-        return "Not available.";
-    }
 
-    Map<String, String> getAllStringsFromFile(String rPath) {
-         return langM.getAllFileStrings(rPath);
-    }
 
-    public int getBenchRecipeNumber(String rPath) {
-         if (benchM.getName(rPath) != null) {
-             return benchM.getAllRecipes(rPath).size();
-         }
-         return -1;
-    }
 
-    public Set<String> getAllLangFileNames() {
-         return langM.getAllNames();
-    }
 
-    public void addLootboxCommon(String rPath, List<String[]> loot) {
-         itemM.addLootBoxCommon(rPath, loot);
-    }
 
-    public void addLootboxUncommon(String rPath, List<String[]> loot) {
-         itemM.addLootBoxUncommon(rPath, loot);
-    }
 
-    public void addLootboxRare(String rPath, List<String[]> loot) {
-         itemM.addLootBoxRare(rPath, loot);
-    }
 
-    public Map<String, Map<String, String>> getLootbox(String rPath) {
-         return itemM.getLootbox(rPath);
-    }
-
-    public void addDeconContent(String rPath, List<String[]> loot) {
-         Map<String, Integer> map = new HashMap<>(5);
-         for (String[] item: loot) {
-             map.put(item[0], Integer.parseInt(item[1]));
-         }
-         itemM.setDecon(rPath, map);
-    }
-
-    public Map<String, Integer> getDecons(String rPath) {
-         return itemM.getDecons(rPath);
-    }
 }

@@ -13,8 +13,9 @@ public class DesignProperties {
 
     // FONTS
 
-    public Font fontHeader = Font.font("Roboto Medium", 15);
-    public Font fontSubHeader = Font.font("Roboto Medium", 13);
+    public Font fontH1 = Font.font("Roboto Medium", 20);
+    public Font fontH2 = Font.font("Roboto Medium", 16);
+    public Font fontH3 = Font.font("Roboto Medium", 14);
     public Font fontNormal = Font.font("Roboto Regular", 12);
 
     // COLORS
@@ -28,6 +29,8 @@ public class DesignProperties {
 
     public String colorTextFieldFocus = "#FF9800";
     public String colorTextFieldError = "#F44336";
+
+    public String colorBackgroundDialog = "#EEEEEE";
 
     // BACKGROUNDS
 
