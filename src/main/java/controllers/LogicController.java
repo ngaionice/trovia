@@ -42,14 +42,13 @@ public class LogicController {
      * @param rPath relative path of the object to be searched for
      * @return the name of the object, obtained from a LangFile
      */
-    private String getName(String rPath) {
+    String getName(String rPath) {
         List<SearchManager> searchables = Arrays.asList(benchM, colM, itemM);
         for (SearchManager manager: searchables) {
             if (manager.getName(rPath) != null) {
                 return langM.getString(manager.getName(rPath));
             }
         }
-        pr.searchFailure(rPath);
         return null;
     }
 
@@ -109,13 +108,18 @@ public class LogicController {
 
     // MODIFY
 
-    private void matchBenchRecipes(String rPath) {
+    List<String> matchBenchRecipes(String rPath) {
         List<String> recipes = benchM.getAllRecipes(rPath);
+        List<String> unmatched = new ArrayList<>();
         String benchName = benchM.getName(rPath);
         for (String recipe: recipes) {
-            recM.setBench("recipes/" + recipe, benchName);
+            if (recM.getName("recipes/" + recipe.toLowerCase()) != null) {
+                recM.setBench("recipes/" + recipe.toLowerCase(), benchName);
+            } else {
+                unmatched.add(recipe);
+            }
         }
-        // TODO: log this process somewhere
+        return unmatched;
     }
 
     /**
@@ -376,4 +380,42 @@ public class LogicController {
          return langM.getAllFileStrings(rPath);
     }
 
+    public int getBenchRecipeNumber(String rPath) {
+         if (benchM.getName(rPath) != null) {
+             return benchM.getAllRecipes(rPath).size();
+         }
+         return -1;
+    }
+
+    public Set<String> getAllLangFileNames() {
+         return langM.getAllNames();
+    }
+
+    public void addLootboxCommon(String rPath, List<String[]> loot) {
+         itemM.addLootBoxCommon(rPath, loot);
+    }
+
+    public void addLootboxUncommon(String rPath, List<String[]> loot) {
+         itemM.addLootBoxUncommon(rPath, loot);
+    }
+
+    public void addLootboxRare(String rPath, List<String[]> loot) {
+         itemM.addLootBoxRare(rPath, loot);
+    }
+
+    public Map<String, Map<String, String>> getLootbox(String rPath) {
+         return itemM.getLootbox(rPath);
+    }
+
+    public void addDeconContent(String rPath, List<String[]> loot) {
+         Map<String, Integer> map = new HashMap<>(5);
+         for (String[] item: loot) {
+             map.put(item[0], Integer.parseInt(item[1]));
+         }
+         itemM.setDecon(rPath, map);
+    }
+
+    public Map<String, Integer> getDecons(String rPath) {
+         return itemM.getDecons(rPath);
+    }
 }

@@ -5,6 +5,7 @@ import objects.LangFile;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class LanguageManager implements Manager, Serializable {
 
@@ -91,6 +92,10 @@ public class LanguageManager implements Manager, Serializable {
 
     public int getLangFileLength(String rPath) {
         return langFileMap.get(rPath).getStrings().size();
+    }
+
+    public Set<String> getAllNames() {
+        return langFileMap.keySet();
     }
 
     // setters

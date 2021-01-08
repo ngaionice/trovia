@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class UIController {
@@ -27,8 +28,6 @@ public class UIController {
 
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
-
-    List<String> selectedArticles = new ArrayList<>();
 
     // CREATE-RELATED
 
@@ -132,12 +131,52 @@ public class UIController {
             content.getChildren().add(createContentText("Not available.", content));
         }
 
-
         content.getChildren().add(createSubHeaderText("Description identifer:", content));
         content.getChildren().add(createContentText(con.getItemDescIdentifier(rPath), content));
 
         content.getChildren().add(createSubHeaderText("Relative path:", content));
         content.getChildren().add(createContentText(rPath, content));
+
+        if (con.getLootbox(rPath) != null) {
+
+            content.getChildren().add(createSubHeaderText("Lootbox Contents", content));
+            Map<String, Map<String, String>> loot = con.getLootbox(rPath);
+
+            // common
+            if (loot.get("common") != null) {
+                Map<String, String> common = loot.get("common");
+                content.getChildren().add(createContentText("Common loot", content));
+                for (String itemPath: common.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + common.get(itemPath), content));
+                }
+            }
+
+            // uncommon
+            if (loot.get("uncommon") != null) {
+                Map<String, String> uncommon = loot.get("uncommon");
+                content.getChildren().add(createContentText("Uncommon loot", content));
+                for (String itemPath: uncommon.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + uncommon.get(itemPath), content));
+                }
+            }
+
+            // rare
+            if (loot.get("rare") != null) {
+                Map<String, String> rare = loot.get("rare");
+                content.getChildren().add(createContentText("Rare loot", content));
+                for (String itemPath: rare.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + rare.get(itemPath), content));
+                }
+            }
+        }
+
+        if (con.getDecons(rPath) != null) {
+            content.getChildren().add(createSubHeaderText("Loots into: ", content));
+            Map<String, Integer> decons = con.getDecons(rPath);
+            for (String itemPath: decons.keySet()) {
+                content.getChildren().add(createContentText( con.getName(itemPath)+ " - " + decons.get(itemPath), content));
+            }
+        }
 
         if (con.getItemRecipes(rPath) != null) {
             content.getChildren().add(createSubHeaderText("Recipes: ", content));
@@ -209,9 +248,6 @@ public class UIController {
             }
         }
 
-
-
-
         return content;
     }
 
@@ -254,7 +290,7 @@ public class UIController {
         String failedPathsJoined = String.join(" \n", failedPaths);
 
         content.getChildren().add(new Text("The following paths were not parsed:"));
-        content.getChildren().add(new TextArea(failedPathsJoined));
+        content.getChildren().add(new JFXTextArea(failedPathsJoined));
 
         Text message = new Text("Note that this is normal, if files that have not been designed to be parsed were selected.");
         message.setWrappingWidth(350);
@@ -264,22 +300,6 @@ public class UIController {
     }
 
     // MODIFY-RELATED
-
-    public void addSelectedArticle(String rPath) {
-        selectedArticles.add(rPath);
-    }
-
-    public void removeSelectedArticle(String rPath) {
-        selectedArticles.remove(rPath);
-    }
-
-    public void clearSelectedArticles(String rPath) {
-        selectedArticles.clear();
-    }
-
-    public List<String> getAllSelectedArticles() {
-        return selectedArticles;
-    }
 
     // DEBUGGING
 
@@ -413,5 +433,43 @@ public class UIController {
 
     public Map<String, String> getALlStringsFromFile(String rPath) {
         return con.getAllStringsFromFile(rPath);
+    }
+
+    public List<String> matchBenchRecipe(String rPath) {
+        return con.matchBenchRecipes(rPath);
+    }
+
+    public int getBenchRecipeNumber(String rPath) {
+        return con.getBenchRecipeNumber(rPath);
+    }
+
+    public String getName(String rPath) {
+        return con.getName(rPath);
+    }
+
+    public Set<String> getAllLangFileNames() {
+        return con.getAllLangFileNames();
+    }
+
+    public String getString(String identifier) {
+        return con.getString(identifier);
+    }
+
+    public void addLootboxContent(String rPath, String rarity, List<String[]> loot) {
+        switch (rarity) {
+            case "common":
+                con.addLootboxCommon(rPath, loot);
+                break;
+            case "uncommon":
+                con.addLootboxUncommon(rPath, loot);
+                break;
+            case "rare":
+                con.addLootboxRare(rPath, loot);
+                break;
+        }
+    }
+
+    public void addDeconContent(String rPath, List<String[]> loot) {
+        con.addDeconContent(rPath, loot);
     }
 }

@@ -91,7 +91,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
      * @param rPath relative path of the item
      * @return a map of maps
      */
-    public Map<String, Map<String, Integer>> getLootbox(String rPath) {
+    public Map<String, Map<String, String>> getLootbox(String rPath) {
         if (itemMap.get(rPath).isLootbox()) {
             return itemMap.get(rPath).getLootbox();
         }
@@ -158,7 +158,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
         addMap.put(item.getRPath(), item);
     }
 
-    public void addDecon(String rPath, Map<String, Integer> decons) {
+    public void setDecon(String rPath, Map<String, Integer> decons) {
         Item item = itemMap.get(rPath);
         item.setDecons(decons);
         item.setDeconnable(true);
@@ -168,7 +168,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
     public void addLootBoxCommon(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
         for (String[] lootable: loot) {
-            item.addLootboxCommon(lootable[0], Integer.parseInt(lootable[1]));
+            item.addLootboxCommon(lootable[0], lootable[1]);
         }
         addMap.put(item.getRPath(), item);
     }
@@ -176,7 +176,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
     public void addLootBoxUncommon(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
         for (String[] lootable: loot) {
-            item.addLootboxUncommon(lootable[0], Integer.parseInt(lootable[1]));
+            item.addLootboxUncommon(lootable[0], lootable[1]);
         }
         addMap.put(item.getRPath(), item);
     }
@@ -184,7 +184,7 @@ public class ItemManager implements Manager, SearchManager, Serializable {
     public void addLootBoxRare(String rPath, List<String[]> loot) {
         Item item = itemMap.get(rPath);
         for (String[] lootable: loot) {
-            item.addLootboxRare(lootable[0], Integer.parseInt(lootable[1]));
+            item.addLootboxRare(lootable[0], lootable[1]);
         }
         addMap.put(item.getRPath(), item);
     }

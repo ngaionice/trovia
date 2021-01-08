@@ -23,7 +23,7 @@ public class ParseItem implements ParseStrategy {
 
         // instantiate the stuff needed to parse
         Markers m = new Markers();
-        String prefabMarker = "24 70 72 65 66 61 62 73 5F 69 74 65 6D"; // $prefabs_item
+        String prefabMarker = "24 70 72 65 66 61 62 "; // $prefabs; changed from $prefabs_item for more flexibility
         String recPathStartMarker = "item\\";
         String recPathEndMarker = ".binfab";
 
@@ -106,8 +106,7 @@ public class ParseItem implements ParseStrategy {
         if (name != null && rPath != null) {
             item = new Item(name, desc, unlocks, rPath, lootbox);
         } else {
-            System.out.println("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");
-            item = new Item(absPath);
+            throw new ParseException("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");
         }
         return item;
     }

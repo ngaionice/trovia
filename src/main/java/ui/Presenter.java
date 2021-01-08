@@ -8,11 +8,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.css.CssMetaData;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.text.TextFlow;
-import javafx.util.Callback;
+
 import javafx.util.Duration;
 import ui.searchables.Searchable;
 import javafx.application.Platform;
@@ -34,6 +30,7 @@ import parser.Parser;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -455,7 +452,6 @@ public class Presenter {
             edit.setOnAction(evt -> {
                 rPathsToEdit.set(checkedRows.entrySet().stream().filter(e -> e.getValue().get()).map(Map.Entry::getKey)
                         .map(Searchable::getRPath).collect(Collectors.toList()));
-                rPathsToEdit.get().forEach(System.out::println);
                 JFXDialog dialogEdit = getEditPane(tablePane, rPathsToEdit.get(), types.get(0));
 
                 dialogEdit.show();
@@ -681,7 +677,7 @@ public class Presenter {
 
         // items only
         JFXButton lootbox = new JFXButton("Add lootbox content");
-        JFXButton decons = new JFXButton("Add deconstruction output");
+        JFXButton decons = new JFXButton("Set deconstruction output");
 
         // benches only
         JFXButton name = new JFXButton("Set bench name");
@@ -704,14 +700,19 @@ public class Presenter {
 
         mastery.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetMastery(rPaths)));
 
+        lootbox.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddLootbox(rPaths, true)));
+        decons.setOnAction(e -> dialogRoot.setCenter(getDialogPaneAddLootbox(rPaths, false)));
+
         name.setOnAction(e -> dialogRoot.setCenter(getDialogPaneSetBench(rPaths)));
+        match.setOnAction(e -> dialogRoot.setCenter(getDialogPaneMatchBenchRecipes(rPaths)));
 
 
         // control the pane based on buttons pressed
         dialogRoot.setLeft(getEditSideBar(root, options));
         dialogRoot.setCenter(getDialogPaneSelectedObjects(rPaths));
 
-        dialogLayout.setHeading(getTextHeader("Editing " + rPaths.size() + " objects", p.colorTextDialog));
+        String plural = rPaths.size() != 1 ? "s" : "";
+        dialogLayout.setHeading(getTextHeader("Editing " + rPaths.size() + " object" + plural, p.colorTextDialog));
         dialogLayout.setBody(dialogRoot);
 
         return dialog;
@@ -747,8 +748,7 @@ public class Presenter {
         return grid;
     }
 
-    StackPane getDialogPaneAddNotes(List<String> rPaths) {
-        StackPane root = new StackPane();
+    AnchorPane getDialogPaneAddNotes(List<String> rPaths) {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
         anchor.getChildren().add(grid);
@@ -773,9 +773,7 @@ public class Presenter {
         AnchorPane.setRightAnchor(fab, 25.0);
         AnchorPane.setBottomAnchor(fab, 15.0);
 
-        root.getChildren().add(anchor);
-
-        return root;
+        return anchor;
     }
 
     // TODO: add button to start instead of starting directly; or move it elsewhere
@@ -797,8 +795,7 @@ public class Presenter {
         return grid;
     }
 
-    StackPane getDialogPaneSetMastery(List<String> rPaths) {
-        StackPane root = new StackPane();
+    AnchorPane getDialogPaneSetMastery(List<String> rPaths) {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
         anchor.getChildren().add(grid);
@@ -817,7 +814,7 @@ public class Presenter {
         grid.add(getTextNormal("Note that input have to be positive integers; leave blank if not applicable.", p.colorTextDialogButton), 0 ,4);
 
         JFXButton save = new JFXButton("Save");
-        JFXSnackbar confirm = new JFXSnackbar(root);
+        JFXSnackbar confirm = new JFXSnackbar(anchor);
 
         save.setOnAction(e -> {
 
@@ -848,14 +845,7 @@ public class Presenter {
 
             String text = status ? "Saved" : "Invalid input(s), try again";
 
-            HBox textBox = new HBox();
-            textBox.getChildren().add(getTextSubHeader(text, p.colorTextDialogButton));
-            textBox.setAlignment(Pos.CENTER_LEFT);
-            textBox.setMinWidth(300);
-            textBox.setMinHeight(35);
-            textBox.setPadding(new Insets(0, 20, 0, 20));
-
-            JFXSnackbar.SnackbarEvent confirmEvent = new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
+            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
             confirm.enqueue(confirmEvent);
         });
         save.getStyleClass().add("animated-option-button");
@@ -867,37 +857,21 @@ public class Presenter {
         AnchorPane.setRightAnchor(fab, 25.0);
         AnchorPane.setBottomAnchor(fab, 15.0);
 
-        root.getChildren().add(anchor);
-
-        return root;
+        return anchor;
     }
 
-    StackPane getDialogPaneSetBench(List<String> rPaths) {
-        StackPane root = new StackPane();
+    AnchorPane getDialogPaneSetBench(List<String> rPaths) {
         AnchorPane anchor = new AnchorPane();
-        GridPane grid = new GridPane();
+        GridPane grid = getDialogGrid();
         anchor.getChildren().add(grid);
 
-        grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(10);
-        grid.setMinWidth(500);
-
-        JFXComboBox<String> choices = new JFXComboBox<>();
-        TextField field = choices.getEditor();
-
-        choices.setEditable(true);
-        choices.setPrefWidth(300);
-        choices.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
-
-        JFXAutoCompletePopup<String> autoCompletePopup = new JFXAutoCompletePopup<>();
-        autoCompletePopup.setPrefWidth(300);
-        autoCompletePopup.setFixedCellSize(32);
-//        for (CssMetaData item: choices.getCssMetaData()) {
-//            System.out.println(item);
-//        }
-
+        // get options for combo box
         Map<String, String> benchEntries = uiCon.getALlStringsFromFile("languages/en/prefabs_placeable_crafting");
-        List<String> keys = benchEntries.keySet().stream().filter(value -> value.contains("name")).collect(Collectors.toList());
+        List<String> keys = benchEntries.keySet().stream().filter(value -> value.contains("name"))
+                .filter(value -> value.contains("interactive"))
+                .filter((value -> !value.contains("category")))
+                .collect(Collectors.toList());
+
 
         // TODO: optimize code here to remove items from map instead of copying?
         Map<String, String> benchNames = new HashMap<>(200);
@@ -907,24 +881,13 @@ public class Presenter {
             }
         }
 
-        // set up auto-complete
-        autoCompletePopup.setSelectionHandler(event -> choices.setValue(event.getObject()));
-        field.textProperty().addListener(observable -> {
-            autoCompletePopup.filter(string -> string.toLowerCase().contains(field.getText().toLowerCase()));
-            if (autoCompletePopup.getFilteredSuggestions().isEmpty() || choices.showingProperty().get() || !choices.focusedProperty().get()) {
-                autoCompletePopup.hide();
-            } else {
-                autoCompletePopup.show(field);
-            }
-        });
-
-        // add values to auto-complete and combobox
-        autoCompletePopup.getSuggestions().addAll(benchNames.values());
-        choices.getItems().addAll(benchNames.values());
+        JFXComboBox<String> choices = getComboBox(benchNames.values(), "Name");
+        JFXAutoCompletePopup<String> autoCompletePopup = getAutoCompletePopup(benchNames.values(), choices);
+        TextField field = getComboBoxEditor(choices, autoCompletePopup);
 
         // set up save button
         JFXButton save = new JFXButton("Save");
-        JFXSnackbar confirm = new JFXSnackbar(root);
+        JFXSnackbar confirm = new JFXSnackbar(anchor);
         save.setOnAction(event -> {
             String identifier = benchEntries.entrySet().stream()
                     .filter(e -> e.getValue().equals(field.getText()))
@@ -932,19 +895,17 @@ public class Presenter {
                     .findFirst()
                     .orElse(null);
 
-            // can't be null, since we are picking from combo box
-            for (String rPath: rPaths) {
-                uiCon.setBenchName(rPath, identifier);
+            // even though it's a combo box, people can hit save because the combo box is editable
+
+            if (identifier != null) {
+                for (String rPath: rPaths) {
+                    uiCon.setBenchName(rPath, identifier);
+                }
             }
 
-            HBox textBox = new HBox();
-            textBox.getChildren().add(getTextSubHeader("Saved", p.colorTextDialogButton));
-            textBox.setAlignment(Pos.CENTER_LEFT);
-            textBox.setMinWidth(300);
-            textBox.setMinHeight(35);
-            textBox.setPadding(new Insets(0, 20, 0, 20));
+            String text = identifier != null ? "Saved" : "Invalid input, try again";
 
-            JFXSnackbar.SnackbarEvent confirmEvent = new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
+            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
             confirm.enqueue(confirmEvent);
 
         });
@@ -961,9 +922,249 @@ public class Presenter {
         grid.add(getTextSubHeader("Add name to bench", p.colorTextDialogButton), 0, 0);
         grid.add(choices, 0, 1);
 
-        root.getChildren().add(anchor);
-
-        return root;
+        return anchor;
     }
 
+    AnchorPane getDialogPaneMatchBenchRecipes(List<String> rPaths) {
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = getDialogGrid();
+        anchor.getChildren().add(grid);
+
+        grid.add(getTextSubHeader("Match recipes for the selected benches", p.colorTextDialogButton), 0, 0);
+
+        for (int i = 0; i < rPaths.size(); i++) {
+            grid.add(getTextNormal(uiCon.getName(rPaths.get(i)) + " - " + uiCon.getBenchRecipeNumber(rPaths.get(i)) + " recipes", p.colorTextDialogButton), 0, i + 1);
+        }
+
+        JFXButton match = new JFXButton("Go");
+        JFXSnackbar confirm = new JFXSnackbar(anchor);
+
+        match.setOnAction(e -> {
+            List<String> unmatched = new ArrayList<>();
+            for (String rPath: rPaths) {
+                unmatched.addAll(uiCon.matchBenchRecipe(rPath));
+            }
+
+            grid.getChildren().clear();
+
+            String outputHeader = unmatched.isEmpty() ? "All recipes matched" : "Unmatched recipes:";
+            grid.add(getTextSubHeader(outputHeader, p.colorTextDialogButton), 0, 0);
+            grid.add(getTextNormal(String.join("\n", unmatched), p.colorTextDialogButton), 0, 1);
+
+            String text = "Matching complete";
+
+            JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
+            confirm.enqueue(confirmEvent);
+        });
+
+        match.getStyleClass().add("animated-option-button");
+
+        JFXNodesList fab = new JFXNodesList();
+        fab.addAnimatedNode(match);
+
+        anchor.getChildren().add(fab);
+        AnchorPane.setRightAnchor(fab, 25.0);
+        AnchorPane.setBottomAnchor(fab, 15.0);
+
+        return anchor;
+    }
+
+    AnchorPane getDialogPaneAddLootbox(List<String> rPaths, boolean lootbox) {
+
+        // if loot = true, lootbox, else is decon
+
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = getDialogGrid();
+        anchor.getChildren().add(grid);
+        grid.setHgap(10);
+
+        AtomicInteger items = new AtomicInteger(1);
+
+        // set up header
+        String headerType = lootbox ? "Add lootbox" : "Set deconstruction";
+
+        Text headerText = getTextSubHeader(headerType + " content", p.colorTextDialogButton);
+        HBox headerBox = new HBox();
+
+        JFXComboBox<String> rarity = new JFXComboBox<>();
+        rarity.setPrefWidth(125);
+        rarity.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
+        rarity.getItems().setAll(Arrays.asList("Common", "Uncommon", "Rare"));
+
+        JFXButton add = getButton("Add field", 75, 30, p.backgroundDialogButton, p.colorTextDialogButton);
+        if (lootbox) {
+            headerBox.getChildren().setAll(Arrays.asList(headerText, rarity, add));
+        } else {
+            headerBox.getChildren().setAll(Arrays.asList(headerText, add));
+        }
+
+        headerBox.setSpacing(20);
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+
+        // set up data
+        List<String> itemNames = new ArrayList<>();
+
+        ObservableList<Searchable> nameAndRPathList = uiCon.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "");
+        for (Searchable item: nameAndRPathList) {
+            itemNames.add(item.getName() + " - " + item.getRPath());
+        }
+
+        List<JFXComboBox<String>> comboBoxes = new ArrayList<>();
+        List<JFXAutoCompletePopup<String>> autoCompletePopups = new ArrayList<>();
+        List<TextField> fields = new ArrayList<>();
+
+        List<JFXTextField> values = new ArrayList<>();
+
+        comboBoxes.add(getComboBox(itemNames, "Item"));
+        values.add(getTextField("Quantity", 50));
+        autoCompletePopups.add(getAutoCompletePopup(itemNames, comboBoxes.get(0)));
+        fields.add(getComboBoxEditor(comboBoxes.get(0), autoCompletePopups.get(0)));
+
+        // set up save button
+        JFXButton save = new JFXButton("Save");
+        JFXSnackbar confirm = new JFXSnackbar(anchor);
+        save.setOnAction(event -> {
+
+                // data validation
+                boolean status = true;
+                for (int i = 0; i < items.get(); i++) {
+                    if (!itemNames.contains(comboBoxes.get(i).getValue())) {
+                        status = false;
+                        break;
+                    }
+
+                    String intRegex = lootbox ? "\\d*[-]?\\d+" : "\\d+";
+                    if (!values.get(i).getText().matches(intRegex)) {
+                        status = false;
+                        break;
+                    }
+                }
+
+                // data insertion, if data is valid
+                if (status) {
+
+                    // get the rPaths
+                    List<String[]> loot = new ArrayList<>();
+                    for (int i = 0; i < items.get(); i++) {
+                        String item = comboBoxes.get(i).getValue();
+                        String quantity = values.get(i).getText();
+
+                        String itemRPath = item.split(" - ")[1];
+                        loot.add(new String[]{itemRPath, quantity});
+                    }
+
+                    // add the loot
+                    String lootboxRarity = rarity.getValue();
+
+                    // if lootbox, add to lootbox, else add to decons
+                    if (lootbox) {
+                        for (String rPath: rPaths) {
+                            uiCon.addLootboxContent(rPath, lootboxRarity.toLowerCase(), loot);
+                        }
+                    } else {
+                        for (String rPath: rPaths) {
+                            uiCon.addDeconContent(rPath, loot);
+                        }
+                    }
+
+                }
+
+                String text = status ? "Saved" : "Invalid input, try again";
+
+                JFXSnackbar.SnackbarEvent confirmEvent = getSnackbarEvent(text);
+                confirm.enqueue(confirmEvent);
+            });
+
+
+        // set up additional fields
+        add.setOnAction(e -> {
+            if (items.get() < 7) {
+                items.getAndIncrement();
+
+                comboBoxes.add(getComboBox(itemNames, "Item"));
+                values.add(getTextField("Quantity", 50));
+                autoCompletePopups.add(getAutoCompletePopup(itemNames, comboBoxes.get(items.get() - 1)));
+                fields.add(getComboBoxEditor(comboBoxes.get(items.get() - 1), autoCompletePopups.get(items.get() - 1)));
+
+                grid.add(comboBoxes.get(items.get() - 1), 0, items.get());
+                grid.add(values.get(items.get() - 1), 1, items.get());
+            }
+
+        });
+
+
+        save.getStyleClass().add("animated-option-button");
+
+        JFXNodesList fab = new JFXNodesList();
+        fab.addAnimatedNode(save);
+
+        anchor.getChildren().add(fab);
+        AnchorPane.setRightAnchor(fab, 25.0);
+        AnchorPane.setBottomAnchor(fab, 15.0);
+
+        grid.add(headerBox, 0, 0, 2, 1);
+        grid.add(comboBoxes.get(0), 0, 1);
+        grid.add(values.get(0), 1, 1);
+
+        return anchor;
+    }
+
+    JFXSnackbar.SnackbarEvent getSnackbarEvent(String text) {
+        HBox textBox = new HBox();
+        textBox.getChildren().add(getTextSubHeader(text, p.colorTextDialogButton));
+        textBox.setAlignment(Pos.CENTER_LEFT);
+        textBox.setMinWidth(300);
+        textBox.setMinHeight(35);
+        textBox.setPadding(new Insets(0, 20, 0, 20));
+
+        return new JFXSnackbar.SnackbarEvent(textBox, Duration.seconds(3.33), null);
+    }
+
+    JFXComboBox<String> getComboBox(Collection<String> content, String promptText) {
+        JFXComboBox<String> options = new JFXComboBox<>();
+        options.setEditable(true);
+        options.setPrefWidth(300);
+        options.setFocusColor(Paint.valueOf(p.colorTextFieldFocus));
+        options.setPromptText(promptText);
+
+        options.getItems().setAll(content);
+
+        return options;
+    }
+
+    JFXAutoCompletePopup<String> getAutoCompletePopup(Collection<String> content, ComboBox<String> choices) {
+        JFXAutoCompletePopup<String> autoCompletePopup = new JFXAutoCompletePopup<>();
+        autoCompletePopup.setPrefWidth(300);
+        autoCompletePopup.setFixedCellSize(32);
+        autoCompletePopup.setStyle("-fx-focus-color: #6D6D6D ; -fx-faint-focus-color: -fx-control-inner-background ;");
+
+        autoCompletePopup.setSelectionHandler(event -> choices.setValue(event.getObject()));
+
+        autoCompletePopup.getSuggestions().setAll(content);
+        return autoCompletePopup;
+    }
+
+    TextField getComboBoxEditor(ComboBox<String> comboBox, JFXAutoCompletePopup<String> autoCompletePopup) {
+        TextField field = comboBox.getEditor();
+        field.textProperty().addListener(observable -> {
+            autoCompletePopup.filter(string -> string.toLowerCase().contains(field.getText().toLowerCase()));
+            if (autoCompletePopup.getFilteredSuggestions().isEmpty() || comboBox.showingProperty().get() || !comboBox.focusedProperty().get()) {
+                autoCompletePopup.hide();
+            } else {
+                autoCompletePopup.show(field);
+            }
+        });
+
+        return field;
+    }
+
+    GridPane getDialogGrid() {
+        GridPane grid = new GridPane();
+
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(10);
+        grid.setMinWidth(500);
+
+        return grid;
+    }
 }

@@ -18,9 +18,9 @@ public class Item implements Article, Serializable {
     boolean isDecon;            // if this item can be deconstructed into other items
     String[] unlocks;           // if isUnlocker = true, list of collection paths that it unlocks; else is an empty array
     Map<String, Integer> decons;            // if canDecon = true, list of Item.name it decons to; else is an empty array
-    Map<String, Integer> lootboxCommon;     // if isLootbox = true, key: rPath of item looted, value: quantity of item looted
-    Map<String, Integer> lootboxUncommon;
-    Map<String, Integer> lootboxRare;
+    Map<String, String> lootboxCommon;     // if isLootbox = true, key: rPath of item looted, value: quantity of item looted
+    Map<String, String> lootboxUncommon;
+    Map<String, String> lootboxRare;
     List<String> recipe = new ArrayList<>();         // if hasRecipe = true, a list of rPaths of recipes, else is an empty list
     List<String> notes;
 
@@ -87,15 +87,24 @@ public class Item implements Article, Serializable {
         this.recipe.add(recipe);
     }
 
-    public void addLootboxCommon(String rPath, int quantity) {
+    public void addLootboxCommon(String rPath, String quantity) {
+        if (lootboxCommon == null) {
+            lootboxCommon = new HashMap<>(10);
+        }
         lootboxCommon.put(rPath, quantity);
     }
 
-    public void addLootboxUncommon(String rPath, int quantity) {
+    public void addLootboxUncommon(String rPath, String quantity) {
+        if (lootboxUncommon == null) {
+            lootboxUncommon = new HashMap<>(10);
+        }
         lootboxUncommon.put(rPath, quantity);
     }
 
-    public void addLootboxRare(String rPath, int quantity) {
+    public void addLootboxRare(String rPath, String quantity) {
+        if (lootboxRare == null ) {
+            lootboxRare = new HashMap<>(10);
+        }
         lootboxRare.put(rPath, quantity);
     }
 
@@ -122,8 +131,8 @@ public class Item implements Article, Serializable {
         return recipe;
     }
 
-    public Map<String, Map<String, Integer>> getLootbox() {
-        Map<String, Map<String, Integer>> contents = new HashMap<>();
+    public Map<String, Map<String, String>> getLootbox() {
+        Map<String, Map<String, String>> contents = new HashMap<>();
         contents.put("common", this.lootboxCommon);
         contents.put("uncommon", this.lootboxUncommon);
         contents.put("rare", this.lootboxRare);

@@ -1,6 +1,7 @@
 package parser.parsestrategies;
 
 import local.Markers;
+import parser.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ParseHelper {
             while (true) {
                 if (matcher.find()) {
                     int index = matcher.start();
-                    if (!rawRecipes.substring(index-3, index-1).matches(m.alphabetPrefab)) { // ignore recipes that unlock recipes
+                    if (!rawRecipes.startsWith("5F", index-3)) { // ignore recipes that unlock recipes; if it matches 5F, the underscore, then it's not valid
                         indices.add(index);
                     }
                 } else {
@@ -52,11 +53,12 @@ public class ParseHelper {
             // clean up the recipes
             for (int i = 1; i < recipes.size(); i++) {
                 String processing = recipes.get(i);
+                System.out.println(Parser.hexToAscii(processing));
                 if (processing.length()-6 > 0) {
                     processing = processing.substring(0, processing.length()-6); // removing the guaranteed 2 characters that are useless
                     int lastIndex = 0;
                     for (int j = 0; j < processing.length(); j += 3) {
-                        if (processing.substring(j, j+2).matches(m.alphabetPrefab)) {
+                        if (processing.substring(j, j+2).matches(m.alphabetRecipe)) {
                             lastIndex = j + 3;
                         } else {
                             break;

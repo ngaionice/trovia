@@ -33,7 +33,10 @@ public class RecipeManager implements Manager, Serializable {
     // getters
 
     public String getName(String rPath) {
-        return recipeMap.get(rPath).getName();
+        if (recipeMap.containsKey(rPath)) {
+            return recipeMap.get(rPath).getName();
+        }
+        return null;
     }
 
     public String[][] getCosts(String rPath) {
