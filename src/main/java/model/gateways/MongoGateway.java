@@ -204,6 +204,7 @@ public class MongoGateway implements DatabaseGateway{
             for (String[] category: categories.keySet()) {
                 catDoc.append(category[0], categories.get(category));
             }
+            doc.append("categories", catDoc);
 
             collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
         }

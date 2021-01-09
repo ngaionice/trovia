@@ -464,12 +464,43 @@ public class Presenter {
         JFXButton mongoChanges = elements.getButton("Sync changes to MongoDB", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
         JFXButton clear = elements.getButton("Clear changed list", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
 
+        JFXProgressBar progressBar = new JFXProgressBar();
+        final Text progressText = new Text("Status");
+        VBox progressBox = elements.getProgressBox(grid, progressText, progressBar);
+        progressBar.setProgress(0);
+
         ser.setOnAction(e -> con.exportDataLocal());
-        mongoAll.setOnAction(e -> con.exportDataMongo(true));
-        mongoChanges.setOnAction(e -> con.exportDataMongo(false));
+        mongoAll.setOnAction(e -> {
+
+            Task<Void> task = logic.getSyncTask(true);
+            progressBar.setProgress(-1);
+            progressText.textProperty().bind(task.messageProperty());
+
+            // adds background thread that syncs
+            Thread thread = new Thread(() -> {
+                task.run();
+                Platform.runLater(() -> progressBar.setProgress(1));
+            });
+            thread.start();
+        });
+        mongoChanges.setOnAction(e -> {
+
+            Task<Void> task = logic.getSyncTask(false);
+            progressBar.setProgress(-1);
+            progressText.textProperty().bind(task.messageProperty());
+
+            // adds background thread that syncs
+            Thread thread = new Thread(() -> {
+                task.run();
+                Platform.runLater(() -> progressBar.setProgress(1));
+            });
+            thread.start();
+        });
         clear.setOnAction(e -> con.clearChanges());
 
-        elements.setNodeGridPane(grid, Arrays.asList(header, ser, mongoAll, mongoChanges, clear));
+        elements.setNodeGridPane(grid, Arrays.asList(header, ser, mongoAll, mongoChanges, clear, progressBox));
+        GridPane.setMargin(header, new Insets(0, 0, 100, 0));
+        GridPane.setMargin(progressBox, new Insets(200, 0, 0, 0));
         return grid;
     }
 

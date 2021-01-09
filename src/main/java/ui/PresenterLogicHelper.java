@@ -142,6 +142,22 @@ public class PresenterLogicHelper {
         };
     }
 
+    Task<Void> getSyncTask(boolean exportAll) {
+        return new Task<Void>() {
+            @Override protected Void call() {
+
+                // begin parsing
+                updateMessage("Synchronizing to database.");
+                con.exportDataMongo(exportAll);
+
+                updateMessage("Synchronization complete.");
+                updateProgress(1, 1);
+
+                return null;
+            }
+        };
+    }
+
     void clearParseList() {
         selectedPaths.clear();
     }
