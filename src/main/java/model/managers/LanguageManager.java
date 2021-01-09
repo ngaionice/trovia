@@ -1,5 +1,6 @@
 package model.managers;
 
+import model.gateways.DatabaseGateway;
 import model.objects.LangFile;
 
 import java.io.Serializable;
@@ -131,5 +132,11 @@ public class LanguageManager implements Manager, Serializable {
     public void clearRemovedFiles() {
         removeMap.clear();
         removeStringMap.clear();
+    }
+
+    // export
+    public void export(DatabaseGateway gateway, boolean exportAll) {
+        Map<String, LangFile> map = exportAll ? getAllFiles() : getNewFiles();
+        gateway.exportLangFile(map);
     }
 }

@@ -4,10 +4,10 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import model.objects.Collection;
-import model.objects.CollectionEnums;
-import model.objects.Item;
-import model.objects.Recipe;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateOptions;
+import model.objects.*;
 import org.bson.Document;
 import local.Variables;
 
@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import java.util.List;
 
 
-public class MongoGateway {
+public class MongoGateway implements DatabaseGateway{
 
     // Gateway for interaction with MongoDB
 
@@ -42,9 +42,12 @@ public class MongoGateway {
         this.collection = database.getCollection(collection);
     }
 
+    /**
+     * Inserts the input map of recipes into the database. If the recipe already exists on the database, then it gets replaced by the new version.
+     *
+     * @param recipes map of recipes, with relative paths as keys and Recipe objects as values
+     */
     public void exportRecipes(Map<String, Recipe> recipes) {
-        List<Document> docs = new ArrayList<>();
-
         for (String rPath: recipes.keySet()) {
             Recipe item = recipes.get(rPath);
 
@@ -60,17 +63,12 @@ public class MongoGateway {
             }
             doc.append("costs", costsDoc);
             doc.append("output", new Document(output[0], output[1]));
-            docs.add(doc);
+            collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
         }
-        System.out.println("Inserting recipes.");
-        collection.insertMany(docs);
-        System.out.println("Recipe insertion complete.");
     }
 
     public void exportItems(Map<String, Item> items) {
-        List<Document> docs = new ArrayList<>();
-
-        for (String rPath: items.keySet()) {
+       for (String rPath: items.keySet()) {
             Item item = items.get(rPath);
 
             String name = item.getName();
@@ -131,17 +129,11 @@ public class MongoGateway {
             if (prop.get(3)) {
                 doc.append("recipes", recipes);
             }
-
-            docs.add(doc);
+            collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
         }
-        System.out.println("Inserting items.");
-        collection.insertMany(docs);
-        System.out.println("Item insertion complete.");
     }
 
     public void exportCollections(Map<String, Collection> collections) {
-        List<Document> docs = new ArrayList<>();
-
         for (String rPath: collections.keySet()) {
             Collection item = collections.get(rPath);
 
@@ -190,12 +182,48 @@ public class MongoGateway {
             if (notes != null && !notes.isEmpty()) {
                 doc.append("notes", notes);
             }
-
-            docs.add(doc);
+            collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
         }
+    }
 
-        System.out.println("Inserting collections.");
-        collection.insertMany(docs);
-        System.out.println("Collection insertion complete.");
+    public void exportBenches(Map<String, Bench> benches) {
+        for (String rPath: benches.keySet()) {
+            Bench item = benches.get(rPath);
+
+            String name = item.getName();
+            boolean profession = item.isProfession();
+            String professionName = item.getProfessionName();
+            Map<String[], List<String>> categories = item.getAllRecipesByCategory();
+
+            Document doc = new Document("name", name).append("profession", profession).append("rPath", rPath);
+            if (professionName != null) {
+                doc.append("professionName", professionName);
+            }
+
+            Document catDoc = new Document();
+            for (String[] category: categories.keySet()) {
+                catDoc.append(category[0], categories.get(category));
+            }
+
+            collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
+        }
+    }
+
+    public void exportLangFile(Map<String, LangFile> files) {
+        for (String rPath: files.keySet()) {
+            LangFile item = files.get(rPath);
+
+            String name = item.getName();
+            Map<String, String> strings = item.getStrings();
+
+            Document doc = new Document("name", name).append("rPath", rPath);
+            Document stringDoc = new Document();
+            for (String identifier: strings.keySet()) {
+                stringDoc.append(identifier.replace("$", "%"), strings.get(identifier));
+            }
+
+            doc.append("strings", stringDoc);
+            collection.replaceOne(Filters.eq("rPath", rPath), doc, new ReplaceOptions().upsert(true));
+        }
     }
 }

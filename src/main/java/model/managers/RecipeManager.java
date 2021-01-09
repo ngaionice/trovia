@@ -1,5 +1,6 @@
 package model.managers;
 
+import model.gateways.DatabaseGateway;
 import model.objects.Recipe;
 
 import java.io.Serializable;
@@ -79,5 +80,11 @@ public class RecipeManager implements Manager, Serializable {
 
     public void clearRemovedRecipes() {
         removeMap.clear();
+    }
+
+    // export
+    public void export(DatabaseGateway gateway, boolean exportAll) {
+        Map<String, Recipe> map = exportAll ? getAllRecipes() : getNewRecipes();
+        gateway.exportRecipes(map);
     }
 }

@@ -1,6 +1,8 @@
 package model.managers;
 
+import model.gateways.DatabaseGateway;
 import model.objects.Bench;
+import model.objects.Item;
 
 import java.io.Serializable;
 import java.util.*;
@@ -44,11 +46,11 @@ public class BenchManager implements Manager, SearchManager, Serializable {
         return benchMap.get(rPath).getAllRecipesByCategory();
     }
 
-    public List<String[]> getAllNamesAndRPaths() {
-
-        if (!benchMap.isEmpty()) {
+    public List<String[]> getAllNamesAndRPaths(String type) {
+        Map<String, Bench> map = type.equals("all") ? benchMap : type.equals("new") ? addMap : removeMap;
+        if (!map.isEmpty()) {
             List<String[]> list = new ArrayList<>();
-            for (Bench item: benchMap.values()) {
+            for (Bench item: map.values()) {
                 list.add(new String[] {item.getName(), item.getRPath()});
             }
             return list;
@@ -100,6 +102,12 @@ public class BenchManager implements Manager, SearchManager, Serializable {
 
     public void clearRemovedBenches() {
         removeMap.clear();
+    }
+
+    // export
+    public void export(DatabaseGateway gateway, boolean exportAll) {
+        Map<String, Bench> map = exportAll ? getAllBenches() : getNewBenches();
+        gateway.exportBenches(map);
     }
 
 }

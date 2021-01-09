@@ -120,10 +120,10 @@ public class Presenter {
         // button actions
         List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
 
-        articles.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Entries", false)));
-        items.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true)));
-        collections.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true)));
-        benches.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", true)));
+        articles.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Entries", false, "all")));
+        items.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true, "all")));
+        collections.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true, "all")));
+        benches.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", true, "all")));
         languages.setOnAction(event -> root.setCenter(notImplemented()));
 
         Button[] options = new Button[]{articles, items, collections, benches, languages};
@@ -132,7 +132,7 @@ public class Presenter {
         nav.getChildren().add(elements.setPropVBox(typeNav, options, p.colorTextNormal));
 
         // update center table
-        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false));
+        root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false, "all"));
     }
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
@@ -150,11 +150,13 @@ public class Presenter {
         // buttons
         JFXButton addBtn = new JFXButton("Review new entries");
         JFXButton removeBtn = new JFXButton("Review deleted entries");
-        JFXButton syncBtn = new JFXButton("Update database");
+        JFXButton syncBtn = new JFXButton("Sync database");
 
         // button actions
-        addBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        removeBtn.setOnAction(event -> root.setCenter(notImplemented()));
+        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
+
+        addBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "New Entries", false, "new")));
+        removeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "Removed Entries", false, "removed")));
         syncBtn.setOnAction(event -> root.setCenter(setSyncPane()));
 
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
@@ -301,7 +303,7 @@ public class Presenter {
 
     // VIEW-RELATED
 
-    StackPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable) {
+    StackPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable, String mapType) {
 
         // set up StackPane to hold dialog box and TableView
         StackPane tablePane = new StackPane();
@@ -397,7 +399,7 @@ public class Presenter {
         }
 
         // get and set content
-        ObservableList<Searchable> articles = logic.getSearchableList(types, "");
+        ObservableList<Searchable> articles = logic.getSearchableList(types, "", mapType);
         FilteredList<Searchable> filtered = new FilteredList<>(articles, p -> true);    // allows filtering
         SortedList<Searchable> sortable = new SortedList<>(filtered);
 
@@ -433,38 +435,45 @@ public class Presenter {
         return tablePane;
     }
 
+    GridPane getDialogPaneSelectedObjects(List<String> rPaths) {
+        GridPane grid = new GridPane();
+
+        grid.setPadding(new Insets(0, 0, 0, 10));
+        grid.setVgap(10);
+        grid.setMinWidth(500);
+
+        Text header = elements.getTextH3("Currently selected objects:", p.colorTextDialogButton);
+        TextArea texts = elements.getTextArea(String.join("\n", rPaths));
+        grid.add(header, 0, 0);
+        grid.add(texts, 0, 1);
+
+        return grid;
+    }
+
     // SYNC-RELATED
 
     GridPane setSyncPane() {
         GridPane grid = new GridPane();
         elements.setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
+        grid.setVgap(10);
 
-        JFXButton button = elements.getButton("Serialize", 100, 100, p.backgroundMainButton, p.colorTextMainButton);
-        button.setOnAction(e -> con.exportDataLocal());
+        Text header = elements.getTextH1("Save changes", p.colorTextHeader);
 
-        grid.add(button, 0, 0);
+        JFXButton ser = elements.getButton("Serialize", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
+        JFXButton mongoAll = elements.getButton("Sync all data to MongoDB", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
+        JFXButton mongoChanges = elements.getButton("Sync changes to MongoDB", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
+        JFXButton clear = elements.getButton("Clear changed list", 200, 35, p.backgroundMainButton, p.colorTextMainButton);
 
+        ser.setOnAction(e -> con.exportDataLocal());
+        mongoAll.setOnAction(e -> con.exportDataMongo(true));
+        mongoChanges.setOnAction(e -> con.exportDataMongo(false));
+        clear.setOnAction(e -> con.clearChanges());
+
+        elements.setNodeGridPane(grid, Arrays.asList(header, ser, mongoAll, mongoChanges, clear));
         return grid;
     }
 
-    // HELPER/MISC
-
-    // exists for view to use only
-    void setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
-        elements.setPropVBox(vBox, options, buttonTextColor);
-    }
-
-    StackPane notImplemented() {
-
-        Text display = new Text("This feature is not yet implemented.");
-        display.setFill(Paint.valueOf(p.colorTextHeader));
-        display.setFont(p.fontH2);
-        StackPane pane = new StackPane();
-        pane.setBackground(p.backgroundMainPane);
-        pane.getChildren().add(display);
-
-        return pane;
-    }
+    // MODIFY-RELATED
 
     JFXDialog getEditPane(StackPane root, List<String> rPaths, Parser.ObjectType type) {
 
@@ -538,21 +547,6 @@ public class Presenter {
 
         nav.getChildren().addAll(options);
         return nav;
-    }
-
-    GridPane getDialogPaneSelectedObjects(List<String> rPaths) {
-        GridPane grid = new GridPane();
-
-        grid.setPadding(new Insets(0, 0, 0, 10));
-        grid.setVgap(10);
-        grid.setMinWidth(500);
-
-        Text header = elements.getTextH3("Currently selected objects:", p.colorTextDialogButton);
-        TextArea texts = elements.getTextArea(String.join("\n", rPaths));
-        grid.add(header, 0, 0);
-        grid.add(texts, 0, 1);
-
-        return grid;
     }
 
     AnchorPane getDialogPaneAddNotes(List<String> rPaths) {
@@ -755,7 +749,7 @@ public class Presenter {
         // set up data
         List<String> itemNames = new ArrayList<>();
 
-        ObservableList<Searchable> nameAndRPathList = logic.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "");
+        ObservableList<Searchable> nameAndRPathList = logic.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "", "all");
         for (Searchable item: nameAndRPathList) {
             itemNames.add(item.getName() + " - " + item.getRPath());
         }
@@ -807,6 +801,25 @@ public class Presenter {
         grid.add(quantities.get(0), 1, 1);
 
         return anchor;
+    }
+
+    // MISC
+
+    // exists for view to use only
+    void setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
+        elements.setPropVBox(vBox, options, buttonTextColor);
+    }
+
+    StackPane notImplemented() {
+
+        Text display = new Text("This feature is not yet implemented.");
+        display.setFill(Paint.valueOf(p.colorTextHeader));
+        display.setFont(p.fontH2);
+        StackPane pane = new StackPane();
+        pane.setBackground(p.backgroundMainPane);
+        pane.getChildren().add(display);
+
+        return pane;
     }
 
 

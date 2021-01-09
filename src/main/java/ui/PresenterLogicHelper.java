@@ -213,9 +213,9 @@ public class PresenterLogicHelper {
 
     // VIEW
 
-    ObservableList<Searchable> getSearchableList(List<Parser.ObjectType> types, String filter) {
+    ObservableList<Searchable> getSearchableList(List<Parser.ObjectType> types, String filter, String mapType) {
         ObservableList<Searchable> searchList = FXCollections.observableArrayList();
-        List<String[]> nameAndRPathList = con.getNameAndRPathList(types);
+        List<String[]> nameAndRPathList = con.getNameAndRPathList(types, mapType);
 
         for (String[] item: nameAndRPathList) {
             if (item[0].toLowerCase().contains(filter.toLowerCase())) {

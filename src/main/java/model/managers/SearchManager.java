@@ -15,5 +15,13 @@ public interface SearchManager {
      */
     String getName(String rPath);
 
-    List<String[]> getAllNamesAndRPaths();
+    /**
+     * Returns a list of string arrays containing names and relative paths of all stored Articles.
+     *
+     * Array format: [language file path of name, relative path]
+     *
+     * @param type "all", "new", "removed"
+     * @return a list of string arrays
+     */
+    List<String[]> getAllNamesAndRPaths(String type);
 }

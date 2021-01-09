@@ -1,6 +1,7 @@
 package model;
 
-import model.gateways.LocalGatway;
+import model.gateways.LocalGateway;
+import model.gateways.MongoGateway;
 import model.managers.*;
 import model.objects.*;
 import model.objects.Collection;
@@ -20,7 +21,8 @@ public class ModelController {
     LanguageManager langM;
     RecipeManager recM;
     Parser p = new Parser();
-    LocalGatway gateway = new LocalGatway();
+    LocalGateway gateway = new LocalGateway();
+    MongoGateway mongo = new MongoGateway();
 
     // PARSING
 
@@ -222,9 +224,10 @@ public class ModelController {
      * Article types included are specified by the input list of SearchManagers.
      *
      * @param artTypes list of Article types in strings
+     * @param type     "all", "new", "removed"
      * @return         list of string arrays
      */
-    public List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes) {
+    public List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes, String type) {
 
         // the ArrayList that will hold the entries
         List<SearchManager> managers = new ArrayList<>();
@@ -246,7 +249,7 @@ public class ModelController {
         List<String[]> entryList = new ArrayList<>();
         for (SearchManager item: managers) {
             if (item != null) {
-                List<String[]> list = item.getAllNamesAndRPaths();
+                List<String[]> list = item.getAllNamesAndRPaths(type);
                 if (list != null) {
                     entryList.addAll(list);
                 }
@@ -357,13 +360,14 @@ public class ModelController {
     // FILE STORAGE
 
     public void exportDataLocal() {
+
         gateway.exportManager("bench.ser", benchM);
         gateway.exportManager("collection.ser", colM);
         gateway.exportManager("item.ser", itemM);
         gateway.exportManager("language.ser", langM);
         gateway.exportManager("recipe.ser", recM);
 
-        // TODO: clear all add/remove maps on save
+        // TODO: change this to only serialize the main map
     }
 
     public void importDataLocal() {
@@ -372,6 +376,36 @@ public class ModelController {
         itemM = (ItemManager) gateway.importManager("item.ser");
         langM = (LanguageManager) gateway.importManager("language.ser");
         recM = (RecipeManager) gateway.importManager("recipe.ser");
+    }
+
+    public void exportDataMongo(boolean exportAll) {
+        mongo.setCollection("benches");
+        benchM.export(mongo, exportAll);
+        mongo.setCollection("collections");
+        colM.export(mongo, exportAll);
+        mongo.setCollection("items");
+        itemM.export(mongo, exportAll);
+        mongo.setCollection("lang_files");
+        langM.export(mongo, exportAll);
+        mongo.setCollection("recipes");
+        recM.export(mongo, exportAll);
+    }
+
+    public void clearChanges() {
+        benchM.clearNewBenches();
+        benchM.clearRemovedBenches();
+
+        itemM.clearNewItems();
+        itemM.clearRemovedItems();
+
+        colM.clearNewCollections();
+        colM.clearRemovedCollections();
+
+        langM.clearNewFiles();
+        langM.clearRemovedFiles();
+
+        recM.clearNewRecipes();
+        recM.clearRemovedRecipes();
     }
 
     // TEMP, for testing

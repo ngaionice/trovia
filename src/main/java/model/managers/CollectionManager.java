@@ -1,7 +1,9 @@
 package model.managers;
 
+import model.gateways.DatabaseGateway;
 import model.objects.Collection;
 import model.objects.CollectionEnums;
+import model.objects.Item;
 
 import java.io.Serializable;
 import java.util.*;
@@ -69,10 +71,11 @@ public class CollectionManager implements Manager, SearchManager, Serializable {
         return collectionMap.get(rPath).getPowerRank();
     }
 
-    public List<String[]> getAllNamesAndRPaths() {
-        if (!collectionMap.isEmpty()) {
+    public List<String[]> getAllNamesAndRPaths(String type) {
+        Map<String, Collection> map = type.equals("all") ? collectionMap : type.equals("new") ? addMap : removeMap;
+        if (!map.isEmpty()) {
             List<String[]> list = new ArrayList<>();
-            for (Collection item: collectionMap.values()) {
+            for (Collection item: map.values()) {
                 list.add(new String[] {item.getName(), item.getRPath()});
             }
             return list;
@@ -126,5 +129,11 @@ public class CollectionManager implements Manager, SearchManager, Serializable {
 
     public void clearRemovedCollections() {
         removeMap.clear();
+    }
+
+    // export
+    public void export(DatabaseGateway gateway, boolean exportAll) {
+        Map<String, Collection> map = exportAll ? getAllCollections() : getNewCollections();
+        gateway.exportCollections(map);
     }
 }

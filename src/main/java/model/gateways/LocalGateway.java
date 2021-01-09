@@ -4,7 +4,7 @@ import model.managers.*;
 
 import java.io.*;
 
-public class LocalGatway {
+public class LocalGateway {
 
     // Gateway for Serialization
 

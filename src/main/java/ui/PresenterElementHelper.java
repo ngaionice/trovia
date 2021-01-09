@@ -118,7 +118,7 @@ public class PresenterElementHelper {
         table.setEditable(true);
         table.setStyle("-fx-box-border: #1B1B1B;");
         table.setFixedCellSize(40);
-        table.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
+        table.prefWidthProperty().bind(root.widthProperty().multiply(0.74));
         table.prefHeightProperty().bind(root.heightProperty().multiply(0.7));
 
         return table;
