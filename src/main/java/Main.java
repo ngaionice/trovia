@@ -14,7 +14,7 @@ public class Main {
         Variables var = new Variables();
 
         // DB testing
-//        DBGateway mango = new DBGateway();
+//        MongoGateway mango = new MongoGateway();
 //        mango.importRecipes(completeRecipes);
 
 //        Bench bench = (Bench) parser.createObject(var.testBench, Parser.ObjectType.BENCH);

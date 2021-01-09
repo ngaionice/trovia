@@ -4,7 +4,7 @@ import managers.*;
 
 import java.io.*;
 
-public class SerGateway {
+public class LocalGatway {
 
     // Gateway for Serialization
 

@@ -10,7 +10,6 @@ import java.util.List;
 
 public class Parser {
 
-
     public enum ObjectType {
         ITEM,
         BENCH,
@@ -39,8 +38,7 @@ public class Parser {
     }
 
     public String insertSpaces(String hexRaw) {
-        String val = "2";
-        return hexRaw.replaceAll("(.{" + val + "})", "$1 ").trim();
+        return hexRaw.replaceAll("(.{2})", "$1 ").trim();
     }
 
     public static String hexToAscii(String hexString) {
@@ -99,40 +97,7 @@ public class Parser {
         }
     }
 
-//    /**
-//     * Takes in a directory path, and parses the files in the directory according to the specified prefab type.
-//     * <p>
-//     * Returns a list containing lists of string arrays output by parsing each file.
-//     *
-//     * @param path        the path of the directory
-//     * @param prefabType  the type of prefab in the directory
-//     * @param includeName whether to include the file name or path in the sub-lists; if true, the first String[] contains the file name
-//     * @param absPath     whether the file name or path should be included; if true, the absolute path is saved in the first String[]
-//     * @return a list containing sub-lists of string arrays, which are the output of each parsed file
-//     * @throws Exception if there are critical file properties missing
-//     */
-//    public List<List<String[]>> convertDirectory(String path, String prefabType, boolean includeName, boolean absPath) throws Exception {
-        // TODO: move to a Files.walk approach to map item paths
-//
-//        File dir = new File(path);
-//        File[] directoryListing = dir.listFiles();
-//        List<List<String[]>> returnList = new ArrayList<>();
-//        if (directoryListing != null) {
-//            for (File child : directoryListing) {
-//                String childPath = child.getPath();
-////                if (!prefabType.equals("recipe")) {
-////                    System.out.println(childPath); // prints path
-////                }
-//                List<String[]> parsedFile = factory(childPath, prefabType);
-//                if (includeName) {
-//                    String filePath = absPath ? child.getAbsolutePath() : child.getName();
-//                    parsedFile.add(0, new String[]{filePath});
-//                }
-//                returnList.add(parsedFile);
-//            }
-//        }
-//        return returnList;
-//    }
+
 
     public Article createObject(String path, ObjectType itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));

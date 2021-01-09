@@ -3,12 +3,17 @@ package ui;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
 import controllers.ModelController;
-import controllers.UIController;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.CheckBoxTreeItem;
+import objects.CollectionEnums;
+import parser.Parser;
+import ui.searchables.Searchable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,15 +21,21 @@ import java.util.Map;
 public class PresenterLogicHelper {
 
     // controls logic for elements in the Presenter
-
-    ModelController con = new ModelController();
-
     String dirPath = "C:\\Program Files (x86)\\Glyph\\Games\\Trove\\Live\\extracted_dec_15_subset";
     String benchFilter = "_interactive";
     String colFilter = "";
     String itemFilter = "";
     String langFilter = "prefabs_";
     String recFilter = "";
+
+    List<String> selectedPaths = new ArrayList<>();
+    List<String> failedPaths = new ArrayList<>();
+
+    ModelController con;
+
+    PresenterLogicHelper(ModelController con) {
+        this.con = con;
+    }
 
     // CREATE
     boolean saveParseSettings(String dirInput, String benchInput, String colInput, String itemInput, String recInput, String langInput) {
@@ -61,18 +72,78 @@ public class PresenterLogicHelper {
         return alerted;
     }
 
-    VBox getContent(String rPath, UIController con) {
 
-        VBox content;
-        if (rPath.contains("item")) {
-            content = con.getItemContent(rPath);
-        } else if (rPath.contains("collection")) {
-            content = con.getCollectionContent(rPath);
-        } else {
-            content = con.getBenchContent(rPath);
+    CheckBoxTreeItem<String> getFileTree(String dirPath, String filter, boolean collectionFilter) {
+
+        CheckBoxTreeItem<java.lang.String> rootItem = new CheckBoxTreeItem<>(dirPath);
+        rootItem.setExpanded(false);
+        List<CheckBoxTreeItem<java.lang.String>> nonDirectories = new ArrayList<>();
+        for (java.lang.String path : con.getPathsWithFilter(dirPath, filter)) {
+
+            // if directory, recursively call the method and add them all to root; note if the sub-directory has no valid files, it gets omitted
+            if (new File(path).isDirectory()) {
+                CheckBoxTreeItem<java.lang.String> subDir = getFileTree(path, filter, collectionFilter);
+
+
+                if (!subDir.isLeaf()) {
+                    rootItem.getChildren().add(getFileTree(path, filter, collectionFilter));
+                }
+            }
+
+            // else, add path to list if it has the filter keyword
+            else {
+                // if npcCheck passes and contains filter word, we process the item
+                boolean npcCheck = !collectionFilter || !path.contains("_npc");
+                if (path.contains(filter) && npcCheck) {
+                    CheckBoxTreeItem<java.lang.String> item = new CheckBoxTreeItem<>(path);
+
+                    // add items to selectedPaths to be parsed later
+                    item.selectedProperty().addListener(event -> {
+                        if (item.isSelected()) {
+                            selectedPaths.add(item.getValue());
+                        } else {
+                            selectedPaths.remove(item.getValue());
+                        }
+
+                    });
+                    nonDirectories.add(item);
+                }
+            }
         }
 
-        return content;
+        // add all the non-directories back in; this is done instead of adding the items in at processing time to show the directories first
+        rootItem.getChildren().addAll(nonDirectories);
+        return rootItem;
+    }
+
+    Task<Void> getParseTask(Parser.ObjectType type) {
+        return new Task<Void>() {
+            @Override protected Void call() throws IOException {
+
+                // clear out old failed paths
+                failedPaths.clear();
+
+                // begin parsing
+                int selectedPathsLength = selectedPaths.size();
+                for (int i = 0; i < selectedPathsLength; i++) {
+                    updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
+                    updateProgress(i, selectedPathsLength);
+                    String output = con.createObject(selectedPaths.get(i), type);
+                    if (output != null) {
+                        failedPaths.add(output);
+                    }
+                }
+                updateMessage("Parsing complete.");
+                updateProgress(selectedPathsLength, selectedPathsLength);
+
+
+                return null;
+            }
+        };
+    }
+
+    void clearParseList() {
+        selectedPaths.clear();
     }
 
     // MODIFY
@@ -94,7 +165,7 @@ public class PresenterLogicHelper {
         return status;
     }
 
-    void itemPropertyInsert(List<JFXComboBox<String>> comboBoxes, List<String> rPaths, List<JFXTextField> quantities, int numberOfFields, boolean lootbox, String rarity, UIController uiCon) {
+    void itemPropertyInsert(List<JFXComboBox<String>> comboBoxes, List<String> rPaths, List<JFXTextField> quantities, int numberOfFields, boolean lootbox, String rarity) {
         // get the rPaths
         List<String[]> loot = new ArrayList<>();
         for (int i = 0; i < numberOfFields; i++) {
@@ -110,12 +181,113 @@ public class PresenterLogicHelper {
         // if lootbox, add to lootbox, else add to decons
         if (lootbox) {
             for (String rPath: rPaths) {
-                uiCon.addLootboxContent(rPath, rarity, loot);
+                con.addLootboxContent(rPath, rarity, loot);
             }
         } else {
             for (String rPath: rPaths) {
-                uiCon.addDeconContent(rPath, loot);
+                con.addDeconContent(rPath, loot);
             }
+        }
+    }
+
+    List<String> getFailedPaths() {
+        return failedPaths;
+    }
+
+    void addNotes(List<String> rPaths, String note) {
+        for (String item: rPaths) {
+            con.addNotes(item, note);
+        }
+    }
+
+    List<String> matchNewRecipes() {
+        List<String> output = con.matchNewRecipes();
+        if (output != null) {
+            for (int i = 0; i < output.size(); i++) {
+                output.set(i, output.get(i).replace(dirPath, ""));
+            }
+            return output;
+        }
+        return null;
+    }
+
+    // VIEW
+
+    ObservableList<Searchable> getSearchableList(List<Parser.ObjectType> types, String filter) {
+        ObservableList<Searchable> searchList = FXCollections.observableArrayList();
+        List<String[]> nameAndRPathList = con.getNameAndRPathList(types);
+
+        for (String[] item: nameAndRPathList) {
+            if (item[0].toLowerCase().contains(filter.toLowerCase())) {
+                searchList.add(new Searchable(item[0], item[1]));
+            }
+        }
+
+        return searchList;
+    }
+
+    String[] getProperties(Map.Entry<CollectionEnums.Property, Double> entry) {
+        switch (entry.getKey()) {
+            case GROUND_MS:
+                return new String[] {"Ground movement speed: ",entry.getValue().toString()};
+            case AIR_MS:
+                return new String[] {"Flight speed: ",entry.getValue().toString()};
+            case GLIDE:
+                return new String[] {"Glide: ",entry.getValue().toString()};
+            case POWER_RANK:
+                return new String[] {"Power Rank: ",entry.getValue().toString()};
+            case MAG_MS:
+                return new String[] {"Mag rider speed: ",entry.getValue().toString()};
+            case WATER_MS:
+                return new String[] {"Ship top speed: ",entry.getValue().toString()};
+            case ACCEL:
+                return new String[] {"Ship acceleration: ",entry.getValue().toString()};
+            case TURN_RATE:
+                return new String[] {"Ship turning rate: ",entry.getValue().toString()};
+            default:
+                return null;
+        }
+    }
+
+    String[] getBuffs(Map.Entry<CollectionEnums.Buff, Double> entry) {
+        switch (entry.getKey()) {
+            case CD:
+                return new String[] {"Critical Damage (%): ",entry.getValue().toString()};
+            case CH:
+                return new String[] {"Critical Hit (%): ",entry.getValue().toString()};
+            case PD:
+                return new String[] {"Physical Damage: ",entry.getValue().toString()};
+            case MD:
+                return new String[] {"Magical Damage: ",entry.getValue().toString()};
+            case AS:
+                return new String[] {"Attack Speed: ",entry.getValue().toString()};
+            case EN:
+                return new String[] {"Max Energy: ",entry.getValue().toString()};
+            case ER:
+                return new String[] {"Energy Regen: ",entry.getValue().toString()};
+            case JP:
+                return new String[] {"Jump: ",entry.getValue().toString()};
+            case LS:
+                return new String[] {"Lasermancy: ",entry.getValue().toString()};
+            case LT:
+                return new String[] {"Light: ",entry.getValue().toString()};
+            case HR:
+                return new String[] {"Health Regen: ",entry.getValue().toString()};
+            case MF:
+                return new String[] {"Magic Find: ",entry.getValue().toString()};
+            case MH:
+                return new String[] {"Maximum Health: ", entry.getValue().toString()};
+            case ER_PCT:
+                double percentage = entry.getValue()*100;
+                return new String[] {"Energy Regen (%): ", Double.toString(percentage)};
+            case HR_PCT:
+                percentage = entry.getValue()*100;
+                return new String[] {"Health Regen (%): ", Double.toString(percentage)};
+            case MH_PCT:
+                percentage = entry.getValue()*100;
+                return new String[] {"Maximum Health (%): ", Double.toString(percentage)};
+            default:
+                return null;
         }
     }
 

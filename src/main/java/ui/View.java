@@ -87,7 +87,6 @@ public class View extends Application {
 
         Button[] options = new Button[] {createBtn, viewBtn, syncBtn};
 
-        pr.initSetUp();
         pr.setPropVBox(mainNav, options, "#fafafa");
 
         // sub-VBox 2

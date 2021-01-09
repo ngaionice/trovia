@@ -1,14 +1,12 @@
 package ui;
 
 import com.jfoenix.controls.*;
-import controllers.UIController;
+import controllers.ModelController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-
-import javafx.util.Duration;
 import ui.searchables.Searchable;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -33,9 +31,9 @@ import java.util.stream.Collectors;
 public class Presenter {
 
     DesignProperties p;
-    UIController uiCon;
+    ModelController con;
     PresenterElementHelper elements;
-    PresenterLogicHelper logic = new PresenterLogicHelper();
+    PresenterLogicHelper logic;
     JFXTreeView<String> dirView;
 
     String benchSubPath = "\\prefabs\\placeable\\crafting";
@@ -47,8 +45,11 @@ public class Presenter {
 
     public Presenter(DesignProperties p) {
         this.p = p;
-        uiCon = new UIController(p);
         elements = new PresenterElementHelper(p);
+        con = new ModelController();
+        logic = new PresenterLogicHelper(con);
+
+        con.importDataLocal();
     }
 
     // NAVIGATION BAR
@@ -107,7 +108,7 @@ public class Presenter {
 
         // make new nav
         VBox typeNav = new VBox();
-        typeNav.setBackground(new Background(new BackgroundFill(Color.rgb(66, 66, 66), CornerRadii.EMPTY, Insets.EMPTY)));
+        typeNav.setBackground(p.backgroundMainSidebar);
 
         // buttons
         JFXButton articles = new JFXButton("All");
@@ -128,7 +129,7 @@ public class Presenter {
         Button[] options = new Button[]{articles, items, collections, benches, languages};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(elements.setPropVBox(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(elements.setPropVBox(typeNav, options, p.colorTextNormal));
 
         // update center table
         root.setCenter(setPaneViewFiles(root, allArticles, "All Articles", false));
@@ -159,7 +160,7 @@ public class Presenter {
         Button[] options = new Button[]{addBtn, removeBtn, syncBtn};
 
         nav.getChildren().add(mainNav);
-        nav.getChildren().add(elements.setPropVBox(typeNav, options, "#c7c7c7"));
+        nav.getChildren().add(elements.setPropVBox(typeNav, options, p.colorTextNormal));
     }
 
     // CREATE-RELATED
@@ -167,7 +168,7 @@ public class Presenter {
     AnchorPane setPaneCreateSettings() {
 
         // clears previous saved paths
-        uiCon.clearParseList();
+        logic.clearParseList();
 
         GridPane grid = new GridPane();
         elements.setPropGridPane(grid, new Insets(80, 50, 70, 50), 20);
@@ -236,11 +237,11 @@ public class Presenter {
         currPane.setBackground(p.backgroundMainPane);
 
         // clears previous saved paths
-        uiCon.clearParseList();
+        logic.clearParseList();
 
         // update dirView to show the directory, and put it into the StackPane
         boolean isCollection = type == Parser.ObjectType.COLLECTION;
-        CheckBoxTreeItem<String> content = uiCon.getFileTree(logic.getDirPath() + subPath, filter, isCollection);
+        CheckBoxTreeItem<String> content = logic.getFileTree(logic.getDirPath() + subPath, filter, isCollection);
         content.setExpanded(true);
 
         dirView = elements.getTreeView(root, content);
@@ -260,7 +261,7 @@ public class Presenter {
         startParse.setOnAction(event -> {
 
             // add button
-            Task<Void> task = uiCon.getParseTask(type);
+            Task<Void> task = logic.getParseTask(type);
             progressBar.progressProperty().bind(task.progressProperty());
             progressText.textProperty().bind(task.messageProperty());
 
@@ -269,9 +270,9 @@ public class Presenter {
                 task.run();
 
                 Platform.runLater(() -> {
-                    if (!uiCon.getFailedPaths().isEmpty()) {
+                    if (!logic.getFailedPaths().isEmpty()) {
                         JFXButton button = elements.getButton("Close", 60, 35, p.backgroundDialog, p.colorTextDialog);
-                        JFXDialog dialog = elements.getDialog(currPane, new Text("Incomplete parsing"), uiCon.getFailedContent(logic.getDirPath()), button);
+                        JFXDialog dialog = elements.getDialog(currPane, new Text("Incomplete parsing"), elements.getFailedContent(logic.getDirPath(), logic.getFailedPaths()), button);
 
                         button.setOnAction(event1 -> dialog.close());
                         dialog.show();
@@ -337,12 +338,15 @@ public class Presenter {
 
                     int selectedRow = table.getSelectionModel().getSelectedCells().get(0).getRow();
                     Searchable article = table.getItems().get(selectedRow);
-                    VBox content = logic.getContent(article.getRPath(), uiCon);
+                    VBox content =
+                            article.getRPath().contains("item") ? elements.getItemContent(article.getRPath(), con) :
+                            article.getRPath().contains("collection") ? elements.getCollectionContent(article.getRPath(), con, logic) :
+                                    elements.getBenchContent(article.getRPath(), con);
 
                     JFXButton button = elements.getButton("Close", 60, 35, p.backgroundDialogButton, p.colorTextDialogButton);
                     button.setOnAction(event1 -> dialogInfo.get().close());
 
-                    dialogInfo.set(elements.getDialog(tablePane, new Text(article.getName()), content, button));
+                    dialogInfo.set(elements.getDialog(tablePane, elements.getTextH2(article.getName(), p.colorTextDialogButton), content, button));
                     dialogInfo.get().show();
                 }
             });
@@ -393,7 +397,7 @@ public class Presenter {
         }
 
         // get and set content
-        ObservableList<Searchable> articles = uiCon.getSearchableList(types, "");
+        ObservableList<Searchable> articles = logic.getSearchableList(types, "");
         FilteredList<Searchable> filtered = new FilteredList<>(articles, p -> true);    // allows filtering
         SortedList<Searchable> sortable = new SortedList<>(filtered);
 
@@ -436,7 +440,7 @@ public class Presenter {
         elements.setPropGridPane(grid, new Insets(80, 50, 20, 50), 0);
 
         JFXButton button = elements.getButton("Serialize", 100, 100, p.backgroundMainButton, p.colorTextMainButton);
-        button.setOnAction(e -> uiCon.save());
+        button.setOnAction(e -> con.exportDataLocal());
 
         grid.add(button, 0, 0);
 
@@ -462,15 +466,12 @@ public class Presenter {
         return pane;
     }
 
-    public void initSetUp() {
-        uiCon.initSetUp();
-    }
-
     JFXDialog getEditPane(StackPane root, List<String> rPaths, Parser.ObjectType type) {
 
         // create the dialog
         JFXDialogLayout dialogLayout = new JFXDialogLayout();
         JFXDialog dialog = new JFXDialog(root, dialogLayout, JFXDialog.DialogTransition.CENTER);
+        dialogLayout.setBackground(p.backgroundDialog);
 
         BorderPane dialogRoot = new BorderPane();
         dialogRoot.prefWidthProperty().bind(root.widthProperty());
@@ -547,7 +548,7 @@ public class Presenter {
         grid.setMinWidth(500);
 
         Text header = elements.getTextH3("Currently selected objects:", p.colorTextDialogButton);
-        Text texts = new Text(String.join("\n", rPaths));
+        TextArea texts = elements.getTextArea(String.join("\n", rPaths));
         grid.add(header, 0, 0);
         grid.add(texts, 0, 1);
 
@@ -563,7 +564,7 @@ public class Presenter {
         JFXSnackbar notif = new JFXSnackbar(anchor);
 
         save.setOnAction(e -> {
-            uiCon.addNotes(rPaths, noteField.getText());
+            logic.addNotes(rPaths, noteField.getText());
             JFXSnackbar.SnackbarEvent status = elements.getSnackbarEvent("Note saved");
             notif.enqueue(status);
         });
@@ -582,10 +583,9 @@ public class Presenter {
         AnchorPane anchor = elements.getAnchorPane(grid, match, true);
         JFXSnackbar notif = new JFXSnackbar(anchor);
         match.setOnAction(e -> {
-            List<String> failed = uiCon.matchNewRecipes(logic.getDirPath());
-            Text texts = failed != null ? elements.getTextNormal(String.join("\n", failed), p.colorTextDialog) :
-                    elements.getTextNormal("All recipes matched.", p.colorTextDialog);
-            grid.add(texts, 0, 1);
+            List<String> failed = logic.matchNewRecipes();
+            grid.add(failed != null ? elements.getTextArea(String.join("\n", failed)) :
+                    elements.getTextNormal("All recipes matched.", p.colorTextDialog), 0, 1);
 
             String text = failed == null ? "All recipes matched" : "Some recipes were not matched";
             JFXSnackbar.SnackbarEvent status = elements.getSnackbarEvent(text);
@@ -620,10 +620,10 @@ public class Presenter {
                     ((!geode.getText().isEmpty() && geode.getText().matches(intRegex)) || geode.getText().isEmpty())) {
                 for (String collection: rPaths) {
                     if (!trove.getText().isEmpty()) {
-                        uiCon.setTroveMastery(collection, Integer.parseInt(trove.getText()));
+                        con.setTroveMastery(collection, Integer.parseInt(trove.getText()));
                     }
                     if (!geode.getText().isEmpty()) {
-                        uiCon.setGeodeMastery(collection, Integer.parseInt(geode.getText()));
+                        con.setGeodeMastery(collection, Integer.parseInt(geode.getText()));
                     }
                 }
                 trove.clear();
@@ -650,7 +650,7 @@ public class Presenter {
         GridPane grid = elements.getDialogGrid();
 
         // get options for combo box
-        Map<String, String> benchEntries = uiCon.getALlStringsFromFile("languages/en/prefabs_placeable_crafting");
+        Map<String, String> benchEntries = con.getAllStringsFromFile("languages/en/prefabs_placeable_crafting");
         List<String> keys = benchEntries.keySet().stream().filter(value -> value.contains("name"))
                 .filter(value -> value.contains("interactive"))
                 .filter((value -> !value.contains("category")))
@@ -683,7 +683,7 @@ public class Presenter {
             // even though it's a combo box, people can hit save because the combo box is editable
             if (identifier != null) {
                 for (String rPath: rPaths) {
-                    uiCon.setBenchName(rPath, identifier);
+                    con.setBenchName(rPath, identifier);
                 }
             }
 
@@ -704,7 +704,7 @@ public class Presenter {
         grid.add(elements.getTextH3("Match recipes for the selected benches", p.colorTextDialogButton), 0, 0);
 
         for (int i = 0; i < rPaths.size(); i++) {
-            grid.add(elements.getTextNormal(uiCon.getName(rPaths.get(i)) + " - " + uiCon.getBenchRecipeNumber(rPaths.get(i)) + " recipes", p.colorTextDialogButton), 0, i + 1);
+            grid.add(elements.getTextNormal(con.getName(rPaths.get(i)) + " - " + con.getBenchRecipes(rPaths.get(i)).size() + " recipes", p.colorTextDialogButton), 0, i + 1);
         }
 
         JFXButton match = new JFXButton("Go");
@@ -714,7 +714,7 @@ public class Presenter {
         match.setOnAction(e -> {
             List<String> unmatched = new ArrayList<>();
             for (String rPath: rPaths) {
-                unmatched.addAll(uiCon.matchBenchRecipe(rPath));
+                unmatched.addAll(con.matchBenchToRecipes(rPath));
             }
 
             grid.getChildren().clear();
@@ -755,7 +755,7 @@ public class Presenter {
         // set up data
         List<String> itemNames = new ArrayList<>();
 
-        ObservableList<Searchable> nameAndRPathList = uiCon.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "");
+        ObservableList<Searchable> nameAndRPathList = logic.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "");
         for (Searchable item: nameAndRPathList) {
             itemNames.add(item.getName() + " - " + item.getRPath());
         }
@@ -780,7 +780,7 @@ public class Presenter {
             boolean status = logic.itemPropertyInputValidation(comboBoxes, itemNames, quantities, items.get(), lootbox);
             if (status) {
                 String lootboxRarity = rarity.getValue().toLowerCase();
-                logic.itemPropertyInsert(comboBoxes, rPaths, quantities, items.get(), lootbox, lootboxRarity, uiCon);
+                logic.itemPropertyInsert(comboBoxes, rPaths, quantities, items.get(), lootbox, lootboxRarity);
             }
 
             String text = status ? "Saved" : "Invalid input, try again";

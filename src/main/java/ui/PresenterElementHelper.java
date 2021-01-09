@@ -1,6 +1,7 @@
 package ui;
 
 import com.jfoenix.controls.*;
+import controllers.ModelController;
 import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,10 +12,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import objects.CollectionEnums;
 import ui.searchables.Searchable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class PresenterElementHelper {
 
@@ -219,6 +222,7 @@ public class PresenterElementHelper {
         textArea.setFocusColor(Paint.valueOf(p.colorBackgroundDialog));
         textArea.setUnFocusColor(Paint.valueOf(p.colorBackgroundDialog));
         textArea.setBackground(p.backgroundDialog);
+        textArea.setEditable(false);
 
         return textArea;
     }
@@ -235,7 +239,6 @@ public class PresenterElementHelper {
     }
 
     // ELEMENT MODIFIERS
-
     VBox setPropVBox(VBox vBox, Button[] options, String buttonTextColor) {
         for (Button item : options) {
             item.setFont(p.fontNormal);
@@ -264,6 +267,182 @@ public class PresenterElementHelper {
         for (int i = 0; i < nodes.size(); i++) {
             grid.add(nodes.get(i), 0, i);
         }
+    }
+    
+    // VBOX CREATORS FOR VIEW
+    VBox getItemContent(String rPath, ModelController con) {
+        VBox content = getContentBox();
+
+        // will need to get more items from ModelController later as we add more properties
+        content.getChildren().add(getTextH3("Description:", p.colorTextDialogButton));
+        if (con.getItemDesc(rPath) != null) {
+            content.getChildren().add(getTextNormal(con.getItemDesc(rPath), p.colorTextDialogButton));
+        } else {
+            content.getChildren().add(getTextNormal("Not available.", p.colorTextDialogButton));
+        }
+
+        content.getChildren().add(getTextH3("Description identifer:", p.colorTextDialogButton));
+        content.getChildren().add(getTextNormal(con.getItemDescIdentifier(rPath), p.colorTextDialogButton));
+
+        content.getChildren().add(getTextH3("Relative path:", p.colorTextDialogButton));
+        content.getChildren().add(getTextNormal(rPath, p.colorTextDialogButton));
+
+        if (con.getLootbox(rPath) != null) {
+
+            content.getChildren().add(getTextH3("Lootbox Contents", p.colorTextDialogButton));
+            Map<String, Map<String, String>> loot = con.getLootbox(rPath);
+
+            // common
+            if (loot.get("common") != null) {
+                Map<String, String> common = loot.get("common");
+                content.getChildren().add(createContentText("Common loot", content));
+                for (String itemPath: common.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + common.get(itemPath), content));
+                }
+            }
+
+            // uncommon
+            if (loot.get("uncommon") != null) {
+                Map<String, String> uncommon = loot.get("uncommon");
+                content.getChildren().add(createContentText("Uncommon loot", content));
+                for (String itemPath: uncommon.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + uncommon.get(itemPath), content));
+                }
+            }
+
+            // rare
+            if (loot.get("rare") != null) {
+                Map<String, String> rare = loot.get("rare");
+                content.getChildren().add(createContentText("Rare loot", content));
+                for (String itemPath: rare.keySet()) {
+                    content.getChildren().add(createContentText(con.getName(itemPath) + " - " + rare.get(itemPath), content));
+                }
+            }
+        }
+
+        if (con.getDecons(rPath) != null) {
+            content.getChildren().add(getTextH3("Loots into: ", p.colorTextDialogButton));
+            Map<String, Integer> decons = con.getDecons(rPath);
+            for (String itemPath: decons.keySet()) {
+                content.getChildren().add(createContentText( con.getName(itemPath)+ " - " + decons.get(itemPath), content));
+            }
+        }
+
+        if (con.getItemRecipes(rPath) != null) {
+            content.getChildren().add(getTextH3("Recipes: ", p.colorTextDialogButton));
+            for (String item: con.getItemRecipes(rPath)) {
+                content.getChildren().add(createContentText(item, content));
+            }
+        }
+
+        if (!con.getItemNotes(rPath).isEmpty()) {
+            content.getChildren().add(new Text("Notes:"));
+            for (String identifier: con.getItemNotes(rPath)) {
+                content.getChildren().add(new Text(con.getString(identifier)));
+            }
+        }
+
+
+        return content;
+    }
+
+    VBox getCollectionContent(String rPath, ModelController con, PresenterLogicHelper logic) {
+        VBox content = getContentBox();
+
+        content.getChildren().add(getTextH3("Description:", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(con.getCollectionDesc(rPath), content));
+
+        content.getChildren().add(getTextH3("Description identifer:", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(con.getCollectionDescIdentifier(rPath), content));
+
+        content.getChildren().add(getTextH3("Relative path:", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(rPath, content));
+
+        Map<CollectionEnums.Property, Double> colProp = con.getCollectionProperties(rPath);
+        Map<CollectionEnums.Buff, Double> buffs = con.getCollectionBuffs(rPath);
+
+        if (!colProp.isEmpty()) {
+            content.getChildren().add(getTextH3("Collection abilities: ", p.colorTextDialogButton));
+            for (Map.Entry<CollectionEnums.Property, Double> item: colProp.entrySet()) {
+                String[] prop = logic.getProperties(item);
+                content.getChildren().add(getTextNormal(prop[0] +  prop[1], p.colorTextDialogButton));
+            }
+        }
+
+        if (buffs != null) {
+            content.getChildren().add(getTextH3("Permanent stats buffs: ", p.colorTextDialogButton));
+            for (Map.Entry<CollectionEnums.Buff, Double> item: buffs.entrySet()) {
+                String[] prop = logic.getBuffs(item);
+                content.getChildren().add(getTextNormal(prop[0]  + prop[1], p.colorTextDialogButton));
+            }
+        }
+
+        Integer[] mastery = con.getCollectionMastery(rPath);
+        content.getChildren().add(getTextH3("Trove Mastery: ", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(mastery[0].toString(), content));
+
+        content.getChildren().add(getTextH3("Geode Mastery: ", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(mastery[1].toString(), content));
+
+        if (con.getCollectionRecipes(rPath) != null) {
+            content.getChildren().add(getTextH3("Recipes: ", p.colorTextDialogButton));
+            for (String item: con.getCollectionRecipes(rPath)) {
+                content.getChildren().add(createContentText(item, content));
+            }
+        }
+
+        if (con.getCollectionNotes(rPath) != null) {
+            content.getChildren().add(getTextH3("Notes: ", p.colorTextDialogButton));
+            for (String identifier: con.getCollectionNotes(rPath)) {
+                content.getChildren().add(createContentText(con.getString(identifier), content));
+            }
+        }
+
+        return content;
+    }
+
+    VBox getBenchContent(String rPath, ModelController con) {
+        VBox content = getContentBox();
+
+        content.getChildren().add(getTextH3("Recipes in bench:", p.colorTextDialogButton));
+        content.getChildren().add(new JFXTextArea(String.join(" \n", con.getBenchRecipes(rPath))));
+
+        content.getChildren().add(getTextH3("Relative path:", p.colorTextDialogButton));
+        content.getChildren().add(createContentText(rPath, content));
+
+        return content;
+    }
+
+    VBox getFailedContent(String dirPath, List<String> failedPaths) {
+        VBox content = new VBox();
+        content.setSpacing(3);
+
+        for (int i = 0; i < failedPaths.size(); i++) {
+            failedPaths.set(i, failedPaths.get(i).substring(dirPath.length() + 1));
+        }
+        String failedPathsJoined = String.join(" \n", failedPaths);
+
+        content.getChildren().add(new Text("The following paths were not parsed:"));
+        TextArea failed = getTextArea(failedPathsJoined);
+        content.getChildren().add(failed);
+
+        Text message = new Text("Note that this is normal, if files that have not been designed to be parsed were selected.");
+        message.setWrappingWidth(350);
+        content.getChildren().add(message);
+
+        return content;
+    }
+
+    VBox getContentBox() {
+        VBox box = new VBox();
+        box.setSpacing(3);
+        return box;
+    }
+
+    Text createContentText(String str, VBox box) {
+        Text text = getTextNormal(str, p.colorTextDialogButton);
+        text.wrappingWidthProperty().bind(box.widthProperty().multiply(0.9));
+        return text;
     }
 
 }

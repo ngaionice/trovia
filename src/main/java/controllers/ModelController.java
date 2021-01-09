@@ -1,6 +1,6 @@
 package controllers;
 
-import gateways.SerGateway;
+import gateways.LocalGatway;
 import managers.*;
 import objects.*;
 import objects.Collection;
@@ -21,7 +21,7 @@ public class ModelController {
     RecipeManager recM;
     Parser p = new Parser();
     TextPresenter pr = new TextPresenter();
-    SerGateway gateway = new SerGateway();
+    LocalGatway gateway = new LocalGatway();
 
     // HELPER?
 
@@ -155,16 +155,18 @@ public class ModelController {
         }
     }
 
-    public void addLootboxCommon(String rPath, List<String[]> loot) {
-        itemM.addLootBoxCommon(rPath, loot);
-    }
-
-    public void addLootboxUncommon(String rPath, List<String[]> loot) {
-        itemM.addLootBoxUncommon(rPath, loot);
-    }
-
-    public void addLootboxRare(String rPath, List<String[]> loot) {
-        itemM.addLootBoxRare(rPath, loot);
+    public void addLootboxContent(String rPath, String rarity, List<String[]> loot) {
+        switch (rarity) {
+            case "common":
+                itemM.addLootBoxCommon(rPath, loot);
+                break;
+            case "uncommon":
+                itemM.addLootBoxUncommon(rPath, loot);
+                break;
+            case "rare":
+                itemM.addLootBoxRare(rPath, loot);
+                break;
+        }
     }
 
     public void addDeconContent(String rPath, List<String[]> loot) {
@@ -367,7 +369,7 @@ public class ModelController {
 
     // FILE STORAGE
 
-    void exportDataLocal() {
+    public void exportDataLocal() {
         gateway.exportManager("bench.ser", benchM);
         gateway.exportManager("collection.ser", colM);
         gateway.exportManager("item.ser", itemM);
@@ -375,7 +377,7 @@ public class ModelController {
         gateway.exportManager("recipe.ser", recM);
     }
 
-    void importDataLocal() {
+    public void importDataLocal() {
         benchM = (BenchManager) gateway.importManager("bench.ser");
         colM = (CollectionManager) gateway.importManager("collection.ser");
         itemM = (ItemManager) gateway.importManager("item.ser");
