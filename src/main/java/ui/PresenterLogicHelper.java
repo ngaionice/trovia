@@ -2,14 +2,14 @@ package ui;
 
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
-import controllers.ModelController;
+import model.ModelController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBoxTreeItem;
-import objects.CollectionEnums;
-import parser.Parser;
+import model.objects.CollectionEnums;
+import model.parser.Parser;
 import ui.searchables.Searchable;
 
 import java.io.File;

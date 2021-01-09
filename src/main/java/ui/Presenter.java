@@ -1,7 +1,7 @@
 package ui;
 
 import com.jfoenix.controls.*;
-import controllers.ModelController;
+import model.ModelController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
@@ -21,7 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
-import parser.Parser;
+import model.parser.Parser;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
