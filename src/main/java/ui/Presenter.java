@@ -137,8 +137,10 @@ public class Presenter {
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
 
+        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
+
         // update center table
-        root.setCenter(notImplemented());
+        root.setCenter(setPaneViewFiles(root, allArticles, "New Entries", false, "new"));
 
         // remove previous nav
         nav.getChildren().clear();
@@ -153,8 +155,6 @@ public class Presenter {
         JFXButton syncBtn = new JFXButton("Sync database");
 
         // button actions
-        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
-
         addBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "New Entries", false, "new")));
         removeBtn.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "Removed Entries", false, "removed")));
         syncBtn.setOnAction(event -> root.setCenter(setSyncPane()));

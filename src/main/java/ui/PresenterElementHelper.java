@@ -405,7 +405,7 @@ public class PresenterElementHelper {
         VBox content = getContentBox();
 
         content.getChildren().add(getTextH3("Recipes in bench:", p.colorTextDialogButton));
-        content.getChildren().add(new JFXTextArea(String.join(" \n", con.getBenchRecipes(rPath))));
+        content.getChildren().add(getTextArea(String.join(" \n", con.getBenchRecipes(rPath))));
 
         content.getChildren().add(getTextH3("Relative path:", p.colorTextDialogButton));
         content.getChildren().add(createContentText(rPath, content));
