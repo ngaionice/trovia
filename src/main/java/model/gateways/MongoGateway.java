@@ -196,13 +196,15 @@ public class MongoGateway implements DatabaseGateway{
             Map<String[], List<String>> categories = item.getAllRecipesByCategory();
 
             Document doc = new Document("name", name).append("profession", profession).append("rPath", rPath);
+
             if (professionName != null) {
                 doc.append("professionName", professionName);
             }
 
             Document catDoc = new Document();
             for (String[] category: categories.keySet()) {
-                catDoc.append(category[0], categories.get(category));
+                System.out.println(category[0]);
+                catDoc.append(category[0].replace("$", "%"), categories.get(category));
             }
             doc.append("categories", catDoc);
 

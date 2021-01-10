@@ -73,7 +73,7 @@ public class ParseBench implements ParseStrategy {
                 currCat.add(Parser.hexToAscii(catHex));
             }
 
-            String[] categoryName = new String[] {Integer.toString(i), currCat.get(0)};
+            String[] categoryName = new String[] {currCat.get(0), Integer.toString(i)};
             List<String> recipes = new ArrayList<>(currCat.subList(1,currCat.size()));
 
             categories.put(categoryName, recipes);
