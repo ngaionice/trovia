@@ -1,18 +1,21 @@
-
 @font-face {
+    font-family: "Roboto Light";
     src: url("fonts/RobotoLight.ttf");
 }
 
 @font-face {
+    font-family: "Roboto";
     src: url("fonts/RobotoRegular.ttf");
 }
 
 @font-face {
-    src: url("fonts/RobotoMedium.ttf");
+    font-family: "Roboto Thin";
+    src: url("fonts/RobotoThin.ttf");
 }
 
 @font-face {
-    src: url("fonts/RobotoSlab.ttf");
+    font-family: "Roboto Medium";
+    src: url("fonts/RobotoMedium.ttf");
 }
 
 .label {
@@ -197,3 +200,71 @@
 .jfx-autocomplete-popup .list-cell {
     -fx-background-color: #FFFFFF;
 }
+
+.root {
+    -fx-accent: #FF9800;
+    -fx-content-base: #FAFAFA;
+}
+
+/*--------------------------------------     New stuff down here     --------------------------------------*/
+
+.nav-button {
+    -fx-pref-width: 160px;
+    -fx-pref-height: 36px;
+    -fx-padding: 0 0 0 12;
+    -fx-background-color: -fx-accent;
+    -fx-alignment: center-left;
+    -fx-font-size: 13px;
+    -fx-font-family: "Roboto Regular";
+    -fx-graphic-text-gap: 16;
+    -jfx-button-type: FLAT;
+}
+
+.nav-button .ikonli-font-icon {
+    -fx-icon-size: 13px;
+}
+
+#nav-box {
+    -fx-padding: 8;
+    -fx-spacing: 8;
+    -fx-background-radius: 3;
+}
+
+#nav-separator {
+    -fx-pref-width: 160px;
+}
+
+#button-parse .ikonli-font-icon {
+    -fx-icon-code: "mdi-plus-circle";
+}
+
+#button-edit .ikonli-font-icon {
+    -fx-icon-code: "mdi-pencil";
+}
+
+#button-sync .ikonli-font-icon {
+    -fx-icon-code: "mdi-sync";
+}
+
+#button-load .ikonli-font-icon {
+    -fx-icon-code: "mdi-database";
+}
+
+#button-quit .ikonli-font-icon {
+    -fx-icon-code: "mdi-exit-to-app";
+}
+
+.header {
+    -fx-background-color: -fx-accent;
+    -fx-pref-height: 64px;
+    -fx-pref-width: Infinity;
+    -fx-padding: 24px;
+    -fx-alignment: center-left;
+}
+
+.header-text {
+    -fx-font-family: "Roboto Medium";
+    -fx-fill: -fx-content-base;
+    -fx-font-size: 15px;
+}
+

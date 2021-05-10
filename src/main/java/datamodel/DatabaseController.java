@@ -14,21 +14,20 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
-public class DataController {
+public class DatabaseController {
 
     Connection con;
     SQLQuerier querier;
     SQLModifier modifier;
 
-//    public static void main(String[] args) throws SQLException {
-//        DataController main = new DataController();
-//
-//        main.createDatabase("C:\\Users\\Julian\\IdeaProjects\\trovia-em\\trove.db",
-//                "C:\\Users\\Julian\\IdeaProjects\\trovia-em\\src\\main\\java\\datamodel\\trove_clean.ddl");
-//        main.loadDatabase("C:\\Users\\Julian\\Desktop\\test.db");
-//    }
+    ObservableMap<String, ObservableBench> sessionBenches;
+    ObservableMap<String, ObservableCollection> sessionCollections;
+    ObservableMap<String, ObservableItem> sessionItems;
+    ObservableMap<String, ObservablePlaceable> sessionPlaceables;
+    ObservableMap<String, ObservableRecipe> sessionRecipes;
+    Map<String, ObservableStrings> sessionStrings;
 
-    public DataController() {
+    public DatabaseController() {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -44,7 +43,7 @@ public class DataController {
      * @param path    desired path and file name of the database
      * @param ddlPath the path of the schema
      */
-    void createDatabase(String path, String ddlPath) {
+    public void createDatabase(String path, String ddlPath) {
         try {
             String ddl = String.join(" ", Files.readAllLines(Paths.get(ddlPath)));
             con = DriverManager.getConnection("jdbc:sqlite:" + path);
@@ -63,19 +62,15 @@ public class DataController {
         }
     }
 
-    void loadDatabase(String path) {
-        try {
-            path = path.replace("\\", "/");
+    public void loadDatabase(String path) throws SQLException {
+        path = path.replace("\\", "/");
 
-            SQLiteConfig config = new SQLiteConfig();
-            config.enforceForeignKeys(true);
+        SQLiteConfig config = new SQLiteConfig();
+        config.enforceForeignKeys(true);
 
-            con = DriverManager.getConnection("jdbc:sqlite:" + path, config.toProperties());
-            querier = new SQLQuerier(con);
-            modifier = new SQLModifier(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        con = DriverManager.getConnection("jdbc:sqlite:" + path, config.toProperties());
+        querier = new SQLQuerier(con);
+        modifier = new SQLModifier(con);
     }
 
     // GETTERS

@@ -264,8 +264,8 @@ public class SQLQuerier {
         getStringsHelper(extracted, extractedStrings);
         getStringsHelper(custom, customStrings);
 
-        strings.put("extracted", new ObservableStrings(extractedStrings));
-        strings.put("custom", new ObservableStrings(customStrings));
+        strings.put("extracted", new ObservableStrings("extracted", extractedStrings));
+        strings.put("custom", new ObservableStrings("custom", customStrings));
 
         return strings;
 //            Map<String, ObservableStrings> strings = new HashMap<>();

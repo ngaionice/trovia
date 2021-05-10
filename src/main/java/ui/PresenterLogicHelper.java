@@ -33,7 +33,7 @@ public class PresenterLogicHelper {
 
     ModelController con;
 
-    PresenterLogicHelper(ModelController con) {
+    public PresenterLogicHelper(ModelController con) {
         this.con = con;
     }
 
@@ -73,7 +73,7 @@ public class PresenterLogicHelper {
     }
 
 
-    CheckBoxTreeItem<String> getFileTree(String dirPath, String filter, boolean collectionFilter) {
+    public CheckBoxTreeItem<String> getFileTree(String dirPath, String filter, boolean collectionFilter) {
 
         CheckBoxTreeItem<java.lang.String> rootItem = new CheckBoxTreeItem<>(dirPath);
         rootItem.setExpanded(false);
@@ -116,7 +116,7 @@ public class PresenterLogicHelper {
         return rootItem;
     }
 
-    Task<Void> getParseTask(Parser.ObjectType type) {
+    public Task<Void> getParseTask(Parser.ObjectType type) {
         return new Task<Void>() {
             @Override protected Void call() throws IOException {
 

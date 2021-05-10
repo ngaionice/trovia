@@ -21,7 +21,7 @@ public class Item implements Article, Serializable {
     Map<String, String> lootboxCommon;     // if isLootbox = true, key: rPath of item looted, value: quantity of item looted
     Map<String, String> lootboxUncommon;
     Map<String, String> lootboxRare;
-    List<String> recipe = new ArrayList<>();         // if hasRecipe = true, a list of rPaths of recipes, else is an empty list
+    List<String> recipe = new ArrayList<>();         // if isCraftable = true, a list of rPaths of recipes, else is an empty list
     List<String> notes;
 
     // an Entity; basic unit; note that gear is not included here
