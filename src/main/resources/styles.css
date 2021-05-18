@@ -26,6 +26,10 @@
     -fx-font-size: 13;
 }
 
+.dir-view {
+    -fx-background-insets: 0 1;
+}
+
 .dir-view .tree-cell {
     -fx-background-color: #1B1B1B ;
     -fx-text-fill: #eeeeee ;
@@ -33,7 +37,7 @@
 
 .dir-view:focused {
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0, 1;
+    -fx-background-insets: 0 1;
     -fx-padding: 1;
 }
 
@@ -140,19 +144,6 @@
     -fx-table-cell-border-color: transparent;
 }
 
-.jfx-progress-bar > .track, .jfx-progress-bar > .bar {
-    -fx-background-radius: 0;
-    -fx-background-insets: 0;
-}
-
-.jfx-progress-bar > .bar {
-    -fx-background-color: #FF9800;
-}
-
-.jfx-progress-bar > .track {
-    -fx-background-color: #424242;
-}
-
 .jfx-snackbar-content {
     -fx-background-color: #EEEEEE;
 }
@@ -201,33 +192,42 @@
     -fx-background-color: #FFFFFF;
 }
 
+/*--------------------------------------     New stuff down here     --------------------------------------*/
+
 .root {
     -fx-accent: #FF9800;
-    -fx-content-base: #FAFAFA;
+    /* to be factored out maybe */
+    -fx-material: #1B1B1B;
+    -fx-dialog-background: #212121;
+    -fx-content: #FAFAFA;
+    -fx-content-light: #EEEEEE;
+    -fx-background-color: -fx-material;
+    -fx-unfocus: #424242;
+    -fx-subtle: #424242;
 }
-
-/*--------------------------------------     New stuff down here     --------------------------------------*/
 
 .nav-button {
     -fx-pref-width: 160px;
     -fx-pref-height: 36px;
     -fx-padding: 0 0 0 12;
-    -fx-background-color: -fx-accent;
+    -fx-background-color: -fx-material;
     -fx-alignment: center-left;
     -fx-font-size: 13px;
     -fx-font-family: "Roboto Regular";
+    -fx-text-fill: -fx-content;
     -fx-graphic-text-gap: 16;
     -jfx-button-type: FLAT;
 }
 
 .nav-button .ikonli-font-icon {
     -fx-icon-size: 13px;
+    -fx-icon-color: -fx-content;
 }
 
 #nav-box {
     -fx-padding: 8;
     -fx-spacing: 8;
-    -fx-background-radius: 3;
+    -fx-background-color: -fx-material;
 }
 
 #nav-separator {
@@ -246,8 +246,16 @@
     -fx-icon-code: "mdi-sync";
 }
 
+#button-review .ikonli-font-icon {
+    -fx-icon-code: "mdi-file-import";
+}
+
 #button-load .ikonli-font-icon {
     -fx-icon-code: "mdi-database";
+}
+
+#button-create .ikonli-font-icon {
+    -fx-icon-code: "mdi-database-plus";
 }
 
 #button-quit .ikonli-font-icon {
@@ -264,7 +272,168 @@
 
 .header-text {
     -fx-font-family: "Roboto Medium";
-    -fx-fill: -fx-content-base;
+    -fx-fill: -fx-content;
     -fx-font-size: 15px;
+}
+
+.jfx-tab-pane .tab-header-area {
+    -fx-padding: 0 -12 0 12;
+}
+
+.jfx-tab-pane .tab-selected-line {
+    -fx-stroke-width: 3pt;
+    -fx-background-color: -fx-content;
+}
+
+.jfx-tab-pane .headers-region,
+.jfx-tab-pane .tab-header-background {
+    -fx-background-color: -fx-accent;
+}
+
+.jfx-tab-pane .tab .tab-label {
+    -fx-font-weight: normal;
+    -fx-font-size: 12;
+}
+
+.dir-view {
+    -fx-background-insets: 1;
+}
+
+.dir-view .tree-cell {
+    -fx-background-color: #1B1B1B ;
+    -fx-text-fill: #eeeeee ;
+}
+
+.dir-view:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 1;
+    -fx-padding: 1;
+}
+
+.dir-view .check-box:selected > .box {
+    -fx-background-color: #C77800;
+}
+
+.dir-view .check-box:default > .box {
+    -fx-background-color: #EEEEEE;
+}
+
+.dir-view .check-box:selected > .box > .mark,
+.dir-view .check-box:indeterminate  > .box > .mark {
+    -fx-background-color: #EEEEEE;
+}
+
+.text-input:disabled {
+    -fx-opacity: 1.0;
+}
+
+.tree-view .tree-cell {
+    -fx-background-color: -fx-material;
+    -fx-text-fill: -fx-content;
+}
+
+.tab {
+    -fx-pref-width: 96px;
+}
+
+.pane-background {
+    -fx-padding: 24px;
+    -fx-background-color: -fx-dialog-background;
+}
+
+.card-backing {
+    -fx-padding: 24px;
+    -fx-alignment: top-center;
+    -fx-background-color: -fx-material;
+    -fx-background-radius: 3px;
+}
+
+.grid-content {
+    -fx-hgap: 12px;
+    -fx-vgap: 12px;
+    -fx-padding: 24px;
+}
+
+.jfx-text-field {
+    -jfx-focus-color: -fx-accent;
+    -jfx-unfocus-color: -fx-unfocus;
+    -jfx-label-float: true;
+}
+
+.jfx-progress-bar > .track,
+.jfx-progress-bar > .bar {
+    -fx-background-radius: 0;
+    -fx-background-insets: 1 0 1 0;
+}
+
+.jfx-progress-bar > .bar {
+    -fx-background-color: -fx-accent;
+    -fx-pref-height: 2px;
+}
+
+.jfx-progress-bar > .track {
+    -fx-background-color: #424242;
+}
+
+.text-field-dir {
+    -fx-pref-width: 520px;
+}
+
+.text-field-filter {
+    -fx-pref-width: 80px;
+}
+
+.button-inline {
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+}
+
+.button-inline .ikonli-font-icon {
+    -fx-icon-color: -fx-content;
+    -fx-icon-size: 13px;
+    -fx-background-radius: 3px;
+}
+
+.floating-button {
+    -fx-background-radius: 50px;
+    -fx-background-color: -fx-accent;
+    -fx-pref-height: 50px;
+    -fx-pref-width: 50px;
+    -fx-min-width: -fx-pref-width;
+    -fx-max-width: -fx-pref-width;
+    -fx-min-height: -fx-pref-height;
+    -fx-max-height: -fx-pref-height;
+    -jfx-button-type: RAISED;
+}
+
+.floating-button .ikonli-font-icon {
+    -fx-icon-size: 20px;
+    -fx-icon-color: -fx-content;
+}
+
+.button-start .ikonli-font-icon {
+    -fx-icon-code: "mdi-play";
+}
+
+.color-subtle {
+    -fx-background-color: -fx-subtle;
+    -fx-text-fill: -fx-content;
+}
+
+.text-normal {
+    -fx-fill: -fx-content;
+}
+
+#text-progress {
+    -fx-translate-x: 2;
+    -fx-fill: -fx-content-light;
+}
+
+#button-set-dir .ikonli-font-icon {
+    -fx-icon-code: "mdi-pencil";
+}
+
+#button-update .ikonli-font-icon {
+    -fx-icon-code: "mdi-update";
 }
 
