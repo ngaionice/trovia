@@ -5,9 +5,11 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
+import datamodel.parser.Parser;
+import datamodel.parser.parsestrategies.ParseException;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Observer;
 
 public class DataModel implements Observer {
 
+    Parser parser;
     DatabaseController database;
     String language;
 
@@ -43,6 +46,7 @@ public class DataModel implements Observer {
 
     public DataModel(String databasePath, String lang) throws SQLException {
         database = new DatabaseController();
+        parser = new Parser();
         language = lang;
         database.loadDatabase(databasePath);
 
@@ -215,5 +219,52 @@ public class DataModel implements Observer {
 
     public void setCurrentString(String currentString) {
         this.currentString.set(currentString);
+    }
+
+    // CREATING OBJECTS
+
+    public void createObject(String absPath, Parser.ObjectType type) throws IOException {
+        switch (type) {
+            case ITEM:
+                try {
+                    ObservableItem item = (ObservableItem) parser.createObject(absPath, type);
+                    sessionItems.put(item.getRPath(), item);
+                    changedItems.put(item.getRPath(), item);
+                } catch (ParseException e) {
+                    System.out.println("Parse failure on item: " + absPath);
+                }
+            case BENCH:
+            case PROFESSION:
+                try {
+                    ObservableBench bench = (ObservableBench) parser.createObject(absPath, type);
+                    sessionBenches.put(bench.getRPath(), bench);
+                    changedBenches.put(bench.getRPath(), bench);
+                } catch(ParseException e) {
+                    System.out.println("Parse failure on bench/profession: " + absPath);
+                }
+            case RECIPE:
+                try {
+                    ObservableRecipe recipe = (ObservableRecipe) parser.createObject(absPath, type);
+                    sessionRecipes.put(recipe.getRPath(), recipe);
+                    changedRecipes.put(recipe.getRPath(), recipe);
+                } catch (ParseException e) {
+                    System.out.println("Parse failure on recipe: " + absPath);
+                }
+            case COLLECTION:
+                try {
+                    ObservableCollection collection = (ObservableCollection) parser.createObject(absPath, type);
+                    sessionCollections.put(collection.getRPath(), collection);
+                    changedCollections.put(collection.getRPath(), collection);
+                } catch (ParseException e) {
+                    System.out.println("Parse failure on collection: " + absPath);
+                }
+            case STRING:
+//                try {
+//                    langM.addLangFile((LangFile) parser.createObject(absPath, type)); // TODO: fix this line up properly
+//                    return null;
+//                } catch (ParseException e) {
+//                    return absPath;
+//                }
+        }
     }
 }

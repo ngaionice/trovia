@@ -234,34 +234,6 @@
     -fx-pref-width: 160px;
 }
 
-#button-parse .ikonli-font-icon {
-    -fx-icon-code: "mdi-plus-circle";
-}
-
-#button-edit .ikonli-font-icon {
-    -fx-icon-code: "mdi-pencil";
-}
-
-#button-sync .ikonli-font-icon {
-    -fx-icon-code: "mdi-sync";
-}
-
-#button-review .ikonli-font-icon {
-    -fx-icon-code: "mdi-file-import";
-}
-
-#button-load .ikonli-font-icon {
-    -fx-icon-code: "mdi-database";
-}
-
-#button-create .ikonli-font-icon {
-    -fx-icon-code: "mdi-database-plus";
-}
-
-#button-quit .ikonli-font-icon {
-    -fx-icon-code: "mdi-exit-to-app";
-}
-
 .header {
     -fx-background-color: -fx-accent;
     -fx-pref-height: 64px;
@@ -363,7 +335,7 @@
 .jfx-progress-bar > .track,
 .jfx-progress-bar > .bar {
     -fx-background-radius: 0;
-    -fx-background-insets: 1 0 1 0;
+    -fx-background-insets: 0.8 0 0.8 0;
 }
 
 .jfx-progress-bar > .bar {
@@ -429,11 +401,5 @@
     -fx-fill: -fx-content-light;
 }
 
-#button-set-dir .ikonli-font-icon {
-    -fx-icon-code: "mdi-pencil";
-}
 
-#button-update .ikonli-font-icon {
-    -fx-icon-code: "mdi-update";
-}
 

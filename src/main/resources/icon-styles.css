@@ -1,0 +1,35 @@
+#button-parse .ikonli-font-icon {
+    -fx-icon-code: "mdi-plus-circle";
+}
+
+#button-edit .ikonli-font-icon {
+    -fx-icon-code: "mdi-pencil";
+}
+
+#button-sync .ikonli-font-icon {
+    -fx-icon-code: "mdi-sync";
+}
+
+#button-review .ikonli-font-icon {
+    -fx-icon-code: "mdi-file-import";
+}
+
+#button-load .ikonli-font-icon {
+    -fx-icon-code: "mdi-database";
+}
+
+#button-create .ikonli-font-icon {
+    -fx-icon-code: "mdi-database-plus";
+}
+
+#button-quit .ikonli-font-icon {
+    -fx-icon-code: "mdi-exit-to-app";
+}
+
+#button-set-dir .ikonli-font-icon {
+    -fx-icon-code: "mdi-pencil";
+}
+
+#button-update .ikonli-font-icon {
+    -fx-icon-code: "mdi-update";
+}

@@ -6,10 +6,7 @@ import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.effects.JFXDepthManager;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
-import javafx.geometry.VPos;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeView;
@@ -17,12 +14,10 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import datamodel.parser.Parser;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,13 +26,13 @@ public class Presenter {
     Stage stage;
     Scene scene;
     BorderPane root;
-    LogicController logic;
+    UIController controller;
 
     public Presenter(Stage stage, Scene sc, BorderPane root) {
         this.stage = stage;
         this.scene = sc;
         this.root = root;
-        this.logic = new LogicController();
+        this.controller = new UIController();
     }
 
     public VBox getNavBar() {
@@ -78,18 +73,8 @@ public class Presenter {
         syncButton.setOnAction(e -> setSyncScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
-        loadButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Database Files", "*.db"));
-            File selected = fileChooser.showOpenDialog(stage);
-            logic.loadDatabase(selected);
-        });
-        createButton.setOnAction(e -> {
-            DirectoryChooser dirChooser = new DirectoryChooser();
-            dirChooser.setTitle("Select the location to save the database in.");
-            File selected = dirChooser.showDialog(stage);
-            logic.createDatabase(selected);
-        });
+        loadButton.setOnAction(e -> controller.loadDatabase(stage));
+        createButton.setOnAction(e -> controller.createDatabase(stage));
 
         quitButton.setOnAction(e -> runQuitSequence());
 
@@ -103,16 +88,14 @@ public class Presenter {
 
         header.getChildren().add(headerText);
 
-        // add center pane for parsing, need file tree, filter, progress bar and FAB for go
-
         JFXTabPane tabs = new JFXTabPane();
-        Tab benches = getParseTab("Benches", "bench");
-        Tab collections = getParseTab("Collections", "collection");
-        Tab items = getParseTab("Items", "item");
-        Tab placeables = getParseTab("Placeables", "placeable");
-        Tab professions = getParseTab("Professions", "profession");
-        Tab recipes = getParseTab("Recipes", "recipe");
-        Tab strings = getParseTab("Strings", "string");
+        Tab benches = getParseTab("Benches", Parser.ObjectType.BENCH);
+        Tab collections = getParseTab("Collections", Parser.ObjectType.COLLECTION);
+        Tab items = getParseTab("Items", Parser.ObjectType.ITEM);
+        Tab placeables = getParseTab("Placeables", Parser.ObjectType.PLACEABLE);
+        Tab professions = getParseTab("Professions", Parser.ObjectType.PROFESSION);
+        Tab recipes = getParseTab("Recipes", Parser.ObjectType.RECIPE);
+        Tab strings = getParseTab("Strings", Parser.ObjectType.STRING);
         tabs.getTabs().addAll(benches, collections, items, placeables, professions, recipes, strings);
 
         header.getStyleClass().add("header");
@@ -123,7 +106,7 @@ public class Presenter {
         root.setCenter(screenRoot);
     }
 
-    private Tab getParseTab(String name, String type) {
+    private Tab getParseTab(String name, Parser.ObjectType type) {
         Tab tab = new Tab(name);
 
         StackPane root = new StackPane();
@@ -142,42 +125,26 @@ public class Presenter {
         directory.setPromptText("Directory");
         directory.setDisable(true);
         filter.setPromptText("Filter");
-        filter.setText(logic.getFilterText(type));
+        filter.setText(controller.getFilterText(type));
+        progressBar.setProgress(0);
 
 //        C:\Program Files (x86)\Glyph\Games\Trove\Live\extracted_dec_15_subset\prefabs\placeable
-        dirButton.setOnAction(e -> {
-            DirectoryChooser dirChooser = new DirectoryChooser();
-            dirChooser.setTitle("Select the location to extract data from.");
-            File selected = dirChooser.showDialog(stage);
-            if (selected != null) {
-                directory.setText(selected.getAbsolutePath());
-                tree.setRoot(logic.getParseTree(directory.getText(), type));
-                updateParseTree(type, tree, directory);
-            }
-        });
-        filterButton.setOnAction(e -> {
-            logic.setFilter(filter.getText(), type);
-            filter.setText(logic.getFilterText(type));
-            if (directory.getText() != null) {
-                updateParseTree(type, tree, directory);
-            }
-        });
+        dirButton.setOnAction(e -> controller.setParseDirectory(stage, directory, tree, type));
+        filterButton.setOnAction(e -> controller.updateParseDirectory(filter, directory, tree, type));
 
         root.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
         directory.getStyleClass().add("text-field-dir");
-        dirButton.getStyleClass().addAll("button-inline", "color-subtle");
         filter.getStyleClass().add("text-field-filter");
+        tree.getStyleClass().add("dir-view");
         dirButton.getStyleClass().addAll("button-inline", "color-subtle");
         filterButton.getStyleClass().addAll("button-inline", "color-subtle");
-        tree.getStyleClass().add("dir-view");
         startButton.getStyleClass().addAll("floating-button", "button-start");
         dirButton.setId("button-set-dir");
         filterButton.setId("button-update");
         progressText.getStyleClass().add("text-normal");
         progressText.setId("text-progress");
-        progressBar.setProgress(0);
 
         dirButton.setRipplerFill(Color.valueOf("#FAFAFA"));
         filterButton.setRipplerFill(Color.valueOf("#FAFAFA"));
@@ -211,21 +178,9 @@ public class Presenter {
         AnchorPane.setBottomAnchor(startButton, 36.0);
 
         JFXDepthManager.setDepth(anchor, 1);
-
         return tab;
     }
 
-    private void updateParseTree(String type, TreeView<String> tree, JFXTextField directory) {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() {
-                CheckBoxTreeItem<String> treeRoot = logic.getParseTree(directory.getText(), type);
-                Platform.runLater(() -> tree.setRoot(treeRoot));
-                return null;
-            }
-        };
-        new Thread(task).start();
-    }
 
     private void setEditScreen() {
 

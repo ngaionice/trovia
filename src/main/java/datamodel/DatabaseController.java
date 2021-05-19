@@ -20,13 +20,6 @@ public class DatabaseController {
     SQLQuerier querier;
     SQLModifier modifier;
 
-    ObservableMap<String, ObservableBench> sessionBenches;
-    ObservableMap<String, ObservableCollection> sessionCollections;
-    ObservableMap<String, ObservableItem> sessionItems;
-    ObservableMap<String, ObservablePlaceable> sessionPlaceables;
-    ObservableMap<String, ObservableRecipe> sessionRecipes;
-    Map<String, ObservableStrings> sessionStrings;
-
     public DatabaseController() {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -296,7 +289,7 @@ public class DatabaseController {
      */
     private void insertNotes(String rPath, String language, String noteID) throws SQLException {
         // if true, does not exist, so insert, else do nothing since noteID are fixed.
-        if (!querier.hasNote(rPath, language)) modifier.insertNote(rPath, language, noteID);
+        if (!querier.hasNote(rPath)) modifier.insertNote(rPath, noteID);
     }
 
     // SETTER HELPERS
