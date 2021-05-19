@@ -3,7 +3,6 @@ package model.managers;
 import model.gateways.DatabaseGateway;
 import model.objects.Collection;
 import model.objects.CollectionEnums;
-import model.objects.Item;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,7 +42,7 @@ public class CollectionManager implements Manager, SearchManager, Serializable {
         return collectionMap.get(rPath).getDesc();
     }
 
-    public List<CollectionEnums.CollectionType> getTypes(String rPath) {
+    public List<CollectionEnums.Type> getTypes(String rPath) {
         return collectionMap.get(rPath).getTypes();
     }
 

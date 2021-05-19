@@ -1,4 +1,4 @@
-package model.objects;
+package datamodel.objects;
 
 public interface Article {
 

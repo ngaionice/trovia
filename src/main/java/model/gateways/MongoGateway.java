@@ -6,12 +6,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.model.UpdateOptions;
 import model.objects.*;
 import org.bson.Document;
 import local.Variables;
 
-import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -141,7 +139,7 @@ public class MongoGateway implements DatabaseGateway{
             String desc = item.getDesc();
             int troveMR = item.getTroveMR();
             int geodeMR = item.getGeodeMR();
-            List<CollectionEnums.CollectionType> types = item.getTypes();
+            List<CollectionEnums.Type> types = item.getTypes();
             Map<CollectionEnums.Property, Double> properties = item.getProperties();
             Map<CollectionEnums.Buff, Double> buffs = item.getBuffs();
             List<String> recipes = item.getRecipes();
@@ -151,7 +149,7 @@ public class MongoGateway implements DatabaseGateway{
                     .append("troveMR", troveMR).append("geodeMR", geodeMR);
 
             List<String> typeString = new ArrayList<>();
-            for (CollectionEnums.CollectionType type: types) {
+            for (CollectionEnums.Type type: types) {
                 typeString.add(String.valueOf(type));
             }
 

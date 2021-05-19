@@ -5,8 +5,8 @@ import model.gateways.MongoGateway;
 import model.managers.*;
 import model.objects.*;
 import model.objects.Collection;
-import model.parser.Parser;
-import model.parser.parsestrategies.ParseException;
+import datamodel.parser.Parser;
+import datamodel.parser.parsestrategies.ParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class ModelController {
                 } catch (ParseException e) {
                     return absPath;
                 }
-            case LANG_FILE:
+            case STRING:
                 try {
                     langM.addLangFile((LangFile) p.createObject(absPath, type));
                     return null;

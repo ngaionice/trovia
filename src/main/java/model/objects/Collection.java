@@ -1,5 +1,7 @@
 package model.objects;
 
+import datamodel.objects.Article;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,14 +15,14 @@ public class Collection implements Article, Serializable {
     String rPath;
     int troveMR;
     int geodeMR;
-    List<CollectionEnums.CollectionType> types;        // refer to CollectionEnums for CollectionTypes
+    List<CollectionEnums.Type> types;        // refer to CollectionEnums for CollectionTypes
     Map<CollectionEnums.Property, Double> properties;  // should not contain mastery info
     Map<CollectionEnums.Buff, Double> buffs;           // for dragons and some badges only, else is null
     List<String> notes;
     List<String> recipes;
 
     // for non-dragons
-    public Collection(String name, String desc, String rPath, List<CollectionEnums.CollectionType> types, Map<CollectionEnums.Property, Double> properties) {
+    public Collection(String name, String desc, String rPath, List<CollectionEnums.Type> types, Map<CollectionEnums.Property, Double> properties) {
         this.name = name;
         this.desc = desc;
         this.rPath = rPath;
@@ -34,16 +36,16 @@ public class Collection implements Article, Serializable {
         this.desc = desc;
         this.rPath = rPath;
         this.types = new ArrayList<>();
-        types.addAll(Arrays.asList(CollectionEnums.CollectionType.DRAGON, CollectionEnums.CollectionType.MOUNT, CollectionEnums.CollectionType.WINGS));
+        types.addAll(Arrays.asList(CollectionEnums.Type.DRAGON, CollectionEnums.Type.MOUNT, CollectionEnums.Type.WINGS));
         this.buffs = buffs;
         this.properties = properties;
         if (isMagRider) {
-            types.add(CollectionEnums.CollectionType.MAG);
+            types.add(CollectionEnums.Type.MAG);
         }
     }
 
     // for badges with dragon buffs
-    public Collection(String name, String desc, String rPath, List<CollectionEnums.CollectionType> types, Map<CollectionEnums.Property, Double> properties, Map<CollectionEnums.Buff, Double> buffs) {
+    public Collection(String name, String desc, String rPath, List<CollectionEnums.Type> types, Map<CollectionEnums.Property, Double> properties, Map<CollectionEnums.Buff, Double> buffs) {
         this.name = name;
         this.desc = desc;
         this.rPath = rPath;
@@ -70,7 +72,7 @@ public class Collection implements Article, Serializable {
      *
      * @return a list of CollectionEnums.CollectionType
      */
-    public List<CollectionEnums.CollectionType> getTypes() {
+    public List<CollectionEnums.Type> getTypes() {
         return types;
     }
 

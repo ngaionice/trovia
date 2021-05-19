@@ -21,7 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
-import model.parser.Parser;
+import datamodel.parser.Parser;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -89,7 +89,7 @@ public class Presenter {
         pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, logic.getBenchFilter(), Parser.ObjectType.BENCH)));
         pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, logic.getItemFilter(), Parser.ObjectType.ITEM)));
         pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, logic.getRecFilter(), Parser.ObjectType.RECIPE)));
-        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, logic.getLangFilter(), Parser.ObjectType.LANG_FILE)));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, logic.getLangFilter(), Parser.ObjectType.STRING)));
         pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 

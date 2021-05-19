@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class CollectionEnums implements Serializable {
 
-    public enum CollectionType {
+    public enum Type {
         MOUNT,
         WINGS,
         BOAT,

@@ -9,7 +9,7 @@ import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBoxTreeItem;
 import model.objects.CollectionEnums;
-import model.parser.Parser;
+import datamodel.parser.Parser;
 import ui.searchables.Searchable;
 
 import java.io.File;
@@ -135,7 +135,6 @@ public class PresenterLogicHelper {
                 }
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
-
 
                 return null;
             }

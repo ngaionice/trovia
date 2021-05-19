@@ -1,5 +1,7 @@
 package model.objects;
 
+import datamodel.objects.Article;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

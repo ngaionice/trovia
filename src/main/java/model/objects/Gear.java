@@ -1,5 +1,7 @@
 package model.objects;
 
+import datamodel.objects.Article;
+
 import java.io.Serializable;
 
 public class Gear implements Article, Serializable {
