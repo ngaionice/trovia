@@ -1,13 +1,13 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.parser.Parser;
-import model.objects.Article;
-import model.objects.Bench;
+import datamodel.objects.ObservableBench;
+import datamodel.parser.Parser;
+import datamodel.objects.Article;
 import local.Markers;
 
 import java.util.*;
 
-public class ParseProfession implements ParseStrategy{
+public class ParseProfession implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
@@ -42,6 +42,7 @@ public class ParseProfession implements ParseStrategy{
         String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
         rPath = rPath.replaceAll("\\\\", "/");
 
-        return new Bench(rPath, categories, path);
+        return new ObservableBench(path, rPath, categories, null);
     }
+
 }

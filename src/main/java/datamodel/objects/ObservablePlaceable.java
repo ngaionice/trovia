@@ -7,13 +7,24 @@ import javafx.collections.ObservableList;
 import java.util.List;
 import java.util.Observable;
 
-public class ObservablePlaceable extends Observable {
+public class ObservablePlaceable extends Observable implements Article {
 
     StringProperty name;
     StringProperty desc;
     StringProperty rPath;
     ListProperty<String> notes;
     BooleanProperty tradable;
+
+    /**
+     * Constructor for new Placeable creations. Not for database imports.
+     */
+    public ObservablePlaceable(String name, String desc, String rPath) {
+        this.name = new SimpleStringProperty(name);
+        this.desc = new SimpleStringProperty(desc);
+        this.rPath = new SimpleStringProperty(rPath);
+        this.notes = new SimpleListProperty<>(FXCollections.observableArrayList());
+        this.tradable = new SimpleBooleanProperty(true);
+    }
 
     public ObservablePlaceable(String name, String desc, String rPath, List<String> notes, boolean isTradable) {
         this.name = new SimpleStringProperty(name);

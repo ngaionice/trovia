@@ -1,7 +1,7 @@
-package model.parser;
+package datamodel.parser;
 
-import model.parser.parsestrategies.*;
-import model.objects.Article;
+import datamodel.parser.parsestrategies.*;
+import datamodel.objects.Article;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -14,7 +14,8 @@ public class Parser {
         ITEM,
         BENCH,
         COLLECTION,
-        LANG_FILE,
+        STRING,
+        PLACEABLE,
         RECIPE,
         PROFESSION;
 
@@ -24,9 +25,10 @@ public class Parser {
                 case ITEM: return "Item";
                 case BENCH: return "Bench";
                 case COLLECTION: return "Collection";
+                case PLACEABLE: return "Placeable";
                 case PROFESSION: return "Profession";
                 case RECIPE: return "Recipe";
-                case LANG_FILE: return "Language File";
+                case STRING: return "Language File";
                 default: throw new IllegalArgumentException();
             }
         }
@@ -106,6 +108,9 @@ public class Parser {
             case ITEM:
                 context = new ParseContext(new ParseItem());
                 return context.parse(splitString, path);
+            case PLACEABLE:
+                context = new ParseContext(new ParsePlaceable());
+                return context.parse(splitString, path);
             case RECIPE:
                 context = new ParseContext(new ParseRecipe());
                 return context.parse(splitString, path);
@@ -118,7 +123,7 @@ public class Parser {
             case COLLECTION:
                 context = new ParseContext(new ParseCollection());
                 return context.parse(splitString, path);
-            case LANG_FILE:
+            case STRING:
                 context = new ParseContext(new ParseLangPrefab());
                 return context.parse(splitString, path);
             default:

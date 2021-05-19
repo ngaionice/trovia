@@ -1,11 +1,12 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.parser.Parser;
-import model.objects.Item;
-import model.objects.Article;
+import datamodel.objects.ObservableItem;
+import datamodel.parser.Parser;
+import datamodel.objects.Article;
 import local.Markers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ParseItem implements ParseStrategy {
@@ -101,18 +102,17 @@ public class ParseItem implements ParseStrategy {
         }
 
         // identify if lootbox exists
-        boolean lootbox = false;
-        if (splitString.contains(m.lootbox)) {
-            lootbox = true;
-        }
+        boolean lootbox = splitString.contains(m.lootbox);
 
-        Item item;
         if (name != null && rPath != null) {
-            item = new Item(name, desc, unlocks, rPath, lootbox);
+            if (lootbox) {
+                return new ObservableItem(name, desc, rPath, unlocks, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new ArrayList<>(), true);
+            }
+            return new ObservableItem(name, desc, rPath, unlocks);
+
         } else {
             throw new ParseException("Item creation at " + absPath + " failed. Parsing of either name or desc failed.");
         }
-        return item;
     }
 
     // creating a new item:

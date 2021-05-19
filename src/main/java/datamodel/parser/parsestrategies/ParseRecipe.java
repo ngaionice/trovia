@@ -1,13 +1,11 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.parser.Parser;
-import model.objects.Article;
-import model.objects.Recipe;
+import datamodel.objects.ObservableRecipe;
+import datamodel.parser.Parser;
+import datamodel.objects.Article;
 import local.Markers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,24 +70,20 @@ public class ParseRecipe implements ParseStrategy {
         // convert the hex strings/numbers to ascii/decimals
         Pattern pLC = Pattern.compile(m.alphabetLowerCase);
 
-        for (String[] item : parsedList) {
+        Map<String, Integer> costs = new HashMap<>();
+        Map<String, Integer> product = new HashMap<>();
+        for (int i = 0; i < parsedList.size() - 1; i++) {
+            String[] item = parsedList.get(i);
             // clean up stray matching characters that are not lowercase letters, as any rPath must start with lowercase
             Matcher mLC = pLC.matcher(item[0]);
             if (mLC.find()) {
                 item[0] = item[0].substring(mLC.start());
             }
-
-            item[0] = Parser.hexToAscii(item[0]);
-            item[1] = Integer.toString(Parser.recipeH2D(item[1], item[0]));
+            costs.put(Parser.hexToAscii(item[0]), Parser.recipeH2D(item[1], item[0]));
         }
+        String[] lastEntry = parsedList.get(parsedList.size() - 1);
+        product.put(Parser.hexToAscii(lastEntry[0]), Parser.recipeH2D(lastEntry[1], lastEntry[0]));
 
-
-
-        // create the object
-        String[] product = parsedList.get(lastIndex-1);
-        parsedList.remove(lastIndex-1);
-        String[][] costs = parsedList.toArray(new String[0][0]);
-
-        return new Recipe(path, rPath, costs, product);
+        return new ObservableRecipe(path, rPath, costs, product);
     }
 }

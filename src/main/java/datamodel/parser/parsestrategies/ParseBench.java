@@ -1,8 +1,8 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.parser.Parser;
-import model.objects.Article;
-import model.objects.Bench;
+import datamodel.objects.ObservableBench;
+import datamodel.parser.Parser;
+import datamodel.objects.Article;
 import local.Markers;
 
 import java.util.*;
@@ -80,9 +80,9 @@ public class ParseBench implements ParseStrategy {
         }
 
         String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        rPath = rPath.replaceAll("\\\\", "/").replace("_interactive", "");
 
-        return new Bench(name, rPath, categories);
+        return new ObservableBench(name, rPath, categories, null);
     }
 
 

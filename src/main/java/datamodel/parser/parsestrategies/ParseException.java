@@ -1,4 +1,4 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
 public class ParseException extends Exception{
 

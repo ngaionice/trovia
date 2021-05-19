@@ -1,6 +1,6 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.objects.Article;
+import datamodel.objects.Article;
 
 interface ParseStrategy {
 

@@ -1,9 +1,9 @@
-package model.parser.parsestrategies;
+package datamodel.parser.parsestrategies;
 
-import model.parser.Parser;
-import model.objects.Article;
-import model.objects.Collection;
-import model.objects.CollectionEnums;
+import datamodel.objects.ObservableCollection;
+import datamodel.parser.Parser;
+import datamodel.objects.Article;
+import datamodel.CollectionEnums;
 import local.Markers;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class ParseCollection implements ParseStrategy{
         // instantiate markers and variables
         Markers m = new Markers();
         String name = null, desc = null;
-        List<CollectionEnums.CollectionType> types = new ArrayList<>();
+        List<CollectionEnums.Type> types = new ArrayList<>();
         Map<CollectionEnums.Property, Double> properties = new HashMap<>(10);
 
         // obtain relative path
@@ -75,7 +75,7 @@ public class ParseCollection implements ParseStrategy{
         if (splitString.contains(m.groundSpeed)) {
             int indexG = splitString.indexOf(m.groundSpeed);
             properties.put(CollectionEnums.Property.GROUND_MS, Parser.collectionH2D(splitString.substring(indexG-6, indexG-1)));
-            types.add(CollectionEnums.CollectionType.MOUNT);
+            types.add(CollectionEnums.Type.MOUNT);
         }
 
         System.out.println("Identified mount property.");
@@ -87,7 +87,7 @@ public class ParseCollection implements ParseStrategy{
 
             if (indexA != -1 && indexGlide != -1) {
                 properties.put(CollectionEnums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA-6, indexA-1)));
-                types.add(CollectionEnums.CollectionType.WINGS);
+                types.add(CollectionEnums.Type.WINGS);
 
                 properties.put(CollectionEnums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide-6, indexGlide-1)));
             } else {
@@ -101,14 +101,14 @@ public class ParseCollection implements ParseStrategy{
         if (splitString.contains(m.mag)) {
             int indexM = splitString.indexOf(m.mag);
             properties.put(CollectionEnums.Property.MAG_MS, Parser.collectionH2D(splitString.substring(indexM+3, indexM+9)));
-            types.add(CollectionEnums.CollectionType.MAG);
+            types.add(CollectionEnums.Type.MAG);
         }
 
         System.out.println("Identified mag property.");
 
         // boat
         if (splitString.contains(m.waterSpeed)) {
-            types.add(CollectionEnums.CollectionType.BOAT);
+            types.add(CollectionEnums.Type.BOAT);
 
             int indexW = splitString.indexOf(m.waterSpeed);
             properties.put(CollectionEnums.Property.WATER_MS, Parser.collectionH2D(splitString.substring(indexW-6, indexW-1)));
@@ -124,8 +124,8 @@ public class ParseCollection implements ParseStrategy{
 
         // dragon
         Map<CollectionEnums.Buff, Double> dragonBuffs = parseBuffs(splitString, m);
-        if (!dragonBuffs.isEmpty() && types.contains(CollectionEnums.CollectionType.MOUNT)) {
-            types.add(CollectionEnums.CollectionType.DRAGON);
+        if (!dragonBuffs.isEmpty() && types.contains(CollectionEnums.Type.MOUNT)) {
+            types.add(CollectionEnums.Type.DRAGON);
         }
 
         System.out.println("Identified dragon property.");
@@ -137,14 +137,15 @@ public class ParseCollection implements ParseStrategy{
 
         System.out.println("Identified PR property.");
 
-        // form the collection object and return
-        if (types.contains(CollectionEnums.CollectionType.DRAGON)) {
-            boolean isMagRider = properties.containsKey(CollectionEnums.Property.MAG_MS);
-            return new Collection(name, desc, rPath, properties, dragonBuffs, isMagRider);
-        } else if (!dragonBuffs.isEmpty()) {
-            return new Collection(name, desc, rPath, types, properties, dragonBuffs);
-        }
-        return new Collection(name, desc, rPath, types, properties);
+        // old stuff below
+//        if (types.contains(CollectionEnums.Type.DRAGON)) {
+//            boolean isMagRider = properties.containsKey(CollectionEnums.Property.MAG_MS);
+//            return new Collection(name, desc, rPath, properties, dragonBuffs, isMagRider);
+//        } else if (!dragonBuffs.isEmpty()) {
+//            return new Collection(name, desc, rPath, types, properties, dragonBuffs);
+//        }
+//        return new Collection(name, desc, rPath, types, properties);
+        return new ObservableCollection(name, desc, rPath, 0, 0, types, properties, dragonBuffs, new ArrayList<>());
     }
 
 

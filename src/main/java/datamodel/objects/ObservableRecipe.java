@@ -7,7 +7,7 @@ import javafx.collections.ObservableMap;
 import java.util.Map;
 import java.util.Observable;
 
-public class ObservableRecipe extends Observable {
+public class ObservableRecipe extends Observable implements Article {
 
     StringProperty name;
     StringProperty rPath;

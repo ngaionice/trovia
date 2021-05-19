@@ -5,28 +5,56 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
+import java.util.*;
 
-public class ObservableItem extends Observable {
+public class ObservableItem extends Observable implements Article {
 
     StringProperty name;
+
+    /**
+     * The string property of the item's description identifier. The wrapped value is nullable.
+     */
     StringProperty desc;
     StringProperty rPath;
     ListProperty<String> unlocks;
     MapProperty<String, Integer> decons;
+
+    /**
+     * The map property of the item's common loot. The wrapped value is nullable.
+     */
     MapProperty<String, String> lootCommon;
+
+    /**
+     * The map property of the item's uncommon loot. The wrapped value is nullable.
+     */
     MapProperty<String, String> lootUncommon;
+
+    /**
+     * The map property of the item's rare loot. The wrapped value is nullable.
+     */
     MapProperty<String, String> lootRare;
     ListProperty<String> notes;
     BooleanProperty tradable;
+
+    public ObservableItem(String name, String desc, String rPath, String[] unlocks) {
+        this.name = new SimpleStringProperty(name);
+        this.desc = new SimpleStringProperty(desc);
+        this.rPath = new SimpleStringProperty(rPath);
+        this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
+        this.notes = new SimpleListProperty<>(FXCollections.observableArrayList());
+        this.tradable = new SimpleBooleanProperty(true);
+
+        this.decons = new SimpleMapProperty<>(FXCollections.observableHashMap());
+        this.lootCommon = new SimpleMapProperty<>(null);
+        this.lootUncommon = new SimpleMapProperty<>(null);
+        this.lootRare = new SimpleMapProperty<>(null);
+    }
 
     public ObservableItem(String name, String desc, String rPath, String[] unlocks, Map<String, Integer> decons,
                           Map<String, String> lootCommon, Map<String, String> lootUncommon, Map<String, String> lootRare,
                           List<String> notes, boolean isTradable) {
         this.name = new SimpleStringProperty(name);
-        this.desc = new SimpleStringProperty(desc);
+        this.desc = desc == null ? new SimpleStringProperty("N/A") : new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
         this.notes = new SimpleListProperty<>(FXCollections.observableArrayList(notes));

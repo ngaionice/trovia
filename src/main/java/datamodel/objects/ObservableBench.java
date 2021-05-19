@@ -9,18 +9,21 @@ import javafx.collections.ObservableMap;
 
 import java.util.*;
 
-public class ObservableBench extends Observable {
+public class ObservableBench extends Observable implements Article {
 
     StringProperty name; // the string identifier of the bench's name
     StringProperty rPath;
     MapProperty<String[], List<String>> categories;
-    StringProperty professionName;
+
+    /**
+     * The name property of the profession. The value wrapped inside is nullable.
+     */
+    StringProperty professionName; // the value in the property can be null
 
     public ObservableBench(String name, String rPath, Map<String[], List<String>> categories, String professionName) {
         this.name = new SimpleStringProperty(name);
         this.rPath = new SimpleStringProperty(rPath);
-        this.professionName = professionName == null ?
-                new SimpleStringProperty("N/A") : new SimpleStringProperty(professionName);
+        this.professionName = new SimpleStringProperty(professionName);
 
         ObservableMap<String[], List<String>> tempMap = FXCollections.observableHashMap();
         categories.forEach(tempMap::put);
