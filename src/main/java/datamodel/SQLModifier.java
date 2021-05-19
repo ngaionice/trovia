@@ -374,11 +374,12 @@ public class SQLModifier {
         ps.executeUpdate();
     }
 
-    void insertNote(String rPath, String lang, String stringID) throws SQLException {
-        PreparedStatement ps = con.prepareStatement("insert into Notes (rel_path, lang, string_id, updated) values (?, ?, ?, datetime('now'))");
+    // MISC
+
+    void insertNote(String rPath, String stringID) throws SQLException {
+        PreparedStatement ps = con.prepareStatement("insert into Notes (rel_path, string_id, updated) values (?, ?, datetime('now'))");
         ps.setString(1, rPath);
-        ps.setString(2, lang);
-        ps.setString(3, stringID);
+        ps.setString(2, stringID);
         ps.executeUpdate();
     }
 

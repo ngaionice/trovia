@@ -356,10 +356,9 @@ public class SQLQuerier {
         return queryOutput.isBeforeFirst();
     }
 
-    boolean hasNote(String rPath, String language) throws SQLException {
-        PreparedStatement checkQuery = con.prepareStatement("select * from Notes where rel_path = ? and lang = ?");
+    boolean hasNote(String rPath) throws SQLException {
+        PreparedStatement checkQuery = con.prepareStatement("select * from Notes where rel_path = ?");
         checkQuery.setString(1, rPath);
-        checkQuery.setString(2, language);
         ResultSet queryOutput = checkQuery.executeQuery();
 
         return queryOutput.isBeforeFirst();
