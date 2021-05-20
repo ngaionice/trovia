@@ -46,7 +46,7 @@ public class DatabaseController {
             Statement statement = con.createStatement();
 
             for (String sql : ddl.split("--GO")) {
-                System.out.println(sql);
+//                System.out.println(sql);
                 statement.executeUpdate(sql);
             }
             modifier.insertLanguage("en");

@@ -41,6 +41,20 @@ public class DataModel implements Observer {
     private final ObjectProperty<ObservableRecipe> currentRecipe = new SimpleObjectProperty<>(null);
     private final StringProperty currentString = new SimpleStringProperty(null);
 
+    public DataModel(String newDatabasePath, String ddlPath, String lang) throws SQLException {
+        database = new DatabaseController();
+        parser = new Parser();
+        language = lang;
+        database.createDatabase(newDatabasePath, ddlPath);
+
+        sessionBenches = database.getBenches();
+        sessionCollections = database.getCollections(language);
+        sessionItems = database.getItems(language);
+        sessionPlaceables = database.getPlaceables(language);
+        sessionRecipes = database.getRecipes();
+        sessionStrings = database.getStrings(language);
+    }
+
     public DataModel(String databasePath, String lang) throws SQLException {
         database = new DatabaseController();
         parser = new Parser();

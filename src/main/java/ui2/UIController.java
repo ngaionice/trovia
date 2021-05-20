@@ -38,7 +38,7 @@ public class UIController {
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
 
-    void loadDatabase(Stage stage, TextArea logger) {
+    boolean loadDatabase(Stage stage, TextArea logger) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Database Files", "*.db"));
         File selected = fileChooser.showOpenDialog(stage);
@@ -48,21 +48,43 @@ public class UIController {
             try {
                 model = new DataModel(path, lang);
                 print(logger, "Database loaded from " + path);
-            } catch (SQLException ex) {
-                // do something
+                return true;
+            } catch (SQLException e) {
+                print(logger, "Database loading failed due to a SQLException; stack trace below:");
+                Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
+                return false;
             }
         }
+        return false;
     }
 
-    void createDatabase(Stage stage, TextArea logger) {
+    boolean createDatabase(Stage stage, TextArea logger) {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select the location to save the database at.");
-        File selected = dirChooser.showDialog(stage);
-        if (selected != null) {
-            String path = selected.getAbsolutePath();
-            System.out.println(path);
-            // create new database at the specified path
+        File newDb = dirChooser.showDialog(stage);
+        FileChooser fileChooser = new FileChooser();
+        if (newDb != null) {
+            fileChooser.setTitle("Select your Data Definition Language file.");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("DDL files", "*.ddl"));
+            File ddl = fileChooser.showOpenDialog(stage);
+            if (ddl != null) {
+                String path = newDb.getAbsolutePath() + "\\trove.db";
+                String ddlPath = ddl.getAbsolutePath();
+                String lang = "en";
+                try {
+                    model = new DataModel(path, ddlPath, lang);
+                    print(logger, "Database created at " + path + " using DDL file at " + ddlPath);
+                    return true;
+                } catch (SQLException e) {
+                    print(logger, "Database creation failed due to a SQLException; stack trace below:");
+                    Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
+                    return false;
+                }
+            }
         }
+
+
+        return false;
     }
 
     void dumpLogs(Stage stage, TextArea logger) {
@@ -79,10 +101,18 @@ public class UIController {
                 logger.clear();
                 print(logger, "Dumped log at " + currTime.toLocalTime());
             } catch (IOException e) {
-                print(logger, "Log dump failed due to an IOException, with stack trace below:");
+                print(logger, "Log dump failed due to an IOException; stack trace below:");
                 Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
             }
         }
+    }
+
+    void enableActionButtons(List<Button> buttons) {
+        buttons.forEach(item -> item.setDisable(false));
+    }
+
+    void disableActionButtons(List<Button> buttons) {
+        buttons.forEach(item -> item.setDisable(true));
     }
 
     void setFilter(String filter, Parser.ObjectType type) {

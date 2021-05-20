@@ -318,6 +318,11 @@
     -fx-background-color: -fx-dialog-background;
 }
 
+.pane-background-no-top {
+    -fx-padding: 0 24 24 24;
+    -fx-background-color: -fx-dialog-background;
+}
+
 .card-backing {
     -fx-padding: 24px;
     -fx-alignment: top-center;

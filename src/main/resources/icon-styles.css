@@ -22,6 +22,10 @@
     -fx-icon-code: "mdi-database-plus";
 }
 
+#button-logs .ikonli-font-icon {
+    -fx-icon-code: "mdi-file-document-box";
+}
+
 #button-dump .ikonli-font-icon {
     -fx-icon-code: "mdi-inbox-arrow-down";
 }

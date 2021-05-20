@@ -5,10 +5,7 @@ import com.jfoenix.effects.JFXDepthManager;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Separator;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -26,7 +23,6 @@ public class Presenter {
     Scene scene;
     BorderPane root;
     UIController controller;
-    StackPane loggerRegion;
     TextArea logger;
 
     public Presenter(Stage stage, Scene sc, BorderPane root) {
@@ -35,12 +31,9 @@ public class Presenter {
         this.root = root;
         this.controller = new UIController();
         this.logger = getLogger();
-        this.loggerRegion = getLoggerRegion();
     }
 
     public VBox getNavBar() {
-        // note that we will need the other components later on to set screens
-
         VBox navBox = new VBox();
         Region spacer = new Region();
         JFXButton parseButton = new JFXButton("Parse");
@@ -49,13 +42,15 @@ public class Presenter {
         JFXButton reviewButton = new JFXButton("Review");
         JFXButton loadButton = new JFXButton("Load");
         JFXButton createButton = new JFXButton("Create");
-        JFXButton dumpButton = new JFXButton("Dump logs");
+        JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
         Separator separator = new Separator();
         Separator separator2 = new Separator();
 
-        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, syncButton, reviewButton, loadButton, createButton, dumpButton, quitButton);
-        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-sync", "button-review", "button-load", "button-create", "button-dump", "button-quit"};
+        List<Button> actionButtons = Arrays.asList(parseButton, editButton, syncButton, reviewButton);
+        List<Button> databaseButtons = Arrays.asList(loadButton, createButton);
+        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, syncButton, reviewButton, loadButton, createButton, logsButton, quitButton);
+        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-sync", "button-review", "button-load", "button-create", "button-logs", "button-quit"};
 
         spacer.prefHeightProperty().bind(scene.heightProperty().multiply(0.125));
         for (int i = 0; i < buttonIds.length; i++) {
@@ -77,11 +72,26 @@ public class Presenter {
         syncButton.setOnAction(e -> setSyncScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
-        loadButton.setOnAction(e -> controller.loadDatabase(stage, logger));
-        createButton.setOnAction(e -> controller.createDatabase(stage, logger));
+        loadButton.setOnAction(e -> {
+            boolean enable = controller.loadDatabase(stage, logger);
+            if (enable) {
+                controller.enableActionButtons(actionButtons);
+                controller.disableActionButtons(databaseButtons);
+            }
+        });
+        createButton.setOnAction(e -> {
+            boolean enable = controller.createDatabase(stage, logger);
+            if (enable) {
+                controller.enableActionButtons(actionButtons);
+                controller.disableActionButtons(databaseButtons);
+            }
+        });
 
-        dumpButton.setOnAction(e -> controller.dumpLogs(stage, logger));
+//        logsButton.setOnAction(e -> controller.dumpLogs(stage, logger));
+        logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
+
+        controller.disableActionButtons(actionButtons);
 
         return navBox;
     }
@@ -108,7 +118,7 @@ public class Presenter {
 
         screenRoot.setTop(header);
         screenRoot.setCenter(tabs);
-        screenRoot.setBottom(loggerRegion);
+        screenRoot.setBottom(getLogsRegion());
         root.setCenter(screenRoot);
     }
 
@@ -134,7 +144,6 @@ public class Presenter {
         filter.setText(controller.getFilterText(type));
         progressBar.setProgress(0);
 
-//        C:\Program Files (x86)\Glyph\Games\Trove\Live\extracted_dec_15_subset\prefabs\placeable
         dirButton.setOnAction(e -> controller.setParseDirectory(stage, directory, tree, type));
         filterButton.setOnAction(e -> controller.updateParseDirectory(filter, directory, tree, type));
         startButton.setOnAction(e -> controller.parse(progressBar, progressText, logger, type));
@@ -177,20 +186,35 @@ public class Presenter {
         grid.add(progressBox, 0, 1, 4, 1);
         grid.add(tree, 0, 2, 4, 1);
 
-        AnchorPane.setRightAnchor(anchor, 0.0);
-        AnchorPane.setLeftAnchor(anchor, 0.0);
-        AnchorPane.setTopAnchor(anchor, 0.0);
-        AnchorPane.setBottomAnchor(anchor, 0.0);
-        AnchorPane.setRightAnchor(startButton, 36.0);
-        AnchorPane.setBottomAnchor(startButton, 36.0);
+        setMaxAnchor(grid);
+        setFabAnchor(startButton);
 
         JFXDepthManager.setDepth(anchor, 1);
         return tab;
     }
 
-
     private void setEditScreen() {
+        BorderPane screenRoot = new BorderPane();
+        HBox header = new HBox();
+        Text headerText = new Text("Edit");
 
+        header.getChildren().add(headerText);
+
+        JFXTabPane tabs = new JFXTabPane();
+        Tab benches = new Tab("Benches");
+        Tab collections = new Tab("Collections");
+        Tab items = new Tab("Items");
+        Tab placeables = new Tab("Placeables");
+        Tab recipes = new Tab("Recipes");
+        Tab strings = new Tab("Strings");
+        tabs.getTabs().addAll(benches, collections, items, placeables, recipes, strings);
+
+        header.getStyleClass().add("header");
+        headerText.getStyleClass().add("header-text");
+
+        screenRoot.setTop(header);
+        screenRoot.setCenter(tabs);
+        root.setCenter(screenRoot);
     }
 
     private void setSyncScreen() {
@@ -201,27 +225,55 @@ public class Presenter {
 
     }
 
-    private StackPane getLoggerRegion() {
+    private void setLogsScreen() {
+        BorderPane screenRoot = new BorderPane();
+        StackPane stack = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        HBox header = new HBox();
+        Text headerText = new Text("Logs");
+        JFXButton dumpButton = new JFXButton();
+
+        dumpButton.setOnAction(e -> controller.dumpLogs(stage, logger));
+
+        header.getChildren().add(headerText);
+        stack.getChildren().add(anchor);
+        anchor.getChildren().add(logger);
+        anchor.getChildren().add(dumpButton);
+
+        header.getStyleClass().add("header");
+        headerText.getStyleClass().add("header-text");
+        stack.getStyleClass().add("pane-background");
+        anchor.getStyleClass().add("card-backing");
+        dumpButton.getStyleClass().add("floating-button");
+        dumpButton.setId("button-dump");
+
+        dumpButton.setGraphic(new FontIcon());
+        dumpButton.setRipplerFill(Color.valueOf("#FAFAFA"));
+
+        setMaxAnchor(logger);
+        setFabAnchor(dumpButton);
+
+        JFXDepthManager.setDepth(anchor, 1);
+
+        screenRoot.setTop(header);
+        screenRoot.setCenter(stack);
+        root.setCenter(screenRoot);
+    }
+
+    private StackPane getLogsRegion() {
         StackPane root = new StackPane();
-        root.getStyleClass().add("pane-background");
-        root.getChildren().add(logger);
-        JFXDepthManager.setDepth(logger, 1);
+        StackPane loggerWrapper = new StackPane();
+        root.getStyleClass().add("pane-background-no-top");
+        root.getChildren().add(loggerWrapper);
+        loggerWrapper.getChildren().add(logger);
+        JFXDepthManager.setDepth(loggerWrapper, 1);
 
         return root;
     }
 
-    private void toggleLogs() {
-        if (loggerRegion.getChildren().size() != 0) {
-            loggerRegion.getChildren().clear();
-        } else {
-            loggerRegion.getChildren().add(logger);
-            JFXDepthManager.setDepth(logger, 1);
-        }
-    }
-
     private TextArea getLogger() {
         TextArea logger = new JFXTextArea();
-//        logger.setEditable(false);
+        logger.setEditable(false);
         logger.setWrapText(true);
         logger.setId("logger");
         return logger;
@@ -230,5 +282,19 @@ public class Presenter {
     private void runQuitSequence() {
         // need to add more stuff such as checking data is saved, etc
         Platform.exit();
+    }
+
+    // HELPER METHODS
+
+    private void setMaxAnchor(Node node) {
+        AnchorPane.setRightAnchor(node, 0.0);
+        AnchorPane.setLeftAnchor(node, 0.0);
+        AnchorPane.setTopAnchor(node, 0.0);
+        AnchorPane.setBottomAnchor(node, 0.0);
+    }
+
+    private void setFabAnchor(Node node) {
+        AnchorPane.setRightAnchor(node, 36.0);
+        AnchorPane.setBottomAnchor(node, 36.0);
     }
 }
