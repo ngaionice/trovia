@@ -11,7 +11,7 @@
 }
 
 #button-review .ikonli-font-icon {
-    -fx-icon-code: "mdi-file-import";
+    -fx-icon-code: "mdi-checkbox-marked-outline";
 }
 
 #button-load .ikonli-font-icon {
@@ -20,6 +20,10 @@
 
 #button-create .ikonli-font-icon {
     -fx-icon-code: "mdi-database-plus";
+}
+
+#button-dump .ikonli-font-icon {
+    -fx-icon-code: "mdi-inbox-arrow-down";
 }
 
 #button-quit .ikonli-font-icon {

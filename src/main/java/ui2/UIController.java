@@ -1,18 +1,24 @@
 package ui2;
 
 import datamodel.DataModel;
+import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import datamodel.parser.Parser;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +38,7 @@ public class UIController {
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
 
-    void loadDatabase(Stage stage) {
+    void loadDatabase(Stage stage, TextArea logger) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Database Files", "*.db"));
         File selected = fileChooser.showOpenDialog(stage);
@@ -41,21 +47,41 @@ public class UIController {
             String lang = "en";     // need to make mini-dialog to select language, but setting to english for now
             try {
                 model = new DataModel(path, lang);
-                // popup saying data loaded -- TODO: make method return boolean to do this
+                print(logger, "Database loaded from " + path);
             } catch (SQLException ex) {
                 // do something
             }
         }
     }
 
-    void createDatabase(Stage stage) {
+    void createDatabase(Stage stage, TextArea logger) {
         DirectoryChooser dirChooser = new DirectoryChooser();
-        dirChooser.setTitle("Select the location to save the database in.");
+        dirChooser.setTitle("Select the location to save the database at.");
         File selected = dirChooser.showDialog(stage);
         if (selected != null) {
             String path = selected.getAbsolutePath();
             System.out.println(path);
             // create new database at the specified path
+        }
+    }
+
+    void dumpLogs(Stage stage, TextArea logger) {
+        DirectoryChooser dirChooser = new DirectoryChooser();
+        dirChooser.setTitle("Select the location to save the logs at.");
+        File selected = dirChooser.showDialog(stage);
+        if (selected != null) {
+            String path = selected.getAbsolutePath();
+            LocalDateTime currTime = LocalDateTime.now();
+            String fileName = "trovia-log-" + currTime.toString().replace(":", "-").replace(".", "-") + ".txt";
+            try  {
+                Path file = Paths.get(path + "\\" + fileName);
+                Files.write(file, Arrays.asList(logger.getText().split("\\n")), StandardCharsets.UTF_8);
+                logger.clear();
+                print(logger, "Dumped log at " + currTime.toLocalTime());
+            } catch (IOException e) {
+                print(logger, "Log dump failed due to an IOException, with stack trace below:");
+                Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
+            }
         }
     }
 
@@ -173,6 +199,22 @@ public class UIController {
         }
     }
 
+    public void parse(ProgressBar progressBar, Text progressText, TextArea logger, Parser.ObjectType type) {
+        Task<Void> task = getParseTask(type);
+        progressBar.progressProperty().bind(task.progressProperty());
+        progressText.textProperty().bind(task.messageProperty());
+
+        new Thread(() -> {
+            task.run();
+            Platform.runLater(() -> {
+                if (!failedPaths.isEmpty()) {
+                    failedPaths.forEach(item -> print(logger, "Parse failure: " + item));
+                    failedPaths.clear();
+                }
+            });
+        }).start();
+    }
+
     public Task<Void> getParseTask(Parser.ObjectType type) {
         return new Task<Void>() {
             @Override
@@ -183,13 +225,13 @@ public class UIController {
                 // begin parsing
                 int selectedPathsLength = selectedPaths.size();
                 for (int i = 0; i < selectedPathsLength; i++) {
-
                     updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
                     updateProgress(i, selectedPathsLength);
-//                    String output = con.createObject(selectedPaths.get(i), type); //TODO: update parser to create new objects
-//                    if (output != null) {
-//                        failedPaths.add(output);
-//                    }
+                    try {
+                        model.createObject(selectedPaths.get(i), type);
+                    } catch (IOException | ParseException e) {
+                        failedPaths.add(selectedPaths.get(i));
+                    }
                 }
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
@@ -197,6 +239,10 @@ public class UIController {
                 return null;
             }
         };
+    }
+
+    void print(TextArea logger, String message) {
+        logger.setText(logger.getText() + "[" + LocalTime.now() + "] " + message + "\n");
     }
 
     void clearSelectedPaths() {

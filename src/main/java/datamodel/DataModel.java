@@ -1,20 +1,17 @@
 package datamodel;
 
 import datamodel.objects.*;
+import datamodel.parser.Parser;
+import datamodel.parser.parsestrategies.ParseException;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableMap;
-import datamodel.parser.Parser;
-import datamodel.parser.parsestrategies.ParseException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class DataModel implements Observer {
 
@@ -56,7 +53,6 @@ public class DataModel implements Observer {
         sessionPlaceables = database.getPlaceables(language);
         sessionRecipes = database.getRecipes();
         sessionStrings = database.getStrings(language);
-        System.out.println("Data loaded.");
     }
 
     @Override
@@ -88,6 +84,172 @@ public class DataModel implements Observer {
                 }
             }
 
+        }
+    }
+
+    // CREATING OBJECTS
+
+    public void createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
+        switch (type) {
+            case ITEM:
+                upsertItem((ObservableItem) parser.createObject(absPath, type));
+                break;
+            case PLACEABLE:
+                upsertPlaceable((ObservablePlaceable) parser.createObject(absPath, type));
+                break;
+            case BENCH:
+            case PROFESSION:
+                upsertBench((ObservableBench) parser.createObject(absPath, type));
+                break;
+            case RECIPE:
+                upsertRecipe((ObservableRecipe) parser.createObject(absPath, type));
+                break;
+            case COLLECTION:
+                upsertCollection((ObservableCollection) parser.createObject(absPath, type));
+                break;
+            case STRING:
+//                try {
+//                    langM.addLangFile((LangFile) parser.createObject(absPath, type)); // TODO: fix this line up properly
+//                    return null;
+//                } catch (ParseException e) {
+//                    return absPath;
+//                }
+        }
+    }
+
+    private void upsertItem(ObservableItem item) {
+        String rPath = item.getRPath();
+        if (!sessionItems.containsKey(rPath)) {
+            sessionItems.put(item.getRPath(), item);
+            changedItems.put(item.getRPath(), item);
+        } else {
+            // update the name, description, and unlocks
+            ObservableItem existing = sessionItems.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(item.getName())) { // names are not nullable
+                existing.setName(item.getName());
+                changed = true;
+            }
+            if (existing.getDesc() == null || (item.getDesc() != null || !existing.getDesc().equals(item.getDesc()))) {
+                existing.setDesc(item.getDesc());
+                changed = true;
+            }
+            if (!isListEqual(existing.getUnlocks(), item.getUnlocks())) {
+                existing.setUnlocks(item.getUnlocks());
+                changed = true;
+            }
+            if (changed) changedItems.put(rPath, existing);
+        }
+    }
+
+    private void upsertPlaceable(ObservablePlaceable placeable) {
+        String rPath = placeable.getRPath();
+        if (!sessionPlaceables.containsKey(rPath)) {
+            sessionPlaceables.put(rPath, placeable);
+            changedPlaceables.put(rPath, placeable);
+        } else {
+            ObservablePlaceable existing = sessionPlaceables.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(placeable.getName())) {
+                existing.setName(placeable.getName());
+                changed = true;
+            }
+            if (existing.getDesc() == null || (placeable.getDesc() != null || !existing.getDesc().equals(placeable.getDesc()))) {
+                existing.setDesc(placeable.getDesc());
+                changed = true;
+            }
+            if (changed) changedPlaceables.put(rPath, existing);
+        }
+    }
+
+    private void upsertRecipe(ObservableRecipe recipe) {
+        String rPath = recipe.getRPath();
+        if (!sessionRecipes.containsKey(rPath)) {
+            sessionRecipes.put(rPath, recipe);
+            changedRecipes.put(rPath, recipe);
+        } else {
+            ObservableRecipe existing = sessionRecipes.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(recipe.getName())) {
+                existing.setName(recipe.getName());
+                changed = true;
+            }
+            if (!existing.getCosts().equals(recipe.getCosts())) {
+                existing.setCosts(recipe.getCosts());
+                changed = true;
+            }
+            if (!existing.getOutput().equals(recipe.getOutput())) {
+                existing.setOutput(recipe.getOutput());
+                changed = true;
+            }
+            if (changed) changedRecipes.put(rPath, recipe);
+        }
+    }
+
+    private void upsertBench(ObservableBench bench) {
+        String rPath = bench.getRPath();
+        if (!sessionBenches.containsKey(rPath)) {
+            sessionBenches.put(rPath, bench);
+            changedBenches.put(rPath, bench);
+        } else {
+            ObservableBench existing = sessionBenches.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(bench.getName())) {
+                existing.setName(bench.getName());
+                changed = true;
+            }
+            // don't compare the profession name, since it always starts as null
+            if (!existing.getCategories().equals(bench.getCategories())) {
+                existing.setCategories(bench.getCategories());
+                changed = true;
+            }
+            if (changed) changedBenches.put(rPath, existing);
+        }
+    }
+
+    private void upsertCollection(ObservableCollection collection) {
+        String rPath = collection.getRPath();
+        if (!sessionCollections.containsKey(rPath)) {
+            sessionCollections.put(rPath, collection);
+            changedCollections.put(rPath, collection);
+        } else {
+            ObservableCollection existing = sessionCollections.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(collection.getName())) {
+                existing.setName(collection.getName());
+                changed = true;
+            }
+            if (existing.getDesc() == null || (collection.getDesc() != null || !existing.getDesc().equals(collection.getDesc()))) {
+                existing.setDesc(collection.getDesc());
+                changed = true;
+            }
+            // ignore the mastery values as they are always added manually
+            if (!existing.getTypes().equals(collection.getTypes())) {
+                existing.setTypes(collection.getTypes());
+                changed = true;
+            }
+            if (!existing.getBuffs().equals(collection.getBuffs())) {
+                existing.setBuffs(collection.getBuffs());
+                changed = true;
+            }
+            if (!existing.getProperties().equals(collection.getProperties())) {
+                existing.setProperties(collection.getProperties());
+                changed = true;
+            }
+            if (changed) changedCollections.put(rPath, existing);
+        }
+    }
+
+    /**
+     * Compares 2 lists of strings and returns whether they contain the same strings (regardless of order).
+     */
+    private boolean isListEqual(List<String> list1, List<String> list2) {
+        if (list1.size() != list2.size()) {
+            return false;
+        } else {
+            Collections.sort(list1);
+            Collections.sort(list2);
+            return list1.equals(list2);
         }
     }
 
@@ -221,50 +383,4 @@ public class DataModel implements Observer {
         this.currentString.set(currentString);
     }
 
-    // CREATING OBJECTS
-
-    public void createObject(String absPath, Parser.ObjectType type) throws IOException {
-        switch (type) {
-            case ITEM:
-                try {
-                    ObservableItem item = (ObservableItem) parser.createObject(absPath, type);
-                    sessionItems.put(item.getRPath(), item);
-                    changedItems.put(item.getRPath(), item);
-                } catch (ParseException e) {
-                    System.out.println("Parse failure on item: " + absPath);
-                }
-            case BENCH:
-            case PROFESSION:
-                try {
-                    ObservableBench bench = (ObservableBench) parser.createObject(absPath, type);
-                    sessionBenches.put(bench.getRPath(), bench);
-                    changedBenches.put(bench.getRPath(), bench);
-                } catch(ParseException e) {
-                    System.out.println("Parse failure on bench/profession: " + absPath);
-                }
-            case RECIPE:
-                try {
-                    ObservableRecipe recipe = (ObservableRecipe) parser.createObject(absPath, type);
-                    sessionRecipes.put(recipe.getRPath(), recipe);
-                    changedRecipes.put(recipe.getRPath(), recipe);
-                } catch (ParseException e) {
-                    System.out.println("Parse failure on recipe: " + absPath);
-                }
-            case COLLECTION:
-                try {
-                    ObservableCollection collection = (ObservableCollection) parser.createObject(absPath, type);
-                    sessionCollections.put(collection.getRPath(), collection);
-                    changedCollections.put(collection.getRPath(), collection);
-                } catch (ParseException e) {
-                    System.out.println("Parse failure on collection: " + absPath);
-                }
-            case STRING:
-//                try {
-//                    langM.addLangFile((LangFile) parser.createObject(absPath, type)); // TODO: fix this line up properly
-//                    return null;
-//                } catch (ParseException e) {
-//                    return absPath;
-//                }
-        }
-    }
 }

@@ -43,6 +43,11 @@ public class ObservableRecipe extends Observable implements Article {
         notifyObservers();
     }
 
+    public void setCosts(ObservableMap<String, Integer> costs) {
+        this.costs.set(costs);
+        notifyObservers();
+    }
+
     public void setOutput(ObservableMap<String, Integer> output) {
         this.output.set(output);
         notifyObservers();

@@ -45,6 +45,11 @@ public class ObservableBench extends Observable implements Article {
         notifyObservers();
     }
 
+    public final void setCategories(ObservableMap<String[], List<String>> categories) {
+        this.categories.set(categories);
+        notifyObservers();
+    }
+
     public final void updateCategory(String[] key, List<String> value) {
         categories.getValue().put(key, value);
         notifyObservers();

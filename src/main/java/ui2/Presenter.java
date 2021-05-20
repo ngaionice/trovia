@@ -1,14 +1,13 @@
 package ui2;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXProgressBar;
-import com.jfoenix.controls.JFXTabPane;
-import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
@@ -27,12 +26,16 @@ public class Presenter {
     Scene scene;
     BorderPane root;
     UIController controller;
+    StackPane loggerRegion;
+    TextArea logger;
 
     public Presenter(Stage stage, Scene sc, BorderPane root) {
         this.stage = stage;
         this.scene = sc;
         this.root = root;
         this.controller = new UIController();
+        this.logger = getLogger();
+        this.loggerRegion = getLoggerRegion();
     }
 
     public VBox getNavBar() {
@@ -46,12 +49,13 @@ public class Presenter {
         JFXButton reviewButton = new JFXButton("Review");
         JFXButton loadButton = new JFXButton("Load");
         JFXButton createButton = new JFXButton("Create");
+        JFXButton dumpButton = new JFXButton("Dump logs");
         JFXButton quitButton = new JFXButton("Quit");
         Separator separator = new Separator();
         Separator separator2 = new Separator();
 
-        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, syncButton, reviewButton, loadButton, createButton, quitButton);
-        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-sync", "button-review", "button-load", "button-create", "button-quit"};
+        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, syncButton, reviewButton, loadButton, createButton, dumpButton, quitButton);
+        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-sync", "button-review", "button-load", "button-create", "button-dump", "button-quit"};
 
         spacer.prefHeightProperty().bind(scene.heightProperty().multiply(0.125));
         for (int i = 0; i < buttonIds.length; i++) {
@@ -73,9 +77,10 @@ public class Presenter {
         syncButton.setOnAction(e -> setSyncScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
-        loadButton.setOnAction(e -> controller.loadDatabase(stage));
-        createButton.setOnAction(e -> controller.createDatabase(stage));
+        loadButton.setOnAction(e -> controller.loadDatabase(stage, logger));
+        createButton.setOnAction(e -> controller.createDatabase(stage, logger));
 
+        dumpButton.setOnAction(e -> controller.dumpLogs(stage, logger));
         quitButton.setOnAction(e -> runQuitSequence());
 
         return navBox;
@@ -103,6 +108,7 @@ public class Presenter {
 
         screenRoot.setTop(header);
         screenRoot.setCenter(tabs);
+        screenRoot.setBottom(loggerRegion);
         root.setCenter(screenRoot);
     }
 
@@ -131,6 +137,7 @@ public class Presenter {
 //        C:\Program Files (x86)\Glyph\Games\Trove\Live\extracted_dec_15_subset\prefabs\placeable
         dirButton.setOnAction(e -> controller.setParseDirectory(stage, directory, tree, type));
         filterButton.setOnAction(e -> controller.updateParseDirectory(filter, directory, tree, type));
+        startButton.setOnAction(e -> controller.parse(progressBar, progressText, logger, type));
 
         root.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
@@ -192,6 +199,32 @@ public class Presenter {
 
     private void setReviewScreen() {
 
+    }
+
+    private StackPane getLoggerRegion() {
+        StackPane root = new StackPane();
+        root.getStyleClass().add("pane-background");
+        root.getChildren().add(logger);
+        JFXDepthManager.setDepth(logger, 1);
+
+        return root;
+    }
+
+    private void toggleLogs() {
+        if (loggerRegion.getChildren().size() != 0) {
+            loggerRegion.getChildren().clear();
+        } else {
+            loggerRegion.getChildren().add(logger);
+            JFXDepthManager.setDepth(logger, 1);
+        }
+    }
+
+    private TextArea getLogger() {
+        TextArea logger = new JFXTextArea();
+//        logger.setEditable(false);
+        logger.setWrapText(true);
+        logger.setId("logger");
+        return logger;
     }
 
     private void runQuitSequence() {

@@ -26,7 +26,7 @@ public class ParseItem implements ParseStrategy {
 
         // instantiate the stuff needed to parse
         Markers m = new Markers();
-        String prefabMarker = "24 70 72 65 66 61 62 "; // $prefabs; changed from $prefabs_item for more flexibility
+        String prefabMarker = "24 70 72 65 66 61 62 "; // $prefab; changed from $prefabs_item for more flexibility
         String recPathStartMarker = "item\\";
         String recPathEndMarker = ".binfab";
 
@@ -38,7 +38,7 @@ public class ParseItem implements ParseStrategy {
         if (splitString.contains(prefabMarker)) {
 
             // if there is no name/desc end marker, which it should, then return an empty item
-            if (!splitString.contains(" 68 00 80")) {
+            if (!splitString.contains(m.endNameDesc)) {
                 System.out.println("Item creation at " + absPath + " failed. Neither name nor description was found.");
                 throw new ParseException("Item creation at " + absPath + " failed. Neither name nor description was found.");
             }

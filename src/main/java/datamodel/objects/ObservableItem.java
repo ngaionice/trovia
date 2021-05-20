@@ -116,6 +116,10 @@ public class ObservableItem extends Observable implements Article {
         notifyObservers();
     }
 
+    public void setUnlocks(List<String> unlocks) {
+        this.unlocks.setValue(FXCollections.observableArrayList(unlocks));
+    }
+
     public void addNote(String noteID) {
         this.notes.getValue().add(noteID);
         notifyObservers();

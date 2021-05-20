@@ -75,6 +75,18 @@ public class ObservableCollection extends Observable implements Article {
         notifyObservers();
     }
 
+    public void setTypes(ObservableList<CollectionEnums.Type> types) {
+        this.types.set(types);
+    }
+
+    public void setProperties(ObservableMap<CollectionEnums.Property, Double> properties) {
+        this.properties.set(properties);
+    }
+
+    public void setBuffs(ObservableMap<CollectionEnums.Buff, Double> buffs) {
+        this.buffs.set(buffs);
+    }
+
     public void updateProperties(CollectionEnums.Property key, double val) {
         properties.getValue().put(key, val);
         notifyObservers();

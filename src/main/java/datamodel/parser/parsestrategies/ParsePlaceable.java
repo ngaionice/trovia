@@ -40,6 +40,8 @@ public class ParsePlaceable implements ParseStrategy {
         } else {
             throw new ParseException("No end-of-name marker found.");
         }
+        if (startIndices[0] == -1)
+            throw new ParseException("No name found.");
         String name = splitString.substring(startIndices[0], nameEndIndex);
 
         // identify overall end marker
