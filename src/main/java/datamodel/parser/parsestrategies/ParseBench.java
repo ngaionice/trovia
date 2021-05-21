@@ -21,8 +21,8 @@ public class ParseBench implements ParseStrategy {
 
         // only 1 category
         if (occ == 2) {
-            int rangeStart = splitString.indexOf(m.prefab);
-            int rangeEnd = splitString.substring(rangeStart + 24).indexOf(m.prefab)+rangeStart;
+            int rangeStart = splitString.indexOf(m.prefab) + 24;
+            int rangeEnd = splitString.substring(rangeStart).indexOf(m.prefab)+rangeStart;
 
             String substring = splitString.substring(rangeStart, rangeEnd);
             String dirtyStationName = splitString.substring(rangeEnd);

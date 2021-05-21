@@ -1,0 +1,116 @@
+.tree-view {
+    -fx-background-insets: 1;
+}
+
+.tree-view .tree-cell {
+    -fx-background-color: -fx-material;
+    -fx-text-fill: -fx-content-light;
+}
+
+.tree-view:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 1;
+    -fx-padding: 1;
+}
+
+.tree-view .check-box:selected > .box {
+    -fx-background-color: -fx-accent-dark;
+}
+
+.tree-view .check-box:default > .box {
+    -fx-background-color: -fx-content-light;
+}
+
+.tree-view .check-box:selected > .box > .mark,
+.tree-view .check-box:indeterminate > .box > .mark {
+    -fx-background-color: -fx-content-light;
+}
+
+.tree-view .tree-cell {
+    -fx-background-color: -fx-material-dark;
+    -fx-text-fill: -fx-content;
+}
+
+.table-view,
+.list-view {
+    -fx-background-color: -fx-material-dark;
+    -fx-base: -fx-material-dark;
+    -fx-background-insets: 1;
+}
+
+.table-view:focused,
+.list-view:focused {
+    -fx-background-color: -fx-material-dark;
+    -fx-base: -fx-material-dark;
+    -fx-background-insets: 1;
+}
+
+.table-view .column-header,
+.table-view .column-header .filler,
+.table-view .column-header-background .filler {
+    -fx-background-color: -fx-material-dark;
+}
+
+.table-view .table-cell,
+.list-view .list-cell {
+    -fx-font-family: Roboto Regular;
+    -fx-text-fill: -fx-content-light;
+}
+
+.table-view .table-row-cell,
+.list-view .list-cell {
+    -fx-background-color: -fx-material-dark;
+    -fx-border-width: 0 0 0 0;
+}
+
+.table-view:focused,
+.list-view:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 1;
+    -fx-padding: 1;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -fx-content-dark;
+    -fx-font-weight: bold;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-insets: 0 10 1 0;
+}
+
+.table-view:focused .table-row-cell:focused {
+    -fx-background-insets: 0 0 0 0;
+}
+
+.table-view:focused .table-row-cell:selected {
+    /*-fx-background-color: #C77800;*/
+    -fx-background-color: -fx-material-light;
+    -fx-background-insets: 0 0 0 0;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: -fx-material;
+    -fx-text-fill: -fx-content-dark;
+    -fx-padding: 3 0 2 7;
+    -fx-cell-size: 32px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -fx-material;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-padding: 4 0 4 5;
+    /* No alternate highlighting */
+    -fx-background-color: -fx-material;
+}
+
+.sidebar-list {
+    -fx-pref-height: 1000px;
+}
+

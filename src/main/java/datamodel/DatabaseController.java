@@ -1,6 +1,7 @@
 package datamodel;
 
 import datamodel.objects.*;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import org.sqlite.SQLiteConfig;
 
@@ -120,16 +121,16 @@ public class DatabaseController {
 
             String name = bench.getName();
             String professionName = bench.getProfessionName();
-            Map<String[], List<String>> categories = bench.getCategories();
+            Map<List<String>, ObservableList<String>> categories = bench.getCategories();
 
             // if there is no first row, then it's not in the database, so we just insert
             if (!querier.hasBench(rPath)) {
                 // insert the bench
                 modifier.insertBench(rPath, name);
                 // insert the bench categories
-                for (String[] key : categories.keySet()) {
-                    String catID = key[0];
-                    int benchIndex = Integer.valueOf(key[1], 10);   // could be an issue if not a number
+                for (List<String> key : categories.keySet()) {
+                    String catID = key.get(0);
+                    int benchIndex = Integer.valueOf(key.get(0), 10);   // could be an issue if not a number
                     modifier.insertBenchCategory(rPath, catID, benchIndex);
                 }
             }
@@ -140,8 +141,8 @@ public class DatabaseController {
             }
 
             // update the recipes
-            for (Map.Entry<String[], List<String>> category : categories.entrySet()) {
-                String key = category.getKey()[0];
+            for (Map.Entry<List<String>, ObservableList<String>> category : categories.entrySet()) {
+                String key = category.getKey().get(0);
                 for (String path : category.getValue()) {
                     modifier.setRecipeBench(path, name);
                     modifier.setRecipeCategory(path, key);

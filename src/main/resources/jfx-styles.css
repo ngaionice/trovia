@@ -1,0 +1,51 @@
+.jfx-tab-pane .tab-header-area {
+    -fx-padding: 0 -12 0 12;
+}
+
+.jfx-tab-pane .tab-selected-line {
+    -fx-stroke-width: 3pt;
+    -fx-background-color: -fx-content;
+}
+
+.jfx-tab-pane .headers-region,
+.jfx-tab-pane .tab-header-background {
+    -fx-background-color: -fx-accent;
+}
+
+.jfx-tab-pane .tab .tab-label {
+    -fx-font-weight: normal;
+    -fx-font-size: 12;
+}
+
+.jfx-text-field {
+    -jfx-focus-color: -fx-accent;
+    -jfx-unfocus-color: -fx-unfocus;
+    -jfx-label-float: true;
+    -fx-text-fill: -fx-content;
+}
+
+.jfx-combo-box {
+    -jfx-focus-color: -fx-accent;
+    -jfx-unfocus-color: -fx-unfocus;
+    -jfx-label-float: true;
+    -fx-text-fill: -fx-content;
+}
+
+.jfx-rippler {
+    -jfx-rippler-fill: -fx-content;
+}
+
+.jfx-progress-bar > .track,
+.jfx-progress-bar > .bar {
+    -fx-background-radius: 0;
+    -fx-background-insets: 0.8 0 0.8 0;
+}
+
+.jfx-progress-bar > .bar {
+    -fx-background-color: -fx-accent;
+    -fx-pref-height: 2px;
+}
+
+.jfx-progress-bar > .track {
+    -fx-background-color: #424242;
+}

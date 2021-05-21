@@ -1,9 +1,13 @@
 package ui2;
 
 import datamodel.DataModel;
+import datamodel.objects.ObservableBench;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
@@ -20,10 +24,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UIController {
@@ -271,6 +272,61 @@ public class UIController {
                 return null;
             }
         };
+    }
+
+    void setEditTabBenchTable(TableView<ObservableBench> table, TableColumn<ObservableBench, String> nameCol, TableColumn<ObservableBench, String> rPathCol) {
+        ObservableMap<String, ObservableBench> benches = model.getSessionBenches();
+        ObservableList<ObservableBench> benchList = FXCollections.observableArrayList(benches.values());
+
+        rPathCol.setCellValueFactory(cellData -> cellData.getValue().rPathProperty());
+        nameCol.setCellValueFactory(cellData -> cellData.getValue().nameProperty()); // TODO: when extracted strings become available, map to the names, else use identifier
+
+        table.getColumns().setAll(Arrays.asList(nameCol, rPathCol));
+        table.setItems(benchList);
+
+        table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentBench(newValue)));
+
+        model.currentBenchProperty().addListener((((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                table.getSelectionModel().clearSelection();
+            } else {
+                table.getSelectionModel().select(newValue);
+            }
+        })));
+    }
+
+    void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {
+
+        model.currentBenchProperty().addListener(((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                professionNameField.textProperty().unbindBidirectional(oldValue.professionNameProperty());
+                categoryComboBox.getItems().clear();
+                categories.getItems().clear();
+            }
+            if (newValue == null) {
+                rPathField.setText("");
+                nameField.setText("");
+                professionNameField.setText("");
+            } else {
+                rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                professionNameField.textProperty().bindBidirectional(newValue.professionNameProperty());
+                // add category items stuff
+                ObservableList<String> dropDownCategories = FXCollections.observableArrayList();
+                newValue.getCategories().keySet().forEach(item -> dropDownCategories.add(String.join(" - ", item)));
+                categoryComboBox.setItems(dropDownCategories);
+            }
+        }));
+
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            categories.getItems().clear();
+            if (newValue != null) {
+                List<String> key = Arrays.asList(newValue.split("\\s-\\s"));
+                categories.getItems().setAll(model.getCurrentBench().getCategories().get(key));
+            }
+        }));
     }
 
     void print(TextArea logger, String message) {

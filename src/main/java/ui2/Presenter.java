@@ -5,9 +5,6 @@ import com.jfoenix.effects.JFXDepthManager;
 import datamodel.objects.*;
 import datamodel.parser.Parser;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -221,6 +218,8 @@ public class Presenter {
             setEditTabContent(newValue);
         }));
 
+        tabs.getSelectionModel().selectFirst();
+
         header.getStyleClass().add("header");
         headerText.getStyleClass().add("header-text");
 
@@ -234,9 +233,9 @@ public class Presenter {
         StackPane tablePane = new StackPane();
         StackPane backingTablePane = new StackPane();
         StackPane backingGridPane = new StackPane();
-        GridPane grid = new GridPane();
+        GridPane sidebar = new GridPane();
 
-        backingGridPane.getChildren().add(grid);
+        backingGridPane.getChildren().add(sidebar);
         backingTablePane.getChildren().add(tablePane);
 
         root.setCenter(backingTablePane);
@@ -245,65 +244,18 @@ public class Presenter {
         backingTablePane.getStyleClass().add("pane-background");
         backingGridPane.getStyleClass().add("pane-background-no-left");
         tablePane.getStyleClass().add("card-backing");
-        grid.getStyleClass().addAll("card-backing", "grid-sidebar");
+        sidebar.getStyleClass().addAll("card-backing", "grid-sidebar");
 
         JFXDepthManager.setDepth(tablePane, 1);
-        JFXDepthManager.setDepth(grid, 1);
+        JFXDepthManager.setDepth(sidebar, 1);
 
-        grid.prefWidthProperty().bind(root.widthProperty().multiply(0.2));
+        sidebar.prefWidthProperty().bind(root.widthProperty().multiply(0.2));
 
         String name = tab.getText();
         switch (name) {
             case "Benches":
-                TableView<ObservableBench> benchTable = new TableView<>();
-                benchTable.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
-                ObservableMap<String, ObservableBench> benches = controller.model.getSessionBenches();
-                ObservableList<ObservableBench> benchList = FXCollections.observableArrayList(benches.values());
-                TableColumn<ObservableBench, String> rPathColumn = new TableColumn<>("Relative Path");
-                TableColumn<ObservableBench, String> nameColumn = new TableColumn<>("Name");
-
-                rPathColumn.setCellValueFactory(cellData -> cellData.getValue().rPathProperty());
-                nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
-
-                benchTable.getColumns().setAll(Arrays.asList(nameColumn, rPathColumn));
-                benchTable.setItems(benchList);
-
-                JFXTextField rPathField = new JFXTextField();
-                rPathField.setPromptText("Relative Path");
-                JFXTextField nameField = new JFXTextField();
-                nameField.setPromptText("Name");
-                JFXTextField professionNameField = new JFXTextField();
-                professionNameField.setPromptText("Profession Name (if applicable)");
-
-                Arrays.asList(rPathField, nameField, professionNameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
-
-                benchTable.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> controller.model.setCurrentBench(newValue)));
-
-                controller.model.currentBenchProperty().addListener(((observable, oldValue, newValue) -> {
-                    if (oldValue != null) {
-                        rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
-                        nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
-                        professionNameField.textProperty().unbindBidirectional(oldValue.professionNameProperty());
-                    }
-                    if (newValue == null) {
-                        benchTable.getSelectionModel().clearSelection();
-                        rPathField.setText("");
-                        nameField.setText("");
-                        professionNameField.setText("");
-                    } else {
-                        benchTable.getSelectionModel().select(newValue);
-                        rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
-                        nameField.textProperty().bindBidirectional(newValue.nameProperty());
-                        professionNameField.textProperty().bindBidirectional(newValue.professionNameProperty());
-                    }
-                }));
-
-
-                grid.add(rPathField, 0, 0);
-                grid.add(nameField, 0, 1);
-                grid.add(professionNameField, 0, 2);
-
-                tablePane.getChildren().add(benchTable);
+                setEditTabBenchTable(tablePane);
+                setEditTabBenchSidebar(sidebar);
                 break;
 //            case "Collections":
 //                TableView<ObservableCollection> collectionTable = new TableView<>();
@@ -418,5 +370,42 @@ public class Presenter {
     private void setFabAnchor(Node node) {
         AnchorPane.setRightAnchor(node, 36.0);
         AnchorPane.setBottomAnchor(node, 36.0);
+    }
+    
+    private void setEditTabBenchTable(StackPane tablePane) {
+        TableView<ObservableBench> table = new TableView<>();
+        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
+        TableColumn<ObservableBench, String> rPathColumn = new TableColumn<>("Relative Path");
+        TableColumn<ObservableBench, String> nameColumn = new TableColumn<>("Name");
+
+        table.setPlaceholder(new Label("No benches imported"));
+
+        controller.setEditTabBenchTable(table, nameColumn, rPathColumn);
+
+        tablePane.getChildren().add(table);
+    }
+    
+    private void setEditTabBenchSidebar(GridPane sidebar) {
+        JFXTextField rPathField = new JFXTextField();
+        JFXTextField nameField = new JFXTextField();
+        JFXTextField professionNameField = new JFXTextField();
+        JFXComboBox<String> categoryDropdown = new JFXComboBox<>();
+        JFXListView<String> categories = new JFXListView<>();
+
+        rPathField.setPromptText("Relative Path");
+        nameField.setPromptText("Name");
+        professionNameField.setPromptText("Profession Name (if applicable)");
+        categoryDropdown.setPromptText("Category");
+
+        Arrays.asList(rPathField, nameField, professionNameField, categoryDropdown).forEach(item -> item.getStyleClass().add("sidebar-text"));
+        categories.getStyleClass().add("sidebar-list");
+
+        sidebar.add(rPathField, 0, 0);
+        sidebar.add(nameField, 0, 1);
+        sidebar.add(professionNameField, 0, 2);
+        sidebar.add(categoryDropdown, 0, 3);
+        sidebar.add(categories, 0, 4);
+
+        controller.setEditTabBenchSidebar(rPathField, nameField, professionNameField, categoryDropdown, categories);
     }
 }

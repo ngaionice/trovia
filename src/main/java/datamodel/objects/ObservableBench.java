@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleMapProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 import java.util.*;
@@ -13,7 +14,7 @@ public class ObservableBench extends Observable implements Article {
 
     StringProperty name; // the string identifier of the bench's name
     StringProperty rPath;
-    MapProperty<String[], List<String>> categories;
+    MapProperty<List<String>, ObservableList<String>> categories; // key: [category #, category path]; value: list of recipe file names
 
     /**
      * The name property of the profession. The value wrapped inside is nullable.
@@ -25,8 +26,8 @@ public class ObservableBench extends Observable implements Article {
         this.rPath = new SimpleStringProperty(rPath);
         this.professionName = new SimpleStringProperty(professionName);
 
-        ObservableMap<String[], List<String>> tempMap = FXCollections.observableHashMap();
-        categories.forEach(tempMap::put);
+        ObservableMap<List<String>, ObservableList<String>> tempMap = FXCollections.observableHashMap();
+        categories.forEach((key, value) -> tempMap.put(Arrays.asList(key), FXCollections.observableArrayList(value)));
         this.categories = new SimpleMapProperty<>(tempMap);
     }
 
@@ -45,12 +46,12 @@ public class ObservableBench extends Observable implements Article {
         notifyObservers();
     }
 
-    public final void setCategories(ObservableMap<String[], List<String>> categories) {
+    public final void setCategories(ObservableMap<List<String>, ObservableList<String>> categories) {
         this.categories.set(categories);
         notifyObservers();
     }
 
-    public final void updateCategory(String[] key, List<String> value) {
+    public final void updateCategory(List<String> key, ObservableList<String> value) {
         categories.getValue().put(key, value);
         notifyObservers();
     }
@@ -63,7 +64,7 @@ public class ObservableBench extends Observable implements Article {
         return rPath;
     }
 
-    public MapProperty<String[], List<String>> categoriesProperty() {
+    public MapProperty<List<String>, ObservableList<String>> categoriesProperty() {
         return categories;
     }
 
@@ -79,7 +80,7 @@ public class ObservableBench extends Observable implements Article {
         return rPath.get();
     }
 
-    public ObservableMap<String[], List<String>> getCategories() {
+    public ObservableMap<List<String>, ObservableList<String>> getCategories() {
         return categories.get();
     }
 

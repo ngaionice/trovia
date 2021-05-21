@@ -31,89 +31,6 @@
     -fx-font-size: 13;
 }
 
-.dir-view {
-    -fx-background-insets: 0 1;
-}
-
-.dir-view .tree-cell {
-    -fx-background-color: #1B1B1B ;
-    -fx-text-fill: #eeeeee ;
-}
-
-.dir-view:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0 1;
-    -fx-padding: 1;
-}
-
-.dir-view .check-box:selected > .box {
-    -fx-background-color: #C77800;
-}
-
-.dir-view .check-box:default > .box {
-    -fx-background-color: #EEEEEE;
-}
-
-.dir-view .check-box:selected > .box > .mark,
-.dir-view .check-box:indeterminate  > .box > .mark {
-    -fx-background-color: #EEEEEE;
-}
-
-.table-view {
-    -fx-base: #1B1B1B;
-    -fx-background-insets: 1;
-}
-
-.table-view .column-header,
-.table-view .column-header .filler,
-.table-view .column-header-background .filler {
-    -fx-background-color: #1B1B1B;
-}
-
-.table-view .table-cell {
-    -fx-font-family: Roboto Regular;
-    -fx-text-fill: #eeeeee ;
-}
-
-.table-view .table-row-cell {
-    -fx-background-color: #1B1B1B ;
-    -fx-border-width: 0 0 0 0;
-    -fx-border-color: #424242;
-}
-
-.table-view:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 1;
-    -fx-padding: 1;
-}
-
-.table-view .column-header .label {
-    -fx-text-fill: #C7C7C7;
-    -fx-font-weight: bold;
-}
-
-.table-view .column-header,
-.table-view .column-header .filler,
-.table-view .column-header-background .filler {
-    -fx-background-color: #1B1B1B;
-}
-
-.table-view .column-header,
-.table-view .filler {
-    -fx-border-width: 0 0 1 0;
-    -fx-border-insets: 0 10 1 0;
-}
-
-.table-view:focused .table-row-cell:focused {
-    -fx-background-insets: 0 0 0 0;
-}
-
-.table-view:focused .table-row-cell:selected {
-    /*-fx-background-color: #C77800;*/
-    -fx-background-color: #C25E00;
-    -fx-background-insets: 0 0 0 0;
-}
-
 .text-col,
 .text-col .label {
     -fx-alignment: center-left;
@@ -202,21 +119,24 @@
 
 .root {
     -fx-accent: #FF9800;
+    -fx-accent-dark: #C25E00;
     /* to be factored out maybe */
-    -fx-material: #1B1B1B;
-    -fx-dialog-background: #212121;
-    -fx-content: #FAFAFA;
-    -fx-content-light: #EEEEEE;
-    -fx-background-color: -fx-material;
-    -fx-unfocus: #424242;
-    -fx-subtle: #424242;
+    -fx-material: #212121;
+    -fx-material-dark: #1B1B1B;
+    -fx-material-light: #424242;
+    -fx-content: #EEEEEE;
+    -fx-content-light: #FAFAFA;
+    -fx-content-dark: #C7C7C7;
+    -fx-background-color: -fx-material-dark;
+    -fx-unfocus: -fx-material-light;
+    -fx-subtle: -fx-material-light;
 }
 
 .nav-button {
     -fx-pref-width: 160px;
     -fx-pref-height: 36px;
     -fx-padding: 0 0 0 12;
-    -fx-background-color: -fx-material;
+    -fx-background-color: -fx-material-dark;
     -fx-alignment: center-left;
     -fx-font-size: 13px;
     -fx-font-family: "Roboto Regular";
@@ -233,7 +153,7 @@
 #nav-box {
     -fx-padding: 8;
     -fx-spacing: 8;
-    -fx-background-color: -fx-material;
+    -fx-background-color: -fx-material-dark;
 }
 
 #nav-separator {
@@ -254,60 +174,8 @@
     -fx-font-size: 15px;
 }
 
-.jfx-tab-pane .tab-header-area {
-    -fx-padding: 0 -12 0 12;
-}
-
-.jfx-tab-pane .tab-selected-line {
-    -fx-stroke-width: 3pt;
-    -fx-background-color: -fx-content;
-}
-
-.jfx-tab-pane .headers-region,
-.jfx-tab-pane .tab-header-background {
-    -fx-background-color: -fx-accent;
-}
-
-.jfx-tab-pane .tab .tab-label {
-    -fx-font-weight: normal;
-    -fx-font-size: 12;
-}
-
-.dir-view {
-    -fx-background-insets: 1;
-}
-
-.dir-view .tree-cell {
-    -fx-background-color: #1B1B1B ;
-    -fx-text-fill: #eeeeee ;
-}
-
-.dir-view:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 1;
-    -fx-padding: 1;
-}
-
-.dir-view .check-box:selected > .box {
-    -fx-background-color: #C77800;
-}
-
-.dir-view .check-box:default > .box {
-    -fx-background-color: #EEEEEE;
-}
-
-.dir-view .check-box:selected > .box > .mark,
-.dir-view .check-box:indeterminate  > .box > .mark {
-    -fx-background-color: #EEEEEE;
-}
-
 .text-input:disabled {
     -fx-opacity: 1.0;
-}
-
-.tree-view .tree-cell {
-    -fx-background-color: -fx-material;
-    -fx-text-fill: -fx-content;
 }
 
 .tab {
@@ -316,23 +184,23 @@
 
 .pane-background {
     -fx-padding: 24px;
-    -fx-background-color: -fx-dialog-background;
+    -fx-background-color: -fx-material;
 }
 
 .pane-background-no-top {
     -fx-padding: 0 24 24 24;
-    -fx-background-color: -fx-dialog-background;
+    -fx-background-color: -fx-material;
 }
 
 .pane-background-no-left {
     -fx-padding: 24 24 24 0;
-    -fx-background-color: -fx-dialog-background;
+    -fx-background-color: -fx-material;
 }
 
 .card-backing {
     -fx-padding: 24px;
     -fx-alignment: top-center;
-    -fx-background-color: -fx-material;
+    -fx-background-color: -fx-material-dark;
     -fx-background-radius: 3px;
 }
 
@@ -344,34 +212,11 @@
 
 .grid-sidebar {
     -fx-hgap: 12px;
-    -fx-vgap: 16px;
+    -fx-vgap: 20px;
     -fx-padding: 24px;
 }
 
-.jfx-text-field {
-    -jfx-focus-color: -fx-accent;
-    -jfx-unfocus-color: -fx-unfocus;
-    -jfx-label-float: true;
-}
 
-.jfx-rippler {
-    -jfx-rippler-fill: -fx-content;
-}
-
-.jfx-progress-bar > .track,
-.jfx-progress-bar > .bar {
-    -fx-background-radius: 0;
-    -fx-background-insets: 0.8 0 0.8 0;
-}
-
-.jfx-progress-bar > .bar {
-    -fx-background-color: -fx-accent;
-    -fx-pref-height: 2px;
-}
-
-.jfx-progress-bar > .track {
-    -fx-background-color: #424242;
-}
 
 .text-field-dir {
     -fx-pref-width: 520px;
@@ -430,11 +275,11 @@
 #logger {
     -fx-font-family: "Roboto Mono";
     -fx-text-fill: -fx-content-light;
-    -fx-background-color: -fx-material;
+    -fx-background-color: -fx-material-dark;
     -fx-background-radius: 3px;
     -fx-padding: 24px;
-    -jfx-focus-color: -fx-material;
-    -jfx-unfocus-color: -fx-material;
+    -jfx-focus-color: -fx-material-dark;
+    -jfx-unfocus-color: -fx-material-dark;
 }
 
 .sidebar-text {
