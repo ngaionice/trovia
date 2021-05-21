@@ -34,7 +34,7 @@ public class DataModel implements Observer {
     Map<String, String> changedExtractedStrings = new HashMap<>();
     Map<String, String> changedCustomStrings = new HashMap<>();
 
-    private final ObjectProperty<ObservableBench> currentBench = new SimpleObjectProperty<>(null);
+    final ObjectProperty<ObservableBench> currentBench = new SimpleObjectProperty<>(null);
     private final ObjectProperty<ObservableCollection> currentCollection = new SimpleObjectProperty<>(null);
     private final ObjectProperty<ObservableItem> currentItem = new SimpleObjectProperty<>(null);
     private final ObjectProperty<ObservablePlaceable> currentPlaceable = new SimpleObjectProperty<>(null);

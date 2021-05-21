@@ -61,6 +61,7 @@
 
 .table-view {
     -fx-base: #1B1B1B;
+    -fx-background-insets: 1;
 }
 
 .table-view .column-header,
@@ -76,13 +77,13 @@
 
 .table-view .table-row-cell {
     -fx-background-color: #1B1B1B ;
-    -fx-border-width: 1 0 0 0;
+    -fx-border-width: 0 0 0 0;
     -fx-border-color: #424242;
 }
 
 .table-view:focused {
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0, 1;
+    -fx-background-insets: 1;
     -fx-padding: 1;
 }
 
@@ -323,6 +324,11 @@
     -fx-background-color: -fx-dialog-background;
 }
 
+.pane-background-no-left {
+    -fx-padding: 24 24 24 0;
+    -fx-background-color: -fx-dialog-background;
+}
+
 .card-backing {
     -fx-padding: 24px;
     -fx-alignment: top-center;
@@ -336,10 +342,20 @@
     -fx-padding: 24px;
 }
 
+.grid-sidebar {
+    -fx-hgap: 12px;
+    -fx-vgap: 16px;
+    -fx-padding: 24px;
+}
+
 .jfx-text-field {
     -jfx-focus-color: -fx-accent;
     -jfx-unfocus-color: -fx-unfocus;
     -jfx-label-float: true;
+}
+
+.jfx-rippler {
+    -jfx-rippler-fill: -fx-content;
 }
 
 .jfx-progress-bar > .track,
@@ -419,6 +435,10 @@
     -fx-padding: 24px;
     -jfx-focus-color: -fx-material;
     -jfx-unfocus-color: -fx-material;
+}
+
+.sidebar-text {
+    -fx-pref-width: 360px;
 }
 
 

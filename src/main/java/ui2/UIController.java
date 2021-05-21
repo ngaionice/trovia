@@ -1,6 +1,7 @@
 package ui2;
 
 import datamodel.DataModel;
+import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -9,9 +10,9 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import datamodel.parser.Parser;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,7 +96,7 @@ public class UIController {
             String path = selected.getAbsolutePath();
             LocalDateTime currTime = LocalDateTime.now();
             String fileName = "trovia-log-" + currTime.toString().replace(":", "-").replace(".", "-") + ".txt";
-            try  {
+            try {
                 Path file = Paths.get(path + "\\" + fileName);
                 Files.write(file, Arrays.asList(logger.getText().split("\\n")), StandardCharsets.UTF_8);
                 logger.clear();

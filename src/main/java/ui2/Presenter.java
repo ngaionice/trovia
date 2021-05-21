@@ -2,16 +2,19 @@ package ui2;
 
 import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
+import datamodel.objects.*;
+import datamodel.parser.Parser;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import datamodel.parser.Parser;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Arrays;
@@ -87,7 +90,6 @@ public class Presenter {
             }
         });
 
-//        logsButton.setOnAction(e -> controller.dumpLogs(stage, logger));
         logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
 
@@ -112,6 +114,14 @@ public class Presenter {
         Tab recipes = getParseTab("Recipes", Parser.ObjectType.RECIPE);
         Tab strings = getParseTab("Strings", Parser.ObjectType.STRING);
         tabs.getTabs().addAll(benches, collections, items, placeables, professions, recipes, strings);
+
+        // debatable design choice: clear all selections on tab switch
+        // issue: different types of paths on different tabs, ideally one list for each but might clog things up even more
+//        tabs.getSelectionModel().selectedIndexProperty().addListener(((observable, oldValue, newValue) -> {
+//            if (!newValue.equals(oldValue)) {
+//                controller.clearSelectedPaths();
+//            }
+//        }));
 
         header.getStyleClass().add("header");
         headerText.getStyleClass().add("header-text");
@@ -162,10 +172,6 @@ public class Presenter {
         progressText.getStyleClass().add("text-normal");
         progressText.setId("text-progress");
 
-        dirButton.setRipplerFill(Color.valueOf("#FAFAFA"));
-        filterButton.setRipplerFill(Color.valueOf("#FAFAFA"));
-        startButton.setRipplerFill(Color.valueOf("#FAFAFA"));
-
         dirButton.setGraphic(new FontIcon());
         filterButton.setGraphic(new FontIcon());
         startButton.setGraphic(new FontIcon());
@@ -209,12 +215,129 @@ public class Presenter {
         Tab strings = new Tab("Strings");
         tabs.getTabs().addAll(benches, collections, items, placeables, recipes, strings);
 
+        tabs.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            // load tab on switch, don't pre-load
+            // index mapping
+            setEditTabContent(newValue);
+        }));
+
         header.getStyleClass().add("header");
         headerText.getStyleClass().add("header-text");
 
         screenRoot.setTop(header);
         screenRoot.setCenter(tabs);
         root.setCenter(screenRoot);
+    }
+
+    private void setEditTabContent(Tab tab) {
+        BorderPane root = new BorderPane();
+        StackPane tablePane = new StackPane();
+        StackPane backingTablePane = new StackPane();
+        StackPane backingGridPane = new StackPane();
+        GridPane grid = new GridPane();
+
+        backingGridPane.getChildren().add(grid);
+        backingTablePane.getChildren().add(tablePane);
+
+        root.setCenter(backingTablePane);
+        root.setRight(backingGridPane);
+
+        backingTablePane.getStyleClass().add("pane-background");
+        backingGridPane.getStyleClass().add("pane-background-no-left");
+        tablePane.getStyleClass().add("card-backing");
+        grid.getStyleClass().addAll("card-backing", "grid-sidebar");
+
+        JFXDepthManager.setDepth(tablePane, 1);
+        JFXDepthManager.setDepth(grid, 1);
+
+        grid.prefWidthProperty().bind(root.widthProperty().multiply(0.2));
+
+        String name = tab.getText();
+        switch (name) {
+            case "Benches":
+                TableView<ObservableBench> benchTable = new TableView<>();
+                benchTable.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
+                ObservableMap<String, ObservableBench> benches = controller.model.getSessionBenches();
+                ObservableList<ObservableBench> benchList = FXCollections.observableArrayList(benches.values());
+                TableColumn<ObservableBench, String> rPathColumn = new TableColumn<>("Relative Path");
+                TableColumn<ObservableBench, String> nameColumn = new TableColumn<>("Name");
+
+                rPathColumn.setCellValueFactory(cellData -> cellData.getValue().rPathProperty());
+                nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+
+                benchTable.getColumns().setAll(Arrays.asList(nameColumn, rPathColumn));
+                benchTable.setItems(benchList);
+
+                JFXTextField rPathField = new JFXTextField();
+                rPathField.setPromptText("Relative Path");
+                JFXTextField nameField = new JFXTextField();
+                nameField.setPromptText("Name");
+                JFXTextField professionNameField = new JFXTextField();
+                professionNameField.setPromptText("Profession Name (if applicable)");
+
+                Arrays.asList(rPathField, nameField, professionNameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
+
+                benchTable.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> controller.model.setCurrentBench(newValue)));
+
+                controller.model.currentBenchProperty().addListener(((observable, oldValue, newValue) -> {
+                    if (oldValue != null) {
+                        rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                        nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                        professionNameField.textProperty().unbindBidirectional(oldValue.professionNameProperty());
+                    }
+                    if (newValue == null) {
+                        benchTable.getSelectionModel().clearSelection();
+                        rPathField.setText("");
+                        nameField.setText("");
+                        professionNameField.setText("");
+                    } else {
+                        benchTable.getSelectionModel().select(newValue);
+                        rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                        nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                        professionNameField.textProperty().bindBidirectional(newValue.professionNameProperty());
+                    }
+                }));
+
+
+                grid.add(rPathField, 0, 0);
+                grid.add(nameField, 0, 1);
+                grid.add(professionNameField, 0, 2);
+
+                tablePane.getChildren().add(benchTable);
+                break;
+            case "Collections":
+                TableView<ObservableCollection> collectionTable = new TableView<>();
+
+                tablePane.getChildren().add(collectionTable);
+                collectionTable.getStyleClass().add("card-backing");
+                break;
+            case "Items":
+                TableView<ObservableItem> itemTable = new TableView<>();
+
+                tablePane.getChildren().add(itemTable);
+                itemTable.getStyleClass().add("card-backing");
+                break;
+            case "Placeables":
+                TableView<ObservablePlaceable> placeableTable = new TableView<>();
+
+                tablePane.getChildren().add(placeableTable);
+                placeableTable.getStyleClass().add("card-backing");
+                break;
+            case "Recipes":
+                TableView<ObservableRecipe> recipeTable = new TableView<>();
+
+                tablePane.getChildren().add(recipeTable);
+                recipeTable.getStyleClass().add("card-backing");
+                break;
+            case "Strings":
+                TableView<ObservableStrings> stringsTable = new TableView<>();
+
+                tablePane.getChildren().add(stringsTable);
+                stringsTable.getStyleClass().add("card-backing");
+                break;
+        }
+
+        tab.setContent(root);
     }
 
     private void setSyncScreen() {
@@ -248,7 +371,6 @@ public class Presenter {
         dumpButton.setId("button-dump");
 
         dumpButton.setGraphic(new FontIcon());
-        dumpButton.setRipplerFill(Color.valueOf("#FAFAFA"));
 
         setMaxAnchor(logger);
         setFabAnchor(dumpButton);
