@@ -238,6 +238,7 @@ public class UIController {
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
+                selectedPaths.clear();
                 if (!failedPaths.isEmpty()) {
                     failedPaths.forEach(item -> print(logger, "Parse failure: " + item));
                     failedPaths.clear();

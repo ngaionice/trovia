@@ -305,36 +305,36 @@ public class Presenter {
 
                 tablePane.getChildren().add(benchTable);
                 break;
-            case "Collections":
-                TableView<ObservableCollection> collectionTable = new TableView<>();
-
-                tablePane.getChildren().add(collectionTable);
-                collectionTable.getStyleClass().add("card-backing");
-                break;
-            case "Items":
-                TableView<ObservableItem> itemTable = new TableView<>();
-
-                tablePane.getChildren().add(itemTable);
-                itemTable.getStyleClass().add("card-backing");
-                break;
-            case "Placeables":
-                TableView<ObservablePlaceable> placeableTable = new TableView<>();
-
-                tablePane.getChildren().add(placeableTable);
-                placeableTable.getStyleClass().add("card-backing");
-                break;
-            case "Recipes":
-                TableView<ObservableRecipe> recipeTable = new TableView<>();
-
-                tablePane.getChildren().add(recipeTable);
-                recipeTable.getStyleClass().add("card-backing");
-                break;
-            case "Strings":
-                TableView<ObservableStrings> stringsTable = new TableView<>();
-
-                tablePane.getChildren().add(stringsTable);
-                stringsTable.getStyleClass().add("card-backing");
-                break;
+//            case "Collections":
+//                TableView<ObservableCollection> collectionTable = new TableView<>();
+//
+//                tablePane.getChildren().add(collectionTable);
+//                collectionTable.getStyleClass().add("card-backing");
+//                break;
+//            case "Items":
+//                TableView<ObservableItem> itemTable = new TableView<>();
+//
+//                tablePane.getChildren().add(itemTable);
+//                itemTable.getStyleClass().add("card-backing");
+//                break;
+//            case "Placeables":
+//                TableView<ObservablePlaceable> placeableTable = new TableView<>();
+//
+//                tablePane.getChildren().add(placeableTable);
+//                placeableTable.getStyleClass().add("card-backing");
+//                break;
+//            case "Recipes":
+//                TableView<ObservableRecipe> recipeTable = new TableView<>();
+//
+//                tablePane.getChildren().add(recipeTable);
+//                recipeTable.getStyleClass().add("card-backing");
+//                break;
+//            case "Strings":
+//                TableView<ObservableStrings> stringsTable = new TableView<>();
+//
+//                tablePane.getChildren().add(stringsTable);
+//                stringsTable.getStyleClass().add("card-backing");
+//                break;
         }
 
         tab.setContent(root);
