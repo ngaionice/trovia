@@ -120,6 +120,7 @@
 .root {
     -fx-accent: #FF9800;
     -fx-accent-dark: #C25E00;
+    -fx-font-family: "Roboto";
     /* to be factored out maybe */
     -fx-material: #212121;
     -fx-material-dark: #1B1B1B;
@@ -139,7 +140,6 @@
     -fx-background-color: -fx-material-dark;
     -fx-alignment: center-left;
     -fx-font-size: 13px;
-    -fx-font-family: "Roboto Regular";
     -fx-text-fill: -fx-content;
     -fx-graphic-text-gap: 16;
     -jfx-button-type: FLAT;
@@ -267,6 +267,11 @@
     -fx-fill: -fx-content;
 }
 
+.text-area {
+    -fx-text-fill: -fx-content-light;
+    -fx-background-color: -fx-material-dark;
+}
+
 #text-progress {
     -fx-translate-x: 2;
     -fx-fill: -fx-content-light;
@@ -274,8 +279,6 @@
 
 #logger {
     -fx-font-family: "Roboto Mono";
-    -fx-text-fill: -fx-content-light;
-    -fx-background-color: -fx-material-dark;
     -fx-background-radius: 3px;
     -fx-padding: 24px;
     -jfx-focus-color: -fx-material-dark;

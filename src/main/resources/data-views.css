@@ -114,3 +114,15 @@
     -fx-pref-height: 1000px;
 }
 
+.sidebar-list-short {
+    -fx-pref-height: 80px;
+}
+
+.sidebar-list-medium {
+    -fx-pref-height: 160px;
+}
+
+.sidebar-list-long {
+    -fx-pref-height: 240px;
+}
+

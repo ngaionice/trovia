@@ -17,7 +17,8 @@
     -fx-font-size: 12;
 }
 
-.jfx-text-field {
+.jfx-text-field,
+.jfx-text-area {
     -jfx-focus-color: -fx-accent;
     -jfx-unfocus-color: -fx-unfocus;
     -jfx-label-float: true;
@@ -48,4 +49,9 @@
 
 .jfx-progress-bar > .track {
     -fx-background-color: #424242;
+}
+
+.jfx-check-box {
+    -jfx-checked-color: -fx-accent;
+    -fx-text-fill: -fx-content;
 }

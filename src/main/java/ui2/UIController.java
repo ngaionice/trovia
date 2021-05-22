@@ -412,18 +412,24 @@ public class UIController {
         }));
     }
 
-    void setEditTabCollectionSidebar(TextField rPathField, TextField nameField, TextField descField, TextField troveMRField, TextField geodeMRField, JFXListView<String> types,
-                                     TableView<ObservableMap<CollectionEnums.Property, Double>> properties, TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs) {
+    void setEditTabCollectionSidebar(TextField rPathField, TextField nameField, TextField descField, TextField troveMRField,
+                                     TextField geodeMRField, ListView<String> types,
+                                     TableView<ObservableMap<CollectionEnums.Property, Double>> properties,
+                                     TableColumn<ObservableMap<CollectionEnums.Property, Double>, String> propCol,
+                                     TableColumn<ObservableMap<CollectionEnums.Property, Double>, Double> propValCol,
+                                     TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs,
+                                     TableColumn<ObservableMap<CollectionEnums.Buff, Double>, String> buffCol,
+                                     TableColumn<ObservableMap<CollectionEnums.Buff, Double>, Double> buffValCol, TextArea notes) {
         model.currentCollectionProperty().addListener(((observable, oldValue, newValue) -> {
+            types.getItems().clear();
+            properties.getItems().clear();
+            buffs.getItems().clear();
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
                 nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
                 descField.textProperty().unbindBidirectional(oldValue.descProperty());
                 troveMRField.textProperty().unbindBidirectional(oldValue.troveMRProperty());
                 geodeMRField.textProperty().unbindBidirectional(oldValue.geodeMRProperty());
-                types.getItems().clear();
-                properties.getItems().clear();
-                buffs.getItems().clear();
             }
             if (newValue == null) {
                 rPathField.setText("");
@@ -431,13 +437,16 @@ public class UIController {
                 descField.setText("");
                 troveMRField.setText("");
                 geodeMRField.setText("");
+                notes.setText("");
             } else {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 troveMRField.textProperty().bindBidirectional(newValue.troveMRProperty(), new NumberStringConverter());
                 geodeMRField.textProperty().bindBidirectional(newValue.geodeMRProperty(), new NumberStringConverter());
-                // TODO: finish types, properties and buffs
+
+                // TODO: finish properties, buffs and notes
+                newValue.getTypes().forEach(item -> types.getItems().add(item.toString()));
             }
         }));
     }

@@ -367,6 +367,19 @@ public class Presenter {
         AnchorPane.setBottomAnchor(node, 36.0);
     }
 
+    private void setEditTabTable(StackPane tablePane, UIController.TabType type) {
+        TableView<ArticleTable> table = new TableView<>();
+        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
+        TableColumn<ArticleTable, String> rPathColumn = new TableColumn<>("Relative Path");
+        TableColumn<ArticleTable, String> nameColumn = new TableColumn<>("Name");
+
+        table.getColumns().setAll(!type.equals(UIController.TabType.RECIPE) ? Arrays.asList(nameColumn, rPathColumn) : Collections.singletonList(rPathColumn));
+        tablePane.getChildren().add(table);
+        controller.setEditTabTable(table, rPathColumn, nameColumn, type);
+        String plural = type.toString().equals("bench") ? "es" : "s";
+        table.setPlaceholder(new Label("No " + type + plural + " imported"));
+    }
+
     private void setEditTabBenchSidebar(GridPane sidebar) {
         JFXTextField rPathField = new JFXTextField();
         JFXTextField nameField = new JFXTextField();
@@ -397,53 +410,136 @@ public class Presenter {
         JFXTextField descField = new JFXTextField();
         JFXTextField troveMRField = new JFXTextField();
         JFXTextField geodeMRField = new JFXTextField();
-        JFXListView<String> types = new JFXListView<>();
+        JFXTextArea notes = new JFXTextArea();
+        VBox typesBox = new VBox();
+        Text typesLabel = new Text("Collection types");
+        ListView<String> types = new ListView<>();
+        VBox propertiesBox = new VBox();
+        Text propertiesLabel = new Text("Type properties");
         TableView<ObservableMap<CollectionEnums.Property, Double>> properties = new TableView<>();
+        VBox buffsBox = new VBox();
+        Text buffsLabel = new Text("Buffs granted");
         TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs = new TableView<>();
+
+        TableColumn<ObservableMap<CollectionEnums.Property, Double>, String> propCol = new TableColumn<>();
+        TableColumn<ObservableMap<CollectionEnums.Property, Double>, Double> propValCol = new TableColumn<>();
+        TableColumn<ObservableMap<CollectionEnums.Buff, Double>, String> buffCol = new TableColumn<>();
+        TableColumn<ObservableMap<CollectionEnums.Buff, Double>, Double> buffValCol = new TableColumn<>();
+
+        typesBox.getChildren().addAll(typesLabel, types);
+        propertiesBox.getChildren().addAll(propertiesLabel, properties);
+        buffsBox.getChildren().addAll(buffsLabel, buffs);
+        properties.getColumns().setAll(Arrays.asList(propCol, propValCol));
+        buffs.getColumns().setAll(Arrays.asList(buffCol, buffValCol));
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
         troveMRField.setPromptText("Trove Mastery");
         geodeMRField.setPromptText("Geode Mastery");
+        notes.setPromptText("Notes");
 
         Arrays.asList(rPathField, nameField, descField, troveMRField, geodeMRField).forEach(item -> item.getStyleClass().add("sidebar-text"));
+        Arrays.asList(typesLabel, propertiesLabel, buffsLabel).forEach(item -> item.getStyleClass().add("text-normal"));
+        types.getStyleClass().add("sidebar-list-short");
+        Arrays.asList(properties, buffs).forEach(item -> item.getStyleClass().add("sidebar-list-medium"));
+        types.prefWidthProperty().bind(sidebar.widthProperty().multiply(0.5));
 
         sidebar.add(rPathField, 0, 0, 2, 1);
         sidebar.add(nameField, 0, 1, 2, 1);
         sidebar.add(descField, 0, 2, 2, 1);
         sidebar.add(troveMRField, 0, 3);
         sidebar.add(geodeMRField, 1, 3);
-        sidebar.add(types, 0, 4, 2, 1);
-        sidebar.add(properties, 0, 5, 2, 1);
-        sidebar.add(buffs, 0, 6, 2, 1);
+        sidebar.add(typesBox, 0, 4, 2, 1);
+        sidebar.add(propertiesBox, 0, 5, 2, 1);
+        sidebar.add(buffsBox, 0, 6, 2, 1);
+        sidebar.add(notes, 0, 7, 2, 1);
 
-        controller.setEditTabCollectionSidebar(rPathField, nameField, descField, troveMRField, geodeMRField, types, properties, buffs);
+        controller.setEditTabCollectionSidebar(rPathField, nameField, descField, troveMRField, geodeMRField,
+                types, properties, propCol, propValCol, buffs, buffCol, buffValCol, notes);
     }
 
     private void setEditTabItemSidebar(GridPane sidebar) {
+        JFXTextField rPathField = new JFXTextField();
+        JFXTextField nameField = new JFXTextField();
+        JFXTextField descField = new JFXTextField();
+        JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
+        VBox deconBox = new VBox();
+        Text deconLabel = new Text("Deconstructs into");
+        TableView<ObservableMap<String, Integer>> decons = new TableView<>();
+        VBox lootBox = new VBox();
+        Text lootLabel = new Text("Lootbox contents (if applicable)");
+        JFXComboBox<String> lootComboBox = new JFXComboBox<>();
+        TableView<ObservableMap<String, String>> loot = new TableView<>();
+        JFXTextArea notes = new JFXTextArea();
 
+        deconBox.getChildren().addAll(deconLabel, decons);
+        lootBox.getChildren().addAll(lootLabel, lootComboBox, loot);
+
+        rPathField.setPromptText("Relative Path");
+        nameField.setPromptText("Name");
+        descField.setPromptText("Description");
+        notes.setPromptText("Notes");
+
+        Arrays.asList(rPathField, nameField, descField, lootComboBox).forEach(item -> item.getStyleClass().add("sidebar-text"));
+        Arrays.asList(deconLabel, lootLabel).forEach(item -> item.getStyleClass().add("text-normal"));
+        decons.getStyleClass().add("sidebar-list-medium");
+        loot.getStyleClass().add("sidebar-list-long");
+
+        sidebar.add(rPathField, 0, 0);
+        sidebar.add(nameField, 0, 1);
+        sidebar.add(descField, 0, 2);
+        sidebar.add(tradableBox, 0, 3);
+        sidebar.add(deconBox, 0, 4);
+        sidebar.add(lootBox, 0, 5);
+        sidebar.add(notes, 0, 6);
     }
 
     private void setEditTabPlaceableSidebar(GridPane sidebar) {
+        JFXTextField rPathField = new JFXTextField();
+        JFXTextField nameField = new JFXTextField();
+        JFXTextField descField = new JFXTextField();
+        JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
+        JFXTextArea notes = new JFXTextArea();
 
+        rPathField.setPromptText("Relative Path");
+        nameField.setPromptText("Name");
+        descField.setPromptText("Description");
+        notes.setPromptText("Notes");
+
+        Arrays.asList(rPathField, nameField, descField).forEach(item -> item.getStyleClass().add("sidebar-text"));
+
+        sidebar.add(rPathField, 0, 0);
+        sidebar.add(nameField, 0, 1);
+        sidebar.add(descField, 0, 2);
+        sidebar.add(tradableBox, 0, 3);
+        sidebar.add(notes, 0, 4);
     }
 
     private void setEditTabRecipeSidebar(GridPane sidebar) {
+        JFXTextField rPathField = new JFXTextField();
+        JFXTextField nameField = new JFXTextField();
+        VBox costBox = new VBox();
+        Text costLabel = new Text("Costs");
+        TableView<ObservableMap<String, Integer>> costs = new TableView<>();
+        VBox outputBox = new VBox();
+        Text outputLabel = new Text("Output");
+        TableView<ObservableMap<String, Integer>> output = new TableView<>();
 
-    }
+        costBox.getChildren().addAll(costLabel, costs);
+        outputBox.getChildren().addAll(outputLabel, output);
 
-    private void setEditTabTable(StackPane tablePane, UIController.TabType type) {
-        TableView<ArticleTable> table = new TableView<>();
-        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
-        TableColumn<ArticleTable, String> rPathColumn = new TableColumn<>("Relative Path");
-        TableColumn<ArticleTable, String> nameColumn = new TableColumn<>("Name");
+        rPathField.setPromptText("Relative Path");
+        nameField.setPromptText("Name");
 
-        table.getColumns().setAll(!type.equals(UIController.TabType.RECIPE) ? Arrays.asList(nameColumn, rPathColumn) : Collections.singletonList(rPathColumn));
-        tablePane.getChildren().add(table);
-        controller.setEditTabTable(table, rPathColumn, nameColumn, type);
-        String plural = type.toString().equals("bench") ? "es" : "s";
-        table.setPlaceholder(new Label("No " + type + plural + " imported"));
+        Arrays.asList(rPathField, nameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
+        Arrays.asList(costLabel, outputLabel).forEach(item -> item.getStyleClass().add("text-normal"));
+        costs.getStyleClass().add("sidebar-list-medium");
+        output.getStyleClass().add("sidebar-list-short");
 
+        sidebar.add(rPathField, 0, 0);
+        sidebar.add(nameField, 0, 1);
+        sidebar.add(costBox, 0, 2);
+        sidebar.add(outputBox, 0, 3);
     }
 }
