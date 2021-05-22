@@ -2,6 +2,7 @@ package datamodel.parser.parsestrategies;
 
 import datamodel.objects.Article;
 import datamodel.objects.ObservablePlaceable;
+import datamodel.parser.Parser;
 import local.Markers;
 
 import java.util.regex.Matcher;
@@ -41,7 +42,7 @@ public class ParsePlaceable implements ParseStrategy {
         }
         if (startIndices[0] == -1)
             throw new ParseException("No name found.");
-        String name = splitString.substring(startIndices[0], nameEndIndex);
+        String name = Parser.hexToAscii(splitString.substring(startIndices[0], nameEndIndex));
 
         // identify overall end marker
         p = Pattern.compile(m.endNameDesc);
@@ -54,7 +55,7 @@ public class ParsePlaceable implements ParseStrategy {
         }
         String desc = null;
         if (startIndices[1] != -1) {
-            desc = splitString.substring(startIndices[1], overallEndIndex);
+            desc = Parser.hexToAscii(splitString.substring(startIndices[1], overallEndIndex));
         }
 
         String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));

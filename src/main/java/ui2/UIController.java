@@ -1,6 +1,9 @@
 package ui2;
 
+import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXTextArea;
+import com.jfoenix.controls.JFXTextField;
 import datamodel.CollectionEnums;
 import datamodel.DataModel;
 import datamodel.objects.*;
@@ -447,6 +450,77 @@ public class UIController {
 
                 // TODO: finish properties, buffs and notes
                 newValue.getTypes().forEach(item -> types.getItems().add(item.toString()));
+            }
+        }));
+    }
+
+    void setEditTabItemSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox,
+                               TableView<ObservableMap<String, Integer>> decons, ComboBox<String> lootComboBox, TableView<ObservableMap<String, String>> loot, JFXTextArea notes) {
+        lootComboBox.getItems().addAll("Common", "Uncommon", "Rare");
+        model.currentItemProperty().addListener(((observable, oldValue, newValue) -> {
+            decons.getItems().clear();
+            loot.getItems().clear();
+            if (oldValue != null) {
+                rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                descField.textProperty().unbindBidirectional(oldValue.descProperty());
+                tradableBox.selectedProperty().unbindBidirectional(oldValue.tradableProperty());
+            }
+            if (newValue == null) {
+                rPathField.setText("");
+                nameField.setText("");
+                descField.setText("");
+                tradableBox.setSelected(false);
+                notes.setText("");
+            } else {
+                rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                descField.textProperty().bindBidirectional(newValue.descProperty());
+                tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
+                // TODO: finish decons, loot, notes
+            }
+        }));
+    }
+
+    void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox, JFXTextArea notes) {
+        model.currentPlaceableProperty().addListener(((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                descField.textProperty().unbindBidirectional(oldValue.descProperty());
+                tradableBox.selectedProperty().unbindBidirectional(oldValue.tradableProperty());
+            }
+            if (newValue == null) {
+                rPathField.setText("");
+                nameField.setText("");
+                descField.setText("");
+                tradableBox.setSelected(false);
+                notes.setText("");
+            } else {
+                rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                descField.textProperty().bindBidirectional(newValue.descProperty());
+                tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
+                // TODO: finish notes
+            }
+        }));
+    }
+
+    void setEditTabRecipeSidebar(JFXTextField rPathField, JFXTextField nameField, TableView<ObservableMap<String, Integer>> costs, TableView<ObservableMap<String, Integer>> output) {
+        model.currentRecipeProperty().addListener(((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                costs.getItems().clear();
+                output.getItems().clear();
+            }
+            if (newValue == null) {
+                rPathField.setText("");
+                nameField.setText("");
+            } else {
+                rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                // TODO: finish costs and output
             }
         }));
     }

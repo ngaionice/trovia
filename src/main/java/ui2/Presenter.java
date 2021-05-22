@@ -493,6 +493,8 @@ public class Presenter {
         sidebar.add(deconBox, 0, 4);
         sidebar.add(lootBox, 0, 5);
         sidebar.add(notes, 0, 6);
+
+        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, lootComboBox, loot, notes);
     }
 
     private void setEditTabPlaceableSidebar(GridPane sidebar) {
@@ -514,6 +516,8 @@ public class Presenter {
         sidebar.add(descField, 0, 2);
         sidebar.add(tradableBox, 0, 3);
         sidebar.add(notes, 0, 4);
+
+        controller.setEditTabPlaceableSidebar(rPathField, nameField, descField, tradableBox, notes);
     }
 
     private void setEditTabRecipeSidebar(GridPane sidebar) {
@@ -541,5 +545,7 @@ public class Presenter {
         sidebar.add(nameField, 0, 1);
         sidebar.add(costBox, 0, 2);
         sidebar.add(outputBox, 0, 3);
+
+        controller.setEditTabRecipeSidebar(rPathField, nameField, costs, output);
     }
 }

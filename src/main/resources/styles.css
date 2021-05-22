@@ -41,10 +41,6 @@
     -fx-alignment: center;
 }
 
-/*.table-row-cell:selected {*/
-/*    -fx-background-color: #FF9800;*/
-/*}*/
-
 .j-checkbox {
     -jfx-checked-color: #C77800;
     -jfx-unchecked-color: #EEEEEE;
@@ -59,7 +55,7 @@
 }
 
 .check-box:selected > .box > .mark,
-.check-box:indeterminate  > .box > .mark {
+.check-box:indeterminate > .box > .mark {
     -fx-background-color: #EEEEEE;
 }
 
@@ -77,7 +73,6 @@
 
 .text-area {
     -fx-background-insets: 0;
-    -fx-background-color: transparent, white, transparent, white;
     -fx-text-box-border: transparent;
 }
 
@@ -98,7 +93,8 @@
     -jfx-button-type: RAISED;
 
 }
-.animated-option-button .jfx-rippler{
+
+.animated-option-button .jfx-rippler {
     -jfx-rippler-fill: rgb(113, 118, 114);
 }
 
@@ -215,7 +211,6 @@
     -fx-vgap: 20px;
     -fx-padding: 24px;
 }
-
 
 
 .text-field-dir {
