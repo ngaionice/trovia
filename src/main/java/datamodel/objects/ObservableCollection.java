@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
-public class ObservableCollection extends Observable implements Article {
+public class ObservableCollection extends Observable implements Article, ArticleTable {
 
     StringProperty name;
     StringProperty desc;

@@ -7,7 +7,7 @@ import javafx.collections.ObservableList;
 import java.util.List;
 import java.util.Observable;
 
-public class ObservablePlaceable extends Observable implements Article {
+public class ObservablePlaceable extends Observable implements Article, ArticleTable {
 
     StringProperty name;
     StringProperty desc;

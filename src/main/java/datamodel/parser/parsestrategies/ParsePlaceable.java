@@ -35,7 +35,6 @@ public class ParsePlaceable implements ParseStrategy {
         mt = p.matcher(splitString);
         int nameEndIndex;
         if (mt.find()) {
-            System.out.println(splitString.substring(mt.start(), mt.start() + 15));
             nameEndIndex = mt.start();
         } else {
             throw new ParseException("No end-of-name marker found.");

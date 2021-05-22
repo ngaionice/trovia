@@ -1,7 +1,9 @@
 package ui2;
 
+import com.jfoenix.controls.JFXListView;
+import datamodel.CollectionEnums;
 import datamodel.DataModel;
-import datamodel.objects.ObservableBench;
+import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
@@ -14,6 +16,7 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,10 +27,32 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UIController {
+
+    enum TabType {
+        BENCH("bench"),
+        COLLECTION("collection"),
+        ITEM("item"),
+        PLACEABLE("placeable"),
+        RECIPE("recipe");
+
+        private final String string;
+
+        TabType(String name) {
+            string = name;
+        }
+
+        @Override
+        public String toString() {
+            return string;
+        }
+    }
 
     DataModel model;
     String benchFilter = "_interactive";
@@ -274,29 +299,87 @@ public class UIController {
         };
     }
 
-    void setEditTabBenchTable(TableView<ObservableBench> table, TableColumn<ObservableBench, String> nameCol, TableColumn<ObservableBench, String> rPathCol) {
-        ObservableMap<String, ObservableBench> benches = model.getSessionBenches();
-        ObservableList<ObservableBench> benchList = FXCollections.observableArrayList(benches.values());
+    void print(TextArea logger, String message) {
+        logger.setText(logger.getText() + "[" + LocalTime.now() + "] " + message + "\n");
+    }
 
+    void clearSelectedPaths() {
+        selectedPaths.clear();
+    }
+
+    void setEditTabTable(TableView<ArticleTable> table, TableColumn<ArticleTable, String> rPathCol, TableColumn<ArticleTable, String> nameCol, TabType type) {
+        switch (type) {
+            case BENCH:
+                ObservableMap<String, ObservableBench> benches = model.getSessionBenches();
+                ObservableList<ArticleTable> benchList = FXCollections.observableArrayList(benches.values());
+                table.setItems(benchList);
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentBench((ObservableBench) newValue)));
+                model.currentBenchProperty().addListener((((observable, oldValue, newValue) -> {
+                    if (newValue == null) {
+                        table.getSelectionModel().clearSelection();
+                    } else {
+                        table.getSelectionModel().select(newValue);
+                    }
+                })));
+                break;
+            case COLLECTION:
+                ObservableMap<String, ObservableCollection> collections = model.getSessionCollections();
+                ObservableList<ArticleTable> collectionList = FXCollections.observableArrayList(collections.values());
+                table.setItems(collectionList);
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentCollection((ObservableCollection) newValue)));
+                model.currentCollectionProperty().addListener((((observable, oldValue, newValue) -> {
+                    if (newValue == null) {
+                        table.getSelectionModel().clearSelection();
+                    } else {
+                        table.getSelectionModel().select(newValue);
+                    }
+                })));
+                break;
+            case ITEM:
+                ObservableMap<String, ObservableItem> items = model.getSessionItems();
+                ObservableList<ArticleTable> itemList = FXCollections.observableArrayList(items.values());
+                table.setItems(itemList);
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentItem((ObservableItem) newValue)));
+                model.currentItemProperty().addListener((((observable, oldValue, newValue) -> {
+                    if (newValue == null) {
+                        table.getSelectionModel().clearSelection();
+                    } else {
+                        table.getSelectionModel().select(newValue);
+                    }
+                })));
+                break;
+            case PLACEABLE:
+                ObservableMap<String, ObservablePlaceable> placeables = model.getSessionPlaceables();
+                ObservableList<ArticleTable> placeableList = FXCollections.observableArrayList(placeables.values());
+                table.setItems(placeableList);
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentPlaceable((ObservablePlaceable) newValue)));
+                model.currentPlaceableProperty().addListener((((observable, oldValue, newValue) -> {
+                    if (newValue == null) {
+                        table.getSelectionModel().clearSelection();
+                    } else {
+                        table.getSelectionModel().select(newValue);
+                    }
+                })));
+                break;
+            case RECIPE:
+                ObservableMap<String, ObservableRecipe> recipes = model.getSessionRecipes();
+                ObservableList<ArticleTable> recipeList = FXCollections.observableArrayList(recipes.values());
+                table.setItems(recipeList);
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentRecipe((ObservableRecipe) newValue)));
+                model.currentRecipeProperty().addListener((((observable, oldValue, newValue) -> {
+                    if (newValue == null) {
+                        table.getSelectionModel().clearSelection();
+                    } else {
+                        table.getSelectionModel().select(newValue);
+                    }
+                })));
+                break;
+        }
         rPathCol.setCellValueFactory(cellData -> cellData.getValue().rPathProperty());
         nameCol.setCellValueFactory(cellData -> cellData.getValue().nameProperty()); // TODO: when extracted strings become available, map to the names, else use identifier
-
-        table.getColumns().setAll(Arrays.asList(nameCol, rPathCol));
-        table.setItems(benchList);
-
-        table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentBench(newValue)));
-
-        model.currentBenchProperty().addListener((((observable, oldValue, newValue) -> {
-            if (newValue == null) {
-                table.getSelectionModel().clearSelection();
-            } else {
-                table.getSelectionModel().select(newValue);
-            }
-        })));
     }
 
     void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {
-
         model.currentBenchProperty().addListener(((observable, oldValue, newValue) -> {
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
@@ -329,11 +412,33 @@ public class UIController {
         }));
     }
 
-    void print(TextArea logger, String message) {
-        logger.setText(logger.getText() + "[" + LocalTime.now() + "] " + message + "\n");
-    }
-
-    void clearSelectedPaths() {
-        selectedPaths.clear();
+    void setEditTabCollectionSidebar(TextField rPathField, TextField nameField, TextField descField, TextField troveMRField, TextField geodeMRField, JFXListView<String> types,
+                                     TableView<ObservableMap<CollectionEnums.Property, Double>> properties, TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs) {
+        model.currentCollectionProperty().addListener(((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
+                nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
+                descField.textProperty().unbindBidirectional(oldValue.descProperty());
+                troveMRField.textProperty().unbindBidirectional(oldValue.troveMRProperty());
+                geodeMRField.textProperty().unbindBidirectional(oldValue.geodeMRProperty());
+                types.getItems().clear();
+                properties.getItems().clear();
+                buffs.getItems().clear();
+            }
+            if (newValue == null) {
+                rPathField.setText("");
+                nameField.setText("");
+                descField.setText("");
+                troveMRField.setText("");
+                geodeMRField.setText("");
+            } else {
+                rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
+                nameField.textProperty().bindBidirectional(newValue.nameProperty());
+                descField.textProperty().bindBidirectional(newValue.descProperty());
+                troveMRField.textProperty().bindBidirectional(newValue.troveMRProperty(), new NumberStringConverter());
+                geodeMRField.textProperty().bindBidirectional(newValue.geodeMRProperty(), new NumberStringConverter());
+                // TODO: finish types, properties and buffs
+            }
+        }));
     }
 }

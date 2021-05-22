@@ -7,7 +7,7 @@ import javafx.collections.ObservableMap;
 
 import java.util.*;
 
-public class ObservableItem extends Observable implements Article {
+public class ObservableItem extends Observable implements Article, ArticleTable {
 
     StringProperty name;
 

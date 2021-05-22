@@ -10,7 +10,7 @@ import javafx.collections.ObservableMap;
 
 import java.util.*;
 
-public class ObservableBench extends Observable implements Article {
+public class ObservableBench extends Observable implements Article, ArticleTable {
 
     StringProperty name; // the string identifier of the bench's name
     StringProperty rPath;

@@ -2,9 +2,11 @@ package ui2;
 
 import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
-import datamodel.objects.*;
+import datamodel.CollectionEnums;
+import datamodel.objects.ArticleTable;
 import datamodel.parser.Parser;
 import javafx.application.Platform;
+import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,6 +17,7 @@ import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Presenter {
@@ -254,33 +257,25 @@ public class Presenter {
         String name = tab.getText();
         switch (name) {
             case "Benches":
-                setEditTabBenchTable(tablePane);
+                setEditTabTable(tablePane, UIController.TabType.BENCH);
                 setEditTabBenchSidebar(sidebar);
                 break;
-//            case "Collections":
-//                TableView<ObservableCollection> collectionTable = new TableView<>();
-//
-//                tablePane.getChildren().add(collectionTable);
-//                collectionTable.getStyleClass().add("card-backing");
-//                break;
-//            case "Items":
-//                TableView<ObservableItem> itemTable = new TableView<>();
-//
-//                tablePane.getChildren().add(itemTable);
-//                itemTable.getStyleClass().add("card-backing");
-//                break;
-//            case "Placeables":
-//                TableView<ObservablePlaceable> placeableTable = new TableView<>();
-//
-//                tablePane.getChildren().add(placeableTable);
-//                placeableTable.getStyleClass().add("card-backing");
-//                break;
-//            case "Recipes":
-//                TableView<ObservableRecipe> recipeTable = new TableView<>();
-//
-//                tablePane.getChildren().add(recipeTable);
-//                recipeTable.getStyleClass().add("card-backing");
-//                break;
+            case "Collections":
+                setEditTabTable(tablePane, UIController.TabType.COLLECTION);
+                setEditTabCollectionSidebar(sidebar);
+                break;
+            case "Items":
+                setEditTabTable(tablePane, UIController.TabType.ITEM);
+                setEditTabItemSidebar(sidebar);
+                break;
+            case "Placeables":
+                setEditTabTable(tablePane, UIController.TabType.PLACEABLE);
+                setEditTabPlaceableSidebar(sidebar);
+                break;
+            case "Recipes":
+                setEditTabTable(tablePane, UIController.TabType.RECIPE);
+                setEditTabRecipeSidebar(sidebar);
+                break;
 //            case "Strings":
 //                TableView<ObservableStrings> stringsTable = new TableView<>();
 //
@@ -371,20 +366,7 @@ public class Presenter {
         AnchorPane.setRightAnchor(node, 36.0);
         AnchorPane.setBottomAnchor(node, 36.0);
     }
-    
-    private void setEditTabBenchTable(StackPane tablePane) {
-        TableView<ObservableBench> table = new TableView<>();
-        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
-        TableColumn<ObservableBench, String> rPathColumn = new TableColumn<>("Relative Path");
-        TableColumn<ObservableBench, String> nameColumn = new TableColumn<>("Name");
 
-        table.setPlaceholder(new Label("No benches imported"));
-
-        controller.setEditTabBenchTable(table, nameColumn, rPathColumn);
-
-        tablePane.getChildren().add(table);
-    }
-    
     private void setEditTabBenchSidebar(GridPane sidebar) {
         JFXTextField rPathField = new JFXTextField();
         JFXTextField nameField = new JFXTextField();
@@ -407,5 +389,61 @@ public class Presenter {
         sidebar.add(categories, 0, 4);
 
         controller.setEditTabBenchSidebar(rPathField, nameField, professionNameField, categoryDropdown, categories);
+    }
+
+    private void setEditTabCollectionSidebar(GridPane sidebar) {
+        JFXTextField rPathField = new JFXTextField();
+        JFXTextField nameField = new JFXTextField();
+        JFXTextField descField = new JFXTextField();
+        JFXTextField troveMRField = new JFXTextField();
+        JFXTextField geodeMRField = new JFXTextField();
+        JFXListView<String> types = new JFXListView<>();
+        TableView<ObservableMap<CollectionEnums.Property, Double>> properties = new TableView<>();
+        TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs = new TableView<>();
+
+        rPathField.setPromptText("Relative Path");
+        nameField.setPromptText("Name");
+        descField.setPromptText("Description");
+        troveMRField.setPromptText("Trove Mastery");
+        geodeMRField.setPromptText("Geode Mastery");
+
+        Arrays.asList(rPathField, nameField, descField, troveMRField, geodeMRField).forEach(item -> item.getStyleClass().add("sidebar-text"));
+
+        sidebar.add(rPathField, 0, 0, 2, 1);
+        sidebar.add(nameField, 0, 1, 2, 1);
+        sidebar.add(descField, 0, 2, 2, 1);
+        sidebar.add(troveMRField, 0, 3);
+        sidebar.add(geodeMRField, 1, 3);
+        sidebar.add(types, 0, 4, 2, 1);
+        sidebar.add(properties, 0, 5, 2, 1);
+        sidebar.add(buffs, 0, 6, 2, 1);
+
+        controller.setEditTabCollectionSidebar(rPathField, nameField, descField, troveMRField, geodeMRField, types, properties, buffs);
+    }
+
+    private void setEditTabItemSidebar(GridPane sidebar) {
+
+    }
+
+    private void setEditTabPlaceableSidebar(GridPane sidebar) {
+
+    }
+
+    private void setEditTabRecipeSidebar(GridPane sidebar) {
+
+    }
+
+    private void setEditTabTable(StackPane tablePane, UIController.TabType type) {
+        TableView<ArticleTable> table = new TableView<>();
+        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
+        TableColumn<ArticleTable, String> rPathColumn = new TableColumn<>("Relative Path");
+        TableColumn<ArticleTable, String> nameColumn = new TableColumn<>("Name");
+
+        table.getColumns().setAll(!type.equals(UIController.TabType.RECIPE) ? Arrays.asList(nameColumn, rPathColumn) : Collections.singletonList(rPathColumn));
+        tablePane.getChildren().add(table);
+        controller.setEditTabTable(table, rPathColumn, nameColumn, type);
+        String plural = type.toString().equals("bench") ? "es" : "s";
+        table.setPlaceholder(new Label("No " + type + plural + " imported"));
+
     }
 }
