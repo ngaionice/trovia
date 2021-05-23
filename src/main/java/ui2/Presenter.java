@@ -525,27 +525,41 @@ public class Presenter {
         JFXTextField nameField = new JFXTextField();
         VBox costBox = new VBox();
         Text costLabel = new Text("Costs");
-        TableView<ObservableMap<String, Integer>> costs = new TableView<>();
+        TableView<UIController.MapEntry<String, Integer>> costs = new TableView<>();
         VBox outputBox = new VBox();
         Text outputLabel = new Text("Output");
-        TableView<ObservableMap<String, Integer>> output = new TableView<>();
+        TableView<UIController.MapEntry<String, Integer>> output = new TableView<>();
+        TableColumn<UIController.MapEntry<String, Integer>, String> costNameCol = new TableColumn<>();
+        TableColumn<UIController.MapEntry<String, Integer>, Integer> costValCol = new TableColumn<>();
+        TableColumn<UIController.MapEntry<String, Integer>, String> outputNameCol = new TableColumn<>();
+        TableColumn<UIController.MapEntry<String, Integer>, Integer> outputValCol = new TableColumn<>();
 
         costBox.getChildren().addAll(costLabel, costs);
         outputBox.getChildren().addAll(outputLabel, output);
+        costs.getColumns().addAll(Arrays.asList(costNameCol, costValCol));
+        output.getColumns().addAll(Arrays.asList(outputNameCol, outputValCol));
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
+        costNameCol.setText("Item");
+        costValCol.setText("Qty");
+        outputNameCol.setText("Output");
+        outputValCol.setText("Qty");
 
         Arrays.asList(rPathField, nameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
         Arrays.asList(costLabel, outputLabel).forEach(item -> item.getStyleClass().add("text-normal"));
         costs.getStyleClass().add("sidebar-list-medium");
         output.getStyleClass().add("sidebar-list-short");
+        costNameCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.8));
+        costValCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.16));
+        outputNameCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.8));
+        outputValCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.16));
 
         sidebar.add(rPathField, 0, 0);
         sidebar.add(nameField, 0, 1);
         sidebar.add(costBox, 0, 2);
         sidebar.add(outputBox, 0, 3);
 
-        controller.setEditTabRecipeSidebar(rPathField, nameField, costs, output);
+        controller.setEditTabRecipeSidebar(rPathField, nameField, costs, costNameCol, costValCol, output, outputNameCol, outputValCol);
     }
 }

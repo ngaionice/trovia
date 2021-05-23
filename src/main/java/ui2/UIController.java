@@ -1,7 +1,5 @@
 package ui2;
 
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 import datamodel.CollectionEnums;
@@ -10,15 +8,20 @@ import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
@@ -506,7 +509,10 @@ public class UIController {
         }));
     }
 
-    void setEditTabRecipeSidebar(JFXTextField rPathField, JFXTextField nameField, TableView<ObservableMap<String, Integer>> costs, TableView<ObservableMap<String, Integer>> output) {
+    void setEditTabRecipeSidebar(JFXTextField rPathField, JFXTextField nameField,
+                                 TableView<MapEntry<String, Integer>> costs, TableColumn<MapEntry<String, Integer>, String> costNameCol,
+                                 TableColumn<MapEntry<String, Integer>, Integer> costValCol, TableView<MapEntry<String, Integer>> output,
+                                 TableColumn<MapEntry<String, Integer>, String> outputNameCol, TableColumn<MapEntry<String, Integer>, Integer> outputValCol) {
         model.currentRecipeProperty().addListener(((observable, oldValue, newValue) -> {
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
@@ -520,8 +526,77 @@ public class UIController {
             } else {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
-                // TODO: finish costs and output
+
+                ObservableMap<String, Integer> costMap = FXCollections.observableHashMap();
+                ObservableList<MapEntry<String, Integer>> costEntries = FXCollections.observableArrayList();
+                costs.setItems(costEntries);
+                addMapTableListener(costMap, costEntries);
+
+                ObservableMap<String, Integer> outputMap = FXCollections.observableHashMap();
+                ObservableList<MapEntry<String, Integer>> outputEntries = FXCollections.observableArrayList();
+                output.setItems(outputEntries);
+                addMapTableListener(outputMap, outputEntries);
+
+                newValue.getCosts().forEach(costMap::put);
+                newValue.getOutput().forEach(outputMap::put);
             }
         }));
+        costNameCol.setCellValueFactory(cd -> Bindings.createStringBinding(() -> cd.getValue().getKey()));
+        costValCol.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getValue()).asObject());
+        outputNameCol.setCellValueFactory(cd -> Bindings.createStringBinding(() -> cd.getValue().getKey()));
+        outputValCol.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getValue()).asObject());
+    }
+
+    void addMapTableListener(ObservableMap<String, Integer> map, ObservableList<MapEntry<String, Integer>> entries) {
+        map.addListener((MapChangeListener.Change<? extends String, ? extends Integer> change) -> {
+            boolean removed = change.wasRemoved();
+            if (removed != change.wasAdded()) {
+                if (removed) {
+                    // no put for existing key
+                    // remove pair completely
+                    entries.remove(new MapEntry<>(change.getKey(), (Integer) null));
+                } else {
+                    // add new entry
+                    entries.add(new MapEntry<>(change.getKey(), change.getValueAdded()));
+                }
+            } else {
+                // replace existing entry
+                MapEntry<String, Integer> entry = new MapEntry<>(change.getKey(), change.getValueAdded());
+
+                int index = entries.indexOf(entry);
+                entries.set(index, entry);
+            }
+        });
+    }
+
+    public final class MapEntry<K, V> {
+
+        private final K key;
+        private final V value;
+
+        public MapEntry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // check equality only based on keys
+            if (obj instanceof MapEntry) {
+                MapEntry<?, ?> other = (MapEntry<?, ?>) obj;
+                return Objects.equals(key, other.key);
+            } else {
+                return false;
+            }
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
+
     }
 }

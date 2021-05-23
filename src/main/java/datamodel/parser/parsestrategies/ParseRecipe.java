@@ -54,7 +54,7 @@ public class ParseRecipe implements ParseStrategy {
         String[] lastStringArray = lastString.split(" ");
         int lastValidCharacter = 0;
         for (String hex: lastStringArray) {
-            if (hex.matches(m.alphabetRecipeRPath)) {
+            if (hex.matches(m.alphabetRecipeRPathExtended)) {
                 lastValidCharacter++;
             } else {
                 break;
