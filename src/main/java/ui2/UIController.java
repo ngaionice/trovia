@@ -1,5 +1,6 @@
 package ui2;
 
+import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 import datamodel.CollectionEnums;
@@ -44,7 +45,8 @@ public class UIController {
         COLLECTION("collection"),
         ITEM("item"),
         PLACEABLE("placeable"),
-        RECIPE("recipe");
+        RECIPE("recipe"),
+        STRING("string");
 
         private final String string;
 
@@ -381,6 +383,24 @@ public class UIController {
         }
         rPathCol.setCellValueFactory(cellData -> cellData.getValue().rPathProperty());
         nameCol.setCellValueFactory(cellData -> cellData.getValue().nameProperty()); // TODO: when extracted strings become available, map to the names, else use identifier
+    }
+
+    void setEditTabStringsTable(JFXComboBox<String> comboBox, TableView<KVPair> table, TableColumn<KVPair, String> idCol, TableColumn<KVPair, String> contentCol) {
+        comboBox.setItems(FXCollections.observableArrayList("Extracted", "Custom"));
+        ObservableList<KVPair> stringEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.stringValueProperty()});
+        idCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        contentCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
+        table.setItems(stringEntries);
+
+        comboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue.equals("Extracted")) {
+                stringEntries.clear();
+                model.getSessionStrings().get("extracted").getStrings().forEach((k,v) -> stringEntries.add(new KVPair(k,v)));
+            } else {
+                stringEntries.clear();
+                model.getSessionStrings().get("custom").getStrings().forEach((k,v) -> stringEntries.add(new KVPair(k,v)));
+            }
+        }));
     }
 
     void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {

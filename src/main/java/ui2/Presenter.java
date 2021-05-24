@@ -4,9 +4,11 @@ import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
 import datamodel.CollectionEnums;
 import datamodel.objects.ArticleTable;
+import datamodel.objects.ObservableStrings;
 import datamodel.parser.Parser;
 import javafx.application.Platform;
 import javafx.collections.ObservableMap;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -279,12 +281,9 @@ public class Presenter {
                 setEditTabTable(tablePane, UIController.TabType.RECIPE);
                 setEditTabRecipeSidebar(sidebar);
                 break;
-//            case "Strings":
-//                TableView<ObservableStrings> stringsTable = new TableView<>();
-//
-//                tablePane.getChildren().add(stringsTable);
-//                stringsTable.getStyleClass().add("card-backing");
-//                break;
+            case "Strings":
+                setEditTabStringsTable(tablePane);
+                break;
         }
 
         tab.setContent(root);
@@ -383,6 +382,29 @@ public class Presenter {
         table.setPlaceholder(new Label("No " + type + plural + " imported"));
     }
 
+    private void setEditTabStringsTable(StackPane tablePane) {
+        BorderPane border = new BorderPane();
+        JFXComboBox<String> comboBox = new JFXComboBox<>();
+        TableView<UIController.KVPair> table = new TableView<>();
+        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
+        TableColumn<UIController.KVPair, String> idCol = new TableColumn<>("Identifier");
+        TableColumn<UIController.KVPair, String> contentCol = new TableColumn<>("Content");
+
+        table.getColumns().setAll(Arrays.asList(idCol, contentCol));
+        table.setPlaceholder(new Label("No strings imported."));
+
+        controller.setEditTabStringsTable(comboBox, table, idCol, contentCol);
+
+        BorderPane.setMargin(comboBox, new Insets(0, 0, 4, 0));
+        idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.32));
+        contentCol.prefWidthProperty().bind(table.widthProperty().multiply(0.64));
+        border.prefHeightProperty().bind(tablePane.heightProperty());
+
+        border.setTop(comboBox);
+        border.setCenter(table);
+        tablePane.getChildren().add(border);
+    }
+
     private void setEditTabBenchSidebar(GridPane sidebar) {
         JFXTextField rPathField = new JFXTextField();
         JFXTextField nameField = new JFXTextField();
@@ -424,10 +446,10 @@ public class Presenter {
         Text buffsLabel = new Text("Buffs granted");
         TableView<UIController.KVPair> buffs = new TableView<>();
 
-        TableColumn<UIController.KVPair, String> propCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, Double> propValCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, String> buffCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, Double> buffValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> propCol = new TableColumn<>("Property");
+        TableColumn<UIController.KVPair, Double> propValCol = new TableColumn<>("Value");
+        TableColumn<UIController.KVPair, String> buffCol = new TableColumn<>("Buff");
+        TableColumn<UIController.KVPair, Double> buffValCol = new TableColumn<>("Value");
 
         typesBox.getChildren().addAll(typesLabel, types);
         propertiesBox.getChildren().addAll(propertiesLabel, properties);
@@ -441,10 +463,6 @@ public class Presenter {
         troveMRField.setPromptText("Trove Mastery");
         geodeMRField.setPromptText("Geode Mastery");
         notes.setPromptText("Notes");
-        propCol.setText("Property");
-        propValCol.setText("Value");
-        buffCol.setText("Buff");
-        buffValCol.setText("Value");
         properties.setEditable(true);
         buffs.setEditable(true);
         propValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -483,14 +501,14 @@ public class Presenter {
         VBox deconBox = new VBox();
         Text deconLabel = new Text("Deconstructs into");
         TableView<UIController.KVPair> decons = new TableView<>();
-        TableColumn<UIController.KVPair, String> deconCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, Integer> deconValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> deconCol = new TableColumn<>("Article");
+        TableColumn<UIController.KVPair, Integer> deconValCol = new TableColumn<>("Qty");
         VBox lootBox = new VBox();
         Text lootLabel = new Text("Lootbox contents (if applicable)");
         JFXComboBox<String> lootComboBox = new JFXComboBox<>();
         TableView<UIController.KVPair> loot = new TableView<>();
-        TableColumn<UIController.KVPair, String> lootCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, String> lootValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> lootCol = new TableColumn<>("Object");
+        TableColumn<UIController.KVPair, String> lootValCol = new TableColumn<>("Qty");
         JFXTextArea notes = new JFXTextArea();
 
         deconBox.getChildren().addAll(deconLabel, decons);
@@ -502,10 +520,6 @@ public class Presenter {
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
         notes.setPromptText("Notes");
-        deconCol.setText("Article");
-        deconValCol.setText("Qty");
-        lootCol.setText("Object");
-        lootValCol.setText("Qty");
         decons.setEditable(true);
         loot.setEditable(true);
 
@@ -561,10 +575,10 @@ public class Presenter {
         VBox outputBox = new VBox();
         Text outputLabel = new Text("Output");
         TableView<UIController.KVPair> output = new TableView<>();
-        TableColumn<UIController.KVPair, String> costNameCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, Integer> costValCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, String> outputNameCol = new TableColumn<>();
-        TableColumn<UIController.KVPair, Integer> outputValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> costNameCol = new TableColumn<>("Item");
+        TableColumn<UIController.KVPair, Integer> costValCol = new TableColumn<>("Qty");
+        TableColumn<UIController.KVPair, String> outputNameCol = new TableColumn<>("Output");
+        TableColumn<UIController.KVPair, Integer> outputValCol = new TableColumn<>("Qty");
 
         costBox.getChildren().addAll(costLabel, costs);
         outputBox.getChildren().addAll(outputLabel, output);
@@ -573,10 +587,6 @@ public class Presenter {
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
-        costNameCol.setText("Item");
-        costValCol.setText("Qty");
-        outputNameCol.setText("Output");
-        outputValCol.setText("Qty");
         costs.setEditable(true);
         costValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         outputValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));

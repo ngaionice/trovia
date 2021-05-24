@@ -1,5 +1,6 @@
 package model;
 
+import datamodel.objects.LangFile;
 import model.gateways.LocalGateway;
 import model.gateways.MongoGateway;
 import model.managers.*;

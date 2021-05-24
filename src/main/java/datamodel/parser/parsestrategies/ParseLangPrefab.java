@@ -2,7 +2,7 @@ package datamodel.parser.parsestrategies;
 
 import datamodel.parser.Parser;
 import datamodel.objects.Article;
-import model.objects.LangFile;
+import datamodel.objects.LangFile;
 import local.Markers;
 
 import java.util.HashMap;

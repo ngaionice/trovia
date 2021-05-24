@@ -1,5 +1,6 @@
 package model.gateways;
 
+import datamodel.objects.LangFile;
 import model.objects.*;
 
 import java.util.Map;

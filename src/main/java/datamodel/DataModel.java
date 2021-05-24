@@ -122,12 +122,8 @@ public class DataModel implements Observer {
                 upsertCollection((ObservableCollection) parser.createObject(absPath, type));
                 break;
             case STRING:
-//                try {
-//                    langM.addLangFile((LangFile) parser.createObject(absPath, type)); // TODO: fix this line up properly
-//                    return null;
-//                } catch (ParseException e) {
-//                    return absPath;
-//                }
+                insertExtractedStrings((LangFile) parser.createObject(absPath, type));
+                break;
         }
     }
 
@@ -254,6 +250,16 @@ public class DataModel implements Observer {
         }
     }
 
+    private void insertExtractedStrings(LangFile newStrings) {
+        ObservableStrings extractedStrings = sessionStrings.get("extracted");
+        if (extractedStrings != null) {
+            newStrings.getStrings().forEach((k, v) -> {
+                extractedStrings.addString(k, v);
+                changedExtractedStrings.put(k, v);
+            });
+        }
+    }
+
     /**
      * Compares 2 lists of strings and returns whether they contain the same strings (regardless of order).
      */
@@ -337,10 +343,6 @@ public class DataModel implements Observer {
         this.currentBench.set(currentBench);
     }
 
-    public ObservableCollection getCurrentCollection() {
-        return currentCollection.get();
-    }
-
     public ObjectProperty<ObservableCollection> currentCollectionProperty() {
         return currentCollection;
     }
@@ -361,10 +363,6 @@ public class DataModel implements Observer {
         this.currentItem.set(currentItem);
     }
 
-    public ObservablePlaceable getCurrentPlaceable() {
-        return currentPlaceable.get();
-    }
-
     public ObjectProperty<ObservablePlaceable> currentPlaceableProperty() {
         return currentPlaceable;
     }
@@ -373,20 +371,12 @@ public class DataModel implements Observer {
         this.currentPlaceable.set(currentPlaceable);
     }
 
-    public ObservableRecipe getCurrentRecipe() {
-        return currentRecipe.get();
-    }
-
     public ObjectProperty<ObservableRecipe> currentRecipeProperty() {
         return currentRecipe;
     }
 
     public void setCurrentRecipe(ObservableRecipe currentRecipe) {
         this.currentRecipe.set(currentRecipe);
-    }
-
-    public String getCurrentString() {
-        return currentString.get();
     }
 
     public StringProperty currentStringProperty() {

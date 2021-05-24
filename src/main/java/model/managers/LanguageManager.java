@@ -1,12 +1,11 @@
 package model.managers;
 
 import model.gateways.DatabaseGateway;
-import model.objects.LangFile;
+import datamodel.objects.LangFile;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class LanguageManager implements Manager, Serializable {
 
