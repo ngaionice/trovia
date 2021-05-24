@@ -8,12 +8,10 @@ import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
+import javafx.beans.property.*;
+import javafx.collections.*;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -510,9 +508,9 @@ public class UIController {
     }
 
     void setEditTabRecipeSidebar(JFXTextField rPathField, JFXTextField nameField,
-                                 TableView<MapEntry<String, Integer>> costs, TableColumn<MapEntry<String, Integer>, String> costNameCol,
-                                 TableColumn<MapEntry<String, Integer>, Integer> costValCol, TableView<MapEntry<String, Integer>> output,
-                                 TableColumn<MapEntry<String, Integer>, String> outputNameCol, TableColumn<MapEntry<String, Integer>, Integer> outputValCol) {
+                                 TableView<KVPair> costs, TableColumn<KVPair, String> costNameCol,
+                                 TableColumn<KVPair, Integer> costValCol, TableView<KVPair> output,
+                                 TableColumn<KVPair, String> outputNameCol, TableColumn<KVPair, Integer> outputValCol) {
         model.currentRecipeProperty().addListener(((observable, oldValue, newValue) -> {
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
@@ -527,76 +525,93 @@ public class UIController {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
 
-                ObservableMap<String, Integer> costMap = FXCollections.observableHashMap();
-                ObservableList<MapEntry<String, Integer>> costEntries = FXCollections.observableArrayList();
+                ObservableList<KVPair> costEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
                 costs.setItems(costEntries);
-                addMapTableListener(costMap, costEntries);
 
-                ObservableMap<String, Integer> outputMap = FXCollections.observableHashMap();
-                ObservableList<MapEntry<String, Integer>> outputEntries = FXCollections.observableArrayList();
+                costEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+                    while (c.next()) {
+                        if (c.wasUpdated()) {
+                            KVPair updated = costEntries.get(c.getFrom());
+                            newValue.updateCost(updated.getKey(), updated.getIntValue());
+                        }
+                    }
+                });
+
+                ObservableList<KVPair> outputEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
                 output.setItems(outputEntries);
-                addMapTableListener(outputMap, outputEntries);
+                outputEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+                    while (c.next()) {
+                        if (c.wasUpdated()) {
+                            KVPair updated = outputEntries.get(c.getFrom());
+                            newValue.updateOutput(updated.getKey(), updated.getIntValue());
+                        }
+                    }
+                });
 
-                newValue.getCosts().forEach(costMap::put);
-                newValue.getOutput().forEach(outputMap::put);
+                newValue.getCosts().forEach((key, value) -> costEntries.add(new KVPair(key, value)));
+                newValue.getOutput().forEach((key, value) -> outputEntries.add(new KVPair(key, value)));
             }
         }));
-        costNameCol.setCellValueFactory(cd -> Bindings.createStringBinding(() -> cd.getValue().getKey()));
-        costValCol.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getValue()).asObject());
-        outputNameCol.setCellValueFactory(cd -> Bindings.createStringBinding(() -> cd.getValue().getKey()));
-        outputValCol.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getValue()).asObject());
+        costNameCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        costValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
+
+        outputNameCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        outputValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
     }
 
-    void addMapTableListener(ObservableMap<String, Integer> map, ObservableList<MapEntry<String, Integer>> entries) {
-        map.addListener((MapChangeListener.Change<? extends String, ? extends Integer> change) -> {
-            boolean removed = change.wasRemoved();
-            if (removed != change.wasAdded()) {
-                if (removed) {
-                    // no put for existing key
-                    // remove pair completely
-                    entries.remove(new MapEntry<>(change.getKey(), (Integer) null));
-                } else {
-                    // add new entry
-                    entries.add(new MapEntry<>(change.getKey(), change.getValueAdded()));
-                }
-            } else {
-                // replace existing entry
-                MapEntry<String, Integer> entry = new MapEntry<>(change.getKey(), change.getValueAdded());
+    class KVPair {
 
-                int index = entries.indexOf(entry);
-                entries.set(index, entry);
-            }
-        });
-    }
+        StringProperty key;
+        StringProperty stringValue;
+        IntegerProperty intValue;
+        DoubleProperty doubleValue;
 
-    public final class MapEntry<K, V> {
-
-        private final K key;
-        private final V value;
-
-        public MapEntry(K key, V value) {
-            this.key = key;
-            this.value = value;
+        KVPair(String key, String value) {
+            this.key = new SimpleStringProperty(key);
+            this.stringValue = new SimpleStringProperty(value);
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            // check equality only based on keys
-            if (obj instanceof MapEntry) {
-                MapEntry<?, ?> other = (MapEntry<?, ?>) obj;
-                return Objects.equals(key, other.key);
-            } else {
-                return false;
-            }
+        KVPair(String key, int value) {
+            this.key = new SimpleStringProperty(key);
+            this.intValue = new SimpleIntegerProperty(value);
         }
 
-        public K getKey() {
+        KVPair(String key, double value) {
+            this.key = new SimpleStringProperty(key);
+            this.doubleValue = new SimpleDoubleProperty(value);
+        }
+
+        String getKey() {
+            return key.get();
+        }
+
+        StringProperty keyProperty() {
             return key;
         }
 
-        public V getValue() {
-            return value;
+        String getStringValue() {
+            return stringValue.get();
         }
 
+        StringProperty stringValueProperty() {
+            return stringValue;
+        }
+
+        int getIntValue() {
+            return intValue.get();
+        }
+
+        IntegerProperty intValueProperty() {
+            return intValue;
+        }
+
+        double getDoubleValue() {
+            return doubleValue.get();
+        }
+
+        DoubleProperty doubleValueProperty() {
+            return doubleValue;
+        }
     }
+
 }

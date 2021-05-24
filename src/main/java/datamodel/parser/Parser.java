@@ -81,7 +81,11 @@ public class Parser {
                     return base3 / 2 + second3 + third3;
                 }
             default: // more than 3, rip
-                System.out.println(item + " - Keep an eye out for these items.");
+                try {
+                    System.out.println(hexToAscii(item) + " - Keep an eye out for this item.");
+                } catch (ClassCastException e) {
+                    System.out.println(item + " - Keep an eye out for this item.");
+                }
                 return 0;
         }
     }

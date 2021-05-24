@@ -48,6 +48,11 @@ public class ObservableRecipe extends Observable implements Article, ArticleTabl
         notifyObservers();
     }
 
+    public void updateOutput(String articleRPath, int quantity) {
+        this.output.getValue().put(articleRPath, quantity);
+        notifyObservers();
+    }
+
     public void setOutput(ObservableMap<String, Integer> output) {
         this.output.set(output);
         notifyObservers();

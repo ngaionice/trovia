@@ -11,9 +11,11 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Arrays;
@@ -525,14 +527,14 @@ public class Presenter {
         JFXTextField nameField = new JFXTextField();
         VBox costBox = new VBox();
         Text costLabel = new Text("Costs");
-        TableView<UIController.MapEntry<String, Integer>> costs = new TableView<>();
+        TableView<UIController.KVPair> costs = new TableView<>();
         VBox outputBox = new VBox();
         Text outputLabel = new Text("Output");
-        TableView<UIController.MapEntry<String, Integer>> output = new TableView<>();
-        TableColumn<UIController.MapEntry<String, Integer>, String> costNameCol = new TableColumn<>();
-        TableColumn<UIController.MapEntry<String, Integer>, Integer> costValCol = new TableColumn<>();
-        TableColumn<UIController.MapEntry<String, Integer>, String> outputNameCol = new TableColumn<>();
-        TableColumn<UIController.MapEntry<String, Integer>, Integer> outputValCol = new TableColumn<>();
+        TableView<UIController.KVPair> output = new TableView<>();
+        TableColumn<UIController.KVPair, String> costNameCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, Integer> costValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> outputNameCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, Integer> outputValCol = new TableColumn<>();
 
         costBox.getChildren().addAll(costLabel, costs);
         outputBox.getChildren().addAll(outputLabel, output);
@@ -545,6 +547,9 @@ public class Presenter {
         costValCol.setText("Qty");
         outputNameCol.setText("Output");
         outputValCol.setText("Qty");
+        costs.setEditable(true);
+        costValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        outputValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
 
         Arrays.asList(rPathField, nameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
         Arrays.asList(costLabel, outputLabel).forEach(item -> item.getStyleClass().add("text-normal"));
