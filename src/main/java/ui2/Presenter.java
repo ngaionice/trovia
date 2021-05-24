@@ -15,6 +15,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -418,15 +419,15 @@ public class Presenter {
         ListView<String> types = new ListView<>();
         VBox propertiesBox = new VBox();
         Text propertiesLabel = new Text("Type properties");
-        TableView<ObservableMap<CollectionEnums.Property, Double>> properties = new TableView<>();
+        TableView<UIController.KVPair> properties = new TableView<>();
         VBox buffsBox = new VBox();
         Text buffsLabel = new Text("Buffs granted");
-        TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs = new TableView<>();
+        TableView<UIController.KVPair> buffs = new TableView<>();
 
-        TableColumn<ObservableMap<CollectionEnums.Property, Double>, String> propCol = new TableColumn<>();
-        TableColumn<ObservableMap<CollectionEnums.Property, Double>, Double> propValCol = new TableColumn<>();
-        TableColumn<ObservableMap<CollectionEnums.Buff, Double>, String> buffCol = new TableColumn<>();
-        TableColumn<ObservableMap<CollectionEnums.Buff, Double>, Double> buffValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> propCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, Double> propValCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> buffCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, Double> buffValCol = new TableColumn<>();
 
         typesBox.getChildren().addAll(typesLabel, types);
         propertiesBox.getChildren().addAll(propertiesLabel, properties);
@@ -440,12 +441,25 @@ public class Presenter {
         troveMRField.setPromptText("Trove Mastery");
         geodeMRField.setPromptText("Geode Mastery");
         notes.setPromptText("Notes");
+        propCol.setText("Property");
+        propValCol.setText("Value");
+        buffCol.setText("Buff");
+        buffValCol.setText("Value");
+        properties.setEditable(true);
+        buffs.setEditable(true);
+        propValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        buffValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
 
         Arrays.asList(rPathField, nameField, descField, troveMRField, geodeMRField).forEach(item -> item.getStyleClass().add("sidebar-text"));
         Arrays.asList(typesLabel, propertiesLabel, buffsLabel).forEach(item -> item.getStyleClass().add("text-normal"));
         types.getStyleClass().add("sidebar-list-short");
         Arrays.asList(properties, buffs).forEach(item -> item.getStyleClass().add("sidebar-list-medium"));
         types.prefWidthProperty().bind(sidebar.widthProperty().multiply(0.5));
+        propCol.prefWidthProperty().bind(properties.widthProperty().multiply(0.8));
+        propValCol.prefWidthProperty().bind(properties.widthProperty().multiply(0.16));
+        buffCol.prefWidthProperty().bind(buffs.widthProperty().multiply(0.8));
+        buffValCol.prefWidthProperty().bind(buffs.widthProperty().multiply(0.16));
+
 
         sidebar.add(rPathField, 0, 0, 2, 1);
         sidebar.add(nameField, 0, 1, 2, 1);
@@ -468,25 +482,41 @@ public class Presenter {
         JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
         VBox deconBox = new VBox();
         Text deconLabel = new Text("Deconstructs into");
-        TableView<ObservableMap<String, Integer>> decons = new TableView<>();
+        TableView<UIController.KVPair> decons = new TableView<>();
+        TableColumn<UIController.KVPair, String> deconCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, Integer> deconValCol = new TableColumn<>();
         VBox lootBox = new VBox();
         Text lootLabel = new Text("Lootbox contents (if applicable)");
         JFXComboBox<String> lootComboBox = new JFXComboBox<>();
-        TableView<ObservableMap<String, String>> loot = new TableView<>();
+        TableView<UIController.KVPair> loot = new TableView<>();
+        TableColumn<UIController.KVPair, String> lootCol = new TableColumn<>();
+        TableColumn<UIController.KVPair, String> lootValCol = new TableColumn<>();
         JFXTextArea notes = new JFXTextArea();
 
         deconBox.getChildren().addAll(deconLabel, decons);
         lootBox.getChildren().addAll(lootLabel, lootComboBox, loot);
+        decons.getColumns().addAll(Arrays.asList(deconCol, deconValCol));
+        loot.getColumns().addAll(Arrays.asList(lootCol, lootValCol));
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
         notes.setPromptText("Notes");
+        deconCol.setText("Article");
+        deconValCol.setText("Qty");
+        lootCol.setText("Object");
+        lootValCol.setText("Qty");
+        decons.setEditable(true);
+        loot.setEditable(true);
 
         Arrays.asList(rPathField, nameField, descField, lootComboBox).forEach(item -> item.getStyleClass().add("sidebar-text"));
         Arrays.asList(deconLabel, lootLabel).forEach(item -> item.getStyleClass().add("text-normal"));
         decons.getStyleClass().add("sidebar-list-medium");
         loot.getStyleClass().add("sidebar-list-long");
+        deconCol.prefWidthProperty().bind(decons.widthProperty().multiply(0.8));
+        deconValCol.prefWidthProperty().bind(decons.widthProperty().multiply(0.16));
+        lootCol.prefWidthProperty().bind(loot.widthProperty().multiply(0.8));
+        lootValCol.prefWidthProperty().bind(loot.widthProperty().multiply(0.16));
 
         sidebar.add(rPathField, 0, 0);
         sidebar.add(nameField, 0, 1);
@@ -496,7 +526,7 @@ public class Presenter {
         sidebar.add(lootBox, 0, 5);
         sidebar.add(notes, 0, 6);
 
-        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, lootComboBox, loot, notes);
+        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, deconCol, deconValCol, lootComboBox, loot, lootCol, lootValCol, notes);
     }
 
     private void setEditTabPlaceableSidebar(GridPane sidebar) {
@@ -557,8 +587,8 @@ public class Presenter {
         output.getStyleClass().add("sidebar-list-short");
         costNameCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.8));
         costValCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.16));
-        outputNameCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.8));
-        outputValCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.16));
+        outputNameCol.prefWidthProperty().bind(output.widthProperty().multiply(0.8));
+        outputValCol.prefWidthProperty().bind(output.widthProperty().multiply(0.16));
 
         sidebar.add(rPathField, 0, 0);
         sidebar.add(nameField, 0, 1);

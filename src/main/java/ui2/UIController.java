@@ -9,17 +9,17 @@ import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
 import javafx.beans.Observable;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
-import javafx.collections.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
@@ -125,7 +125,7 @@ public class UIController {
         if (selected != null) {
             String path = selected.getAbsolutePath();
             LocalDateTime currTime = LocalDateTime.now();
-            String fileName = "trovia-log-" + currTime.toString().replace(":", "-").replace(".", "-") + ".txt";
+            String fileName = "log-" + currTime.toString().replace(":", "-").replace(".", "-") + ".txt";
             try {
                 Path file = Paths.get(path + "\\" + fileName);
                 Files.write(file, Arrays.asList(logger.getText().split("\\n")), StandardCharsets.UTF_8);
@@ -418,12 +418,12 @@ public class UIController {
 
     void setEditTabCollectionSidebar(TextField rPathField, TextField nameField, TextField descField, TextField troveMRField,
                                      TextField geodeMRField, ListView<String> types,
-                                     TableView<ObservableMap<CollectionEnums.Property, Double>> properties,
-                                     TableColumn<ObservableMap<CollectionEnums.Property, Double>, String> propCol,
-                                     TableColumn<ObservableMap<CollectionEnums.Property, Double>, Double> propValCol,
-                                     TableView<ObservableMap<CollectionEnums.Buff, Double>> buffs,
-                                     TableColumn<ObservableMap<CollectionEnums.Buff, Double>, String> buffCol,
-                                     TableColumn<ObservableMap<CollectionEnums.Buff, Double>, Double> buffValCol, TextArea notes) {
+                                     TableView<KVPair> properties,
+                                     TableColumn<KVPair, String> propCol,
+                                     TableColumn<KVPair, Double> propValCol,
+                                     TableView<KVPair> buffs,
+                                     TableColumn<KVPair, String> buffCol,
+                                     TableColumn<KVPair, Double> buffValCol, TextArea notes) {
         model.currentCollectionProperty().addListener(((observable, oldValue, newValue) -> {
             types.getItems().clear();
             properties.getItems().clear();
@@ -449,14 +449,48 @@ public class UIController {
                 troveMRField.textProperty().bindBidirectional(newValue.troveMRProperty(), new NumberStringConverter());
                 geodeMRField.textProperty().bindBidirectional(newValue.geodeMRProperty(), new NumberStringConverter());
 
-                // TODO: finish properties, buffs and notes
+                // TODO: finish notes
                 newValue.getTypes().forEach(item -> types.getItems().add(item.toString()));
+
+                ObservableList<KVPair> propertiesEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.doubleValueProperty()});
+                properties.setItems(propertiesEntries);
+
+                ObservableList<KVPair> buffsEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.doubleValueProperty()});
+                buffs.setItems(buffsEntries);
+
+                propertiesEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+                    while (c.next()) {
+                        if (c.wasUpdated()) {
+                            KVPair updated = propertiesEntries.get(c.getFrom());
+                            newValue.updateProperties(CollectionEnums.Property.valueOf(updated.getKey()), updated.getDoubleValue());
+                        }
+                    }
+                });
+
+                buffsEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+                    while (c.next()) {
+                        if (c.wasUpdated()) {
+                            KVPair updated = buffsEntries.get(c.getFrom());
+                            newValue.updateBuffs(CollectionEnums.Buff.valueOf(updated.getKey()), updated.getDoubleValue());
+                        }
+                    }
+                });
+
+                newValue.getProperties().forEach((key, value) -> propertiesEntries.add(new KVPair(key.toString(), value)));
+                newValue.getBuffs().forEach((key, value) -> buffsEntries.add(new KVPair(key.toString(), value)));
             }
         }));
+        propCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        propValCol.setCellValueFactory(cd -> cd.getValue().doubleValueProperty().asObject());
+
+        buffCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        buffValCol.setCellValueFactory(cd -> cd.getValue().doubleValueProperty().asObject());
     }
 
     void setEditTabItemSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox,
-                               TableView<ObservableMap<String, Integer>> decons, ComboBox<String> lootComboBox, TableView<ObservableMap<String, String>> loot, JFXTextArea notes) {
+                               TableView<KVPair> decons, TableColumn<KVPair, String> deconCol, TableColumn<KVPair, Integer> deconValCol,
+                               ComboBox<String> lootComboBox, TableView<KVPair> loot, TableColumn<KVPair, String> lootCol,
+                               TableColumn<KVPair, String> lootValCol, JFXTextArea notes) {
         lootComboBox.getItems().addAll("Common", "Uncommon", "Rare");
         model.currentItemProperty().addListener(((observable, oldValue, newValue) -> {
             decons.getItems().clear();
@@ -479,8 +513,18 @@ public class UIController {
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
                 // TODO: finish decons, loot, notes
+
+                ObservableList<KVPair> deconEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
+                decons.setItems(deconEntries);
+
+
+                newValue.getDecons().forEach((key, value) -> deconEntries.add(new KVPair(key, value)));
             }
         }));
+        deconCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        deconValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
+        lootCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        lootValCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
     }
 
     void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox, JFXTextArea notes) {
