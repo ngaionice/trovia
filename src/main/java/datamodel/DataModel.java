@@ -254,7 +254,7 @@ public class DataModel implements Observer {
         ObservableStrings extractedStrings = sessionStrings.get("extracted");
         if (extractedStrings != null) {
             newStrings.getStrings().forEach((k, v) -> {
-                extractedStrings.addString(k, v);
+                extractedStrings.upsertString(k, v);
                 changedExtractedStrings.put(k, v);
             });
         }

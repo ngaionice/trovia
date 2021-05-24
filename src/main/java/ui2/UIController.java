@@ -401,6 +401,20 @@ public class UIController {
                 model.getSessionStrings().get("custom").getStrings().forEach((k,v) -> stringEntries.add(new KVPair(k,v)));
             }
         }));
+
+        stringEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+            while (c.next()) {
+                if (c.wasUpdated()) {
+                    KVPair updated = stringEntries.get(c.getFrom());
+                    ReadOnlyObjectProperty<String> type = comboBox.getSelectionModel().selectedItemProperty();
+                    if (type.get().equals("extracted")) {
+                        model.getSessionStrings().get("extracted").upsertString(updated.getKey(), updated.getStringValue());
+                    } else {
+                        model.getSessionStrings().get("custom").upsertString(updated.getKey(), updated.getStringValue());
+                    }
+                }
+            }
+        });
     }
 
     void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {
@@ -621,6 +635,22 @@ public class UIController {
 
         outputNameCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
         outputValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
+    }
+
+    void setEditTabStringsSidebar(TableView<KVPair> table, TextField idField, TextArea contentArea) {
+        table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                idField.textProperty().unbindBidirectional(oldValue.keyProperty());
+                contentArea.textProperty().unbindBidirectional(oldValue.stringValueProperty());
+            }
+            if (newValue == null) {
+                idField.setText("");
+                contentArea.setText("");
+            } else {
+                idField.textProperty().bindBidirectional(newValue.keyProperty());
+                contentArea.textProperty().bindBidirectional(newValue.stringValueProperty());
+            }
+        }));
     }
 
     class KVPair {

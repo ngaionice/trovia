@@ -33,7 +33,7 @@ public class ObservableStrings extends Observable {
         return strings;
     }
 
-    public void addString(String id, String content) {
+    public void upsertString(String id, String content) {
         this.strings.getValue().put(id, content);
         notifyObservers(new String[]{id, content});
     }

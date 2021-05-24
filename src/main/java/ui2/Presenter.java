@@ -282,7 +282,9 @@ public class Presenter {
                 setEditTabRecipeSidebar(sidebar);
                 break;
             case "Strings":
-                setEditTabStringsTable(tablePane);
+                TableView<UIController.KVPair> table = new TableView<>();
+                setEditTabStringsTable(tablePane, table);
+                setEditTabStringsSidebar(sidebar, table);
                 break;
         }
 
@@ -382,10 +384,9 @@ public class Presenter {
         table.setPlaceholder(new Label("No " + type + plural + " imported"));
     }
 
-    private void setEditTabStringsTable(StackPane tablePane) {
+    private void setEditTabStringsTable(StackPane tablePane, TableView<UIController.KVPair> table) {
         BorderPane border = new BorderPane();
         JFXComboBox<String> comboBox = new JFXComboBox<>();
-        TableView<UIController.KVPair> table = new TableView<>();
         table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
         TableColumn<UIController.KVPair, String> idCol = new TableColumn<>("Identifier");
         TableColumn<UIController.KVPair, String> contentCol = new TableColumn<>("Content");
@@ -606,5 +607,20 @@ public class Presenter {
         sidebar.add(outputBox, 0, 3);
 
         controller.setEditTabRecipeSidebar(rPathField, nameField, costs, costNameCol, costValCol, output, outputNameCol, outputValCol);
+    }
+
+    private void setEditTabStringsSidebar(GridPane sidebar, TableView<UIController.KVPair> table) {
+        JFXTextField idField = new JFXTextField();
+        JFXTextArea contentArea = new JFXTextArea();
+
+        idField.setPromptText("Identifier");
+        contentArea.setPromptText("Content");
+
+        idField.getStyleClass().add("sidebar-text");
+
+        sidebar.add(idField, 0, 0);
+        sidebar.add(contentArea, 0, 1);
+
+        controller.setEditTabStringsSidebar(table, idField, contentArea);
     }
 }

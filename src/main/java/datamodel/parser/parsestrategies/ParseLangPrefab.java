@@ -16,7 +16,7 @@ public class ParseLangPrefab implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
         // for debugging
-        System.out.println("Processing " + absPath);
+//        System.out.println("Processing " + absPath);
 
         // instantiate the identifiers and variables
         Markers m = new Markers();
