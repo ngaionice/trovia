@@ -8,6 +8,7 @@ import datamodel.DataModel;
 import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.*;
@@ -21,6 +22,7 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
@@ -40,26 +42,6 @@ import java.util.stream.Collectors;
 
 public class UIController {
 
-    enum TabType {
-        BENCH("bench"),
-        COLLECTION("collection"),
-        ITEM("item"),
-        PLACEABLE("placeable"),
-        RECIPE("recipe"),
-        STRING("string");
-
-        private final String string;
-
-        TabType(String name) {
-            string = name;
-        }
-
-        @Override
-        public String toString() {
-            return string;
-        }
-    }
-
     DataModel model;
     String benchFilter = "_interactive";
     String collectionFilter = "";
@@ -67,9 +49,10 @@ public class UIController {
     String placeableFilter = "";
     String stringFilter = "prefabs_";
     String recipeFilter = "";
-
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
+
+    boolean isBuffering = false;
 
     boolean loadDatabase(Stage stage, TextArea logger) {
         FileChooser fileChooser = new FileChooser();
@@ -395,10 +378,10 @@ public class UIController {
         comboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue.equals("Extracted")) {
                 stringEntries.clear();
-                model.getSessionStrings().get("extracted").getStrings().forEach((k,v) -> stringEntries.add(new KVPair(k,v)));
+                model.getSessionStrings().get("extracted").getStrings().forEach((k, v) -> stringEntries.add(new KVPair(k, v)));
             } else {
                 stringEntries.clear();
-                model.getSessionStrings().get("custom").getStrings().forEach((k,v) -> stringEntries.add(new KVPair(k,v)));
+                model.getSessionStrings().get("custom").getStrings().forEach((k, v) -> stringEntries.add(new KVPair(k, v)));
             }
         }));
 
@@ -407,7 +390,7 @@ public class UIController {
                 if (c.wasUpdated()) {
                     KVPair updated = stringEntries.get(c.getFrom());
                     ReadOnlyObjectProperty<String> type = comboBox.getSelectionModel().selectedItemProperty();
-                    if (type.get().equals("extracted")) {
+                    if (type.get().equals("Extracted")) {
                         model.getSessionStrings().get("extracted").upsertString(updated.getKey(), updated.getStringValue());
                     } else {
                         model.getSessionStrings().get("custom").upsertString(updated.getKey(), updated.getStringValue());
@@ -415,6 +398,8 @@ public class UIController {
                 }
             }
         });
+
+        comboBox.getSelectionModel().selectFirst();
     }
 
     void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {
@@ -526,9 +511,19 @@ public class UIController {
                                ComboBox<String> lootComboBox, TableView<KVPair> loot, TableColumn<KVPair, String> lootCol,
                                TableColumn<KVPair, String> lootValCol, JFXTextArea notes) {
         lootComboBox.getItems().addAll("Common", "Uncommon", "Rare");
+
+        deconCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        deconValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
+        lootCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
+        lootValCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
+
+        ObservableList<KVPair> lootEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.stringValueProperty()});
         model.currentItemProperty().addListener(((observable, oldValue, newValue) -> {
+            isBuffering = true;
             decons.getItems().clear();
             loot.getItems().clear();
+            lootEntries.clear();
+            isBuffering = false;
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
                 nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
@@ -546,19 +541,66 @@ public class UIController {
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
-                // TODO: finish decons, loot, notes
+                // TODO: finish notes
 
                 ObservableList<KVPair> deconEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
                 decons.setItems(deconEntries);
 
+                deconEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+                    while (c.next()) {
+                        if (c.wasUpdated()) {
+                            KVPair updated = deconEntries.get(c.getFrom());
+                            newValue.upsertDecon(updated.getKey(), updated.getIntValue());
+                        }
+                    }
+                });
 
                 newValue.getDecons().forEach((key, value) -> deconEntries.add(new KVPair(key, value)));
+                lootComboBox.getSelectionModel().selectFirst();
             }
         }));
-        deconCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
-        deconValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
-        lootCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
-        lootValCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
+        lootComboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            isBuffering = true;
+            lootEntries.clear();
+            KVPair curr = loot.getSelectionModel().selectedItemProperty().get();
+            if (newValue != null && curr != null) {
+                ObservableMap<String, String> lootMap = null;
+                switch (newValue) {
+                    case "Common":
+                        lootMap = model.getCurrentItem().getLootCommon();
+                        break;
+                    case "Uncommon":
+                        lootMap = model.getCurrentItem().getLootUncommon();
+                        break;
+                    case "Rare":
+                        lootMap = model.getCurrentItem().getLootRare();
+                        break;
+                }
+                if (lootMap != null) {
+                    lootMap.forEach((k, v) -> lootEntries.add(new KVPair(k, v)));
+                }
+            }
+            isBuffering = false;
+        }));
+        lootEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
+            while (c.next()) {
+                if (!isBuffering && c.wasUpdated()) {
+                    KVPair updated = lootEntries.get(c.getFrom());
+                    String currRarity = lootComboBox.getSelectionModel().selectedItemProperty().get();
+                    switch (currRarity) {
+                        case "Common":
+                            model.getCurrentItem().upsertLootCommon(updated.getKey(), updated.getStringValue());
+                            break;
+                        case "Uncommon":
+                            model.getCurrentItem().upsertLootUncommon(updated.getKey(), updated.getStringValue());
+                            break;
+                        case "Rare":
+                            model.getCurrentItem().upsertLootRare(updated.getKey(), updated.getStringValue());
+                            break;
+                    }
+                }
+            }
+        });
     }
 
     void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox, JFXTextArea notes) {
@@ -651,6 +693,26 @@ public class UIController {
                 contentArea.textProperty().bindBidirectional(newValue.stringValueProperty());
             }
         }));
+    }
+
+    enum TabType {
+        BENCH("bench"),
+        COLLECTION("collection"),
+        ITEM("item"),
+        PLACEABLE("placeable"),
+        RECIPE("recipe"),
+        STRING("string");
+
+        private final String string;
+
+        TabType(String name) {
+            string = name;
+        }
+
+        @Override
+        public String toString() {
+            return string;
+        }
     }
 
     class KVPair {

@@ -96,22 +96,22 @@ public class ObservableItem extends Observable implements Article, ArticleTable 
         notifyObservers();
     }
 
-    public void addDecon(String itemRPath, int quantity) {
+    public void upsertDecon(String itemRPath, int quantity) {
         this.decons.getValue().put(itemRPath, quantity);
         notifyObservers();
     }
 
-    public void addLootCommon(String itemRPath, String quantity) {
+    public void upsertLootCommon(String itemRPath, String quantity) {
         this.lootCommon.getValue().put(itemRPath, quantity);
         notifyObservers();
     }
 
-    public void setLootUncommon(String itemRPath, String quantity) {
+    public void upsertLootUncommon(String itemRPath, String quantity) {
         this.lootUncommon.getValue().put(itemRPath, quantity);
         notifyObservers();
     }
 
-    public void setLootRare(String itemRPath, String quantity) {
+    public void upsertLootRare(String itemRPath, String quantity) {
         this.lootRare.getValue().put(itemRPath, quantity);
         notifyObservers();
     }
