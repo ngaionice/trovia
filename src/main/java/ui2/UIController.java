@@ -246,7 +246,7 @@ public class UIController {
     }
 
     public void parse(ProgressBar progressBar, Text progressText, TextArea logger, Parser.ObjectType type) {
-        Task<Void> task = getParseTask(type);
+        Task<Void> task = getParseTask(type, logger);
         progressBar.progressProperty().bind(task.progressProperty());
         progressText.textProperty().bind(task.messageProperty());
 
@@ -262,7 +262,7 @@ public class UIController {
         }).start();
     }
 
-    public Task<Void> getParseTask(Parser.ObjectType type) {
+    public Task<Void> getParseTask(Parser.ObjectType type, TextArea logger) {
         return new Task<Void>() {
             @Override
             protected Void call() {
@@ -277,6 +277,7 @@ public class UIController {
                     try {
                         model.createObject(selectedPaths.get(i), type);
                     } catch (IOException | ParseException e) {
+                        print(logger, e.getMessage());
                         failedPaths.add(selectedPaths.get(i));
                     }
                 }

@@ -1,47 +1,17 @@
 package datamodel.parser;
 
-import datamodel.parser.parsestrategies.*;
 import datamodel.objects.Article;
+import datamodel.parser.parsestrategies.*;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
 public class Parser {
-
-    public enum ObjectType {
-        ITEM,
-        BENCH,
-        COLLECTION,
-        STRING,
-        PLACEABLE,
-        RECIPE,
-        PROFESSION;
-
-        @Override
-        public String toString() {
-            switch(this) {
-                case ITEM: return "Item";
-                case BENCH: return "Bench";
-                case COLLECTION: return "Collection";
-                case PLACEABLE: return "Placeable";
-                case PROFESSION: return "Profession";
-                case RECIPE: return "Recipe";
-                case STRING: return "Language File";
-                default: throw new IllegalArgumentException();
-            }
-        }
-    }
-
-    public String byteToString(String path) throws IOException {
-        byte[] array = Files.readAllBytes(Paths.get(path));
-        return javax.xml.bind.DatatypeConverter.printHexBinary(array);
-    }
-
-    public String insertSpaces(String hexRaw) {
-        return hexRaw.replaceAll("(.{2})", "$1 ").trim();
-    }
 
     public static String hexToAscii(String hexString) {
         StringBuilder output = new StringBuilder();
@@ -53,7 +23,7 @@ public class Parser {
         return output.toString();
     }
 
-    public static int recipeH2D(String hexNumber, String item) {
+    public static int recipeH2D(String hexNumber, String item) throws ParseException {
         String[] hexPartition = hexNumber.split(" ");
         switch (hexPartition.length) {
             case 1:
@@ -82,11 +52,10 @@ public class Parser {
                 }
             default: // more than 3, rip
                 try {
-                    System.out.println(hexToAscii(item) + " - Keep an eye out for this item.");
+                    throw new ParseException("Quantity conversion failed at: " + hexToAscii(item));
                 } catch (ClassCastException e) {
-                    System.out.println(item + " - Keep an eye out for this item.");
+                    throw new ParseException("Quantity conversion failed at: " + item);
                 }
-                return 0;
         }
     }
 
@@ -97,13 +66,39 @@ public class Parser {
         int denom = 67 - second;
 
         if (first > 128) {
-            return 2*(128/Math.pow(4, denom)) + 2*(first-128)/Math.pow(4, denom);
+            return 2 * (128 / Math.pow(4, denom)) + 2 * (first - 128) / Math.pow(4, denom);
         } else {
-            return 128/Math.pow(4, denom) + first/Math.pow(4, denom);
+            return 128 / Math.pow(4, denom) + first / Math.pow(4, denom);
         }
     }
 
+    /**
+     * Logs the supplied strings to the text file at the path specified. Requires the text file to exist in order to log.
+     *
+     * @param itemToLog list of strings to be logged
+     * @param path      path of the text file to be logged to
+     */
+    public static void logToFile(List<String> itemToLog, String path) {
+        try (FileWriter fw = new FileWriter(path, true);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            for (String item : itemToLog) {
+                out.println(item);
+//                System.out.println(item);
+            }
+        } catch (IOException e) {
+            System.out.println("Logging to" + path + "failed.");
+        }
+    }
 
+    public String byteToString(String path) throws IOException {
+        byte[] array = Files.readAllBytes(Paths.get(path));
+        return javax.xml.bind.DatatypeConverter.printHexBinary(array);
+    }
+
+    public String insertSpaces(String hexRaw) {
+        return hexRaw.replaceAll("(.{2})", "$1 ").trim();
+    }
 
     public Article createObject(String path, ObjectType itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
@@ -135,23 +130,35 @@ public class Parser {
         }
     }
 
-    /**
-     * Logs the supplied strings to the text file at the path specified. Requires the text file to exist in order to log.
-     *
-     * @param itemToLog list of strings to be logged
-     * @param path path of the text file to be logged to
-     */
-    public static void logToFile(List<String> itemToLog, String path) {
-        try(FileWriter fw = new FileWriter(path, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter out = new PrintWriter(bw))
-        {
-            for (String item:itemToLog) {
-                out.println(item);
-//                System.out.println(item);
+    public enum ObjectType {
+        ITEM,
+        BENCH,
+        COLLECTION,
+        STRING,
+        PLACEABLE,
+        RECIPE,
+        PROFESSION;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case ITEM:
+                    return "Item";
+                case BENCH:
+                    return "Bench";
+                case COLLECTION:
+                    return "Collection";
+                case PLACEABLE:
+                    return "Placeable";
+                case PROFESSION:
+                    return "Profession";
+                case RECIPE:
+                    return "Recipe";
+                case STRING:
+                    return "Language File";
+                default:
+                    throw new IllegalArgumentException();
             }
-        } catch (IOException e) {
-            System.out.println("Logging to" + path + "failed.");
         }
     }
 }
