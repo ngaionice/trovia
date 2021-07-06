@@ -12,7 +12,7 @@ public class Strings extends Observable {
 
     // the key is the identifier, and the value is the content
     String name;
-    String lang;
+    String lang = "en";
     MapProperty<String, String> strings;
 
     public Strings(String name, Map<String, String> strings) {

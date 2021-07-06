@@ -1,11 +1,16 @@
 package ui2;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
-import datamodel.Enums;
 import datamodel.DataModel;
+import datamodel.Enums;
+import datamodel.Serializer;
 import datamodel.objects.*;
+import datamodel.objects.Collection;
+import datamodel.objects.Skin;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
 import javafx.beans.Observable;
@@ -21,7 +26,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,18 +37,15 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UIController {
 
     DataModel model = new DataModel();
-//    String benchFilter = "_interactive";
+    //    String benchFilter = "_interactive";
     String filter = "";
-//    String stringFilter = "prefabs_";
+    //    String stringFilter = "prefabs_";
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
 
@@ -226,6 +230,12 @@ public class UIController {
 
     void printPlain(TextArea logger, String message) {
         logger.appendText(message);
+    }
+
+    void printList(TextArea logger, List<String> messages) {
+        StringBuilder builder = new StringBuilder();
+        messages.forEach(m -> builder.append("[").append(LocalTime.now()).append("] ").append(m).append("\n"));
+        logger.appendText(builder.toString());
     }
 
     void clearSelectedPaths() {
@@ -631,9 +641,121 @@ public class UIController {
         }));
     }
 
-//    void setUpLogger(TextArea logger) {
-//        logger.textProperty().bindBidirectional(logs);
-//    }
+    /**
+     *
+     * @param selected the selected file from the file selector
+     * @param changedOnly if true, export changed data only; else exports everything stored
+     * @param selection an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
+     *                  0: benches
+     *                  1: collections
+     *                  2: collection indices
+     *                  3: gear styles
+     *                  4: items
+     *                  5: placeables
+     *                  6: recipes
+     *                  7: skins
+     *                  8: strings
+     * @param logger the TextArea used for logging
+     */
+    void serialize(File selected, boolean changedOnly, int[] selection, TextArea logger) {
+        Gson serializer = Serializer.getSerializer();
+        if (selected != null) {
+            if (selection.length != 9) {
+                print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
+                return;
+            }
+            String dirPath = selected.getAbsolutePath();
+            LocalDateTime currTime = LocalDateTime.now();
+            String fileName = "trove-extract-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
+            try {
+                String path = dirPath + "\\" + fileName;
+                JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
+                writer.beginObject();
+                if (selection[0] != 0) writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
+                if (selection[1] != 0) writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
+                // add collection indices and gear styles later
+                if (selection[4] != 0) writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
+                if (selection[5] != 0) writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
+                if (selection[6] != 0) writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
+                if (selection[7] != 0) writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
+                if (selection[8] != 0) {
+                    // TODO: finish it up
+                }
+                writer.endObject();
+                writer.close();
+                print(logger, "Data exported to " + path);
+            } catch (IOException e) {
+                print(logger, "Export failed due to an IOException; stack trace below:");
+                List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+                printList(logger, errorList);
+            }
+        }
+    }
+
+    void writeBenches(JsonWriter writer, Gson serializer, Map<String, Bench> benches) throws IOException {
+        writer.name("benches");
+        writer.beginObject();
+        for (Map.Entry<String, Bench> entry: benches.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeCollections(JsonWriter writer, Gson serializer, Map<String, Collection> collections) throws IOException {
+        writer.name("collections");
+        writer.beginObject();
+        for (Map.Entry<String, Collection> entry: collections.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeItems(JsonWriter writer, Gson serializer, Map<String, Item> items) throws IOException {
+        writer.name("items");
+        writer.beginObject();
+        for (Map.Entry<String, Item> entry: items.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writePlaceables(JsonWriter writer, Gson serializer, Map<String, Placeable> placeables) throws IOException {
+        writer.name("placeables");
+        writer.beginObject();
+        for (Map.Entry<String, Placeable> entry: placeables.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeRecipes(JsonWriter writer, Gson serializer, Map<String, Recipe> recipes) throws IOException {
+        writer.name("recipes");
+        writer.beginObject();
+        for (Map.Entry<String, Recipe> entry: recipes.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeSkins(JsonWriter writer, Gson serializer, Map<String, Skin> skins) throws IOException {
+        writer.name("skins");
+        writer.beginObject();
+        for (Map.Entry<String, Skin> entry: skins.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeStrings(JsonWriter writer, Gson serializer, Map<String, Strings> strings) throws IOException {
+        writer.name("strings");
+        writer.beginObject();
+        for (Map.Entry<String, Strings> entry: strings.entrySet()) {
+            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+
 
     enum TabType {
         BENCH("bench"),

@@ -5,6 +5,8 @@ import com.jfoenix.effects.JFXDepthManager;
 import datamodel.Enums;
 import datamodel.objects.ArticleTable;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -13,11 +15,14 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -82,13 +87,7 @@ public class Presenter {
                 controller.disableActionButtons(databaseButtons);
             }
         });
-        exportButton.setOnAction(e -> {
-//            boolean enable = controller.createDatabase(stage, logger);
-//            if (enable) {
-//                controller.enableActionButtons(actionButtons);
-//                controller.disableActionButtons(databaseButtons);
-//            }
-        });
+        exportButton.setOnAction(e -> setExportScreen());
 
         logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
@@ -99,18 +98,7 @@ public class Presenter {
     }
 
     private void setParseScreen() {
-        BorderPane screenRoot = new BorderPane();
-        HBox header = new HBox();
-        Text headerText = new Text("Parse");
-
-        header.getChildren().add(headerText);
-        header.getStyleClass().add("header");
-        headerText.getStyleClass().add("header-text");
-
-        screenRoot.setTop(header);
-        screenRoot.setCenter(getParseScreenContent());
-        screenRoot.setBottom(getLogsRegion());
-        root.setCenter(screenRoot);
+        setScreenBorderPane("Parse", getParseScreenContent(), true);
     }
 
     private Pane getParseScreenContent() {
@@ -276,6 +264,109 @@ public class Presenter {
 
     private void setReviewScreen() {
 
+    }
+
+    private void setExportScreen() {
+        setScreenBorderPane("Export", getExportScreenContent(), true);
+    }
+
+    private Pane getExportScreenContent() {
+        StackPane center = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = new GridPane();
+        JFXTextField directory = new JFXTextField();
+        JFXButton dirButton = new JFXButton();
+        JFXButton startButton = new JFXButton();
+        JFXToggleButton changedButton = new JFXToggleButton();
+        BooleanProperty[] selected = new BooleanProperty[9];
+        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
+
+        List<JFXCheckBox> checkboxes = new ArrayList<>();
+        for (int i = 0; i < selected.length; i++) {
+            selected[i] = new SimpleBooleanProperty(true);
+            JFXCheckBox cb = new JFXCheckBox(texts[i]);
+            cb.setSelected(true);
+            cb.selectedProperty().bindBidirectional(selected[i]);
+            checkboxes.add(cb);
+        }
+
+        directory.setPromptText("Directory");
+        directory.setDisable(true);
+        changedButton.setText("Export all data");
+
+        dirButton.setOnAction(e -> {
+            DirectoryChooser dirChooser = new DirectoryChooser();
+            dirChooser.setTitle("Select the location to export data to.");
+            File selectedPath = dirChooser.showDialog(stage);
+            if (selectedPath != null) {
+                directory.setText(selectedPath.getAbsolutePath());
+            }
+        });
+        changedButton.selectedProperty().addListener(e -> {
+            if (changedButton.isSelected()) {
+                changedButton.setText("Export changed data only");
+            } else {
+                changedButton.setText("Export all data");
+            }
+        });
+        startButton.setOnAction(e -> {
+            File selectedDir = new File(directory.getText());
+            if (directory.getText() != null && selectedDir.isDirectory()) {
+                int[] selection = new int[selected.length];
+                for (int i = 0; i < selection.length; i++) {
+                    if (selected[i].getValue()) selection[i] = 1;
+                }
+                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), selection, logger);
+            }
+        });
+
+        center.getStyleClass().add("pane-background");
+        anchor.getStyleClass().add("card-backing");
+        grid.getStyleClass().add("grid-content");
+        directory.getStyleClass().add("text-field-dir");
+        dirButton.getStyleClass().addAll("button-inline", "color-subtle");
+        startButton.getStyleClass().addAll("floating-button", "button-start");
+        dirButton.setId("button-set-dir");
+
+        dirButton.setGraphic(new FontIcon());
+        startButton.setGraphic(new FontIcon());
+
+        center.getChildren().add(anchor);
+        anchor.getChildren().add(grid);
+        anchor.getChildren().add(startButton);
+        grid.add(directory, 0, 0, 2, 1);
+        grid.add(dirButton, 2, 0);
+        grid.add(changedButton, 3, 0);
+        int row = 1;
+        for (int i = 0; i < checkboxes.size(); i++) {
+            if ((i % 2) == 0) {
+                grid.add(checkboxes.get(i), 0, row);
+            } else {
+                grid.add(checkboxes.get(i), 1, row);
+                row++;
+            }
+        }
+
+        setMaxAnchor(grid);
+        setFabAnchor(startButton);
+
+        JFXDepthManager.setDepth(anchor, 1);
+        return center;
+    }
+
+    private void setScreenBorderPane(String headerString, Node content, boolean showLogger) {
+        BorderPane screenRoot = new BorderPane();
+        HBox header = new HBox();
+        Text headerText = new Text(headerString);
+
+        header.getChildren().add(headerText);
+        header.getStyleClass().add("header");
+        headerText.getStyleClass().add("header-text");
+
+        screenRoot.setTop(header);
+        screenRoot.setCenter(content);
+        if (showLogger) screenRoot.setBottom(getLogsRegion());
+        root.setCenter(screenRoot);
     }
 
     private void setLogsScreen() {

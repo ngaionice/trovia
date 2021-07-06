@@ -104,7 +104,6 @@ public class Parser {
     public Article createObject(String path, Enums.ObjectType itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
-        System.out.println(itemType.toString());
         switch (itemType) {
             case ITEM:
                 context = new ParseContext(new ParseItem());

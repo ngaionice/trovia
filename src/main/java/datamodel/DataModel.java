@@ -20,16 +20,22 @@ public class DataModel implements Observer {
 
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
+    ObservableMap<String, Object> sessionCollectionIndices = FXCollections.observableHashMap();
+    ObservableMap<String, String[]> sessionGearStyles = FXCollections.observableHashMap();
     ObservableMap<String, Item> sessionItems = FXCollections.observableHashMap();
     ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
     ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
+    ObservableMap<String, Skin> sessionSkins = FXCollections.observableHashMap();
     Map<String, Strings> sessionStrings = new HashMap<>();
 
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
+    Map<String, Object> changedCollectionIndices = new HashMap<>();
+    Map<String, String[]> changedGearStyles = new HashMap<>();
     Map<String, Item> changedItems = new HashMap<>();
     Map<String, Placeable> changedPlaceables = new HashMap<>();
     Map<String, Recipe> changedRecipes = new HashMap<>();
+    Map<String, Skin> changedSkins = new HashMap<>();
     Map<String, String> changedExtractedStrings = new HashMap<>();
     Map<String, String> changedCustomStrings = new HashMap<>();
 
@@ -270,6 +276,18 @@ public class DataModel implements Observer {
         return sessionStrings;
     }
 
+    public ObservableMap<String, Object> getSessionCollectionIndices() {
+        return sessionCollectionIndices;
+    }
+
+    public ObservableMap<String, String[]> getSessionGearStyles() {
+        return sessionGearStyles;
+    }
+
+    public ObservableMap<String, Skin> getSessionSkins() {
+        return sessionSkins;
+    }
+
     // GETTERS - CHANGED DATA
 
     public Map<String, Bench> getChangedBenches() {
@@ -298,6 +316,18 @@ public class DataModel implements Observer {
 
     public Map<String, String> getChangedCustomStrings() {
         return changedCustomStrings;
+    }
+
+    public Map<String, Object> getChangedCollectionIndices() {
+        return changedCollectionIndices;
+    }
+
+    public Map<String, String[]> getChangedGearStyles() {
+        return changedGearStyles;
+    }
+
+    public Map<String, Skin> getChangedSkins() {
+        return changedSkins;
     }
 
     // GETTERS AND SETTERS - CURRENTLY SELECTED DATA

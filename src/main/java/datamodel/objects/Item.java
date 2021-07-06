@@ -33,7 +33,7 @@ public class Item extends Observable implements Article, ArticleTable {
      * The map property of the item's rare loot. The wrapped value is nullable.
      */
     MapProperty<String, String> lootRare;
-    IntegerProperty blueprintIndex = null;
+    IntegerProperty blueprintIndex = null; // TODO: add bp stuff to the second initializer as well
     ListProperty<String> possibleBlueprints;
     ListProperty<String> notes;
     BooleanProperty tradable;
