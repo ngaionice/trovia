@@ -1,5 +1,6 @@
-package datamodel;
+package unused;
 
+import datamodel.Enums;
 import datamodel.objects.*;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -69,35 +70,35 @@ public class DatabaseController {
 
     // GETTERS
 
-    ObservableMap<String, ObservableBench> getBenches() throws SQLException {
+    ObservableMap<String, Bench> getBenches() throws SQLException {
         return querier.getBenches();
     }
 
-    ObservableMap<String, ObservableCollection> getCollections(String language) throws SQLException {
+    ObservableMap<String, Collection> getCollections(String language) throws SQLException {
         return querier.getCollections(language);
     }
 
-    ObservableMap<String, ObservableItem> getItems(String language) throws SQLException {
+    ObservableMap<String, Item> getItems(String language) throws SQLException {
         return querier.getItems(language);
     }
 
-    ObservableMap<String, ObservablePlaceable> getPlaceables(String language) throws SQLException {
+    ObservableMap<String, Placeable> getPlaceables(String language) throws SQLException {
         return querier.getPlaceables(language);
     }
 
-    ObservableMap<String, ObservableRecipe> getRecipes() throws SQLException {
+    ObservableMap<String, Recipe> getRecipes() throws SQLException {
         return querier.getRecipes();
     }
 
-    Map<String, ObservableStrings> getStrings(String language) throws SQLException {
+    Map<String, Strings> getStrings(String language) throws SQLException {
         return querier.getStrings(language);
     }
 
     // SETTERS
 
-    void updateDatabase(Map<String, ObservableBench> benches, Map<String, ObservableCollection> collections,
-                        Map<String, ObservableItem> items, Map<String, ObservablePlaceable> placeables,
-                        Map<String, ObservableRecipe> recipes, Map<String, ObservableStrings> strings, String language) throws SQLException {
+    void updateDatabase(Map<String, Bench> benches, Map<String, Collection> collections,
+                        Map<String, Item> items, Map<String, Placeable> placeables,
+                        Map<String, Recipe> recipes, Map<String, Strings> strings, String language) throws SQLException {
         // there is a order to insertion: first we insert strings, then we insert recipes, then everything else
         // we insert strings to prevent non-existent references to string identifiers, then as benches depend on
         // recipes paths, we insert recipes before it, then we can insert everything else
@@ -114,10 +115,10 @@ public class DatabaseController {
      *
      * @param benches a Map containing updated/new ObservableBenches, with the relative path of the bench as the key
      */
-    private void upsertBenches(Map<String, ObservableBench> benches) throws SQLException {
-        for (Map.Entry<String, ObservableBench> entry : benches.entrySet()) {
+    private void upsertBenches(Map<String, Bench> benches) throws SQLException {
+        for (Map.Entry<String, Bench> entry : benches.entrySet()) {
             String rPath = entry.getKey();
-            ObservableBench bench = entry.getValue();
+            Bench bench = entry.getValue();
 
             String name = bench.getName();
             String professionName = bench.getProfessionName();
@@ -151,10 +152,10 @@ public class DatabaseController {
         }
     }
 
-    private void upsertCollections(Map<String, ObservableCollection> collections, String notesLanguage) throws SQLException {
-        for (Map.Entry<String, ObservableCollection> entry : collections.entrySet()) {
+    private void upsertCollections(Map<String, Collection> collections, String notesLanguage) throws SQLException {
+        for (Map.Entry<String, Collection> entry : collections.entrySet()) {
             String rPath = entry.getKey();
-            ObservableCollection collection = entry.getValue();
+            Collection collection = entry.getValue();
 
             // insert if not present, else update mastery
             if (!querier.hasCollection(rPath)) {
@@ -171,25 +172,25 @@ public class DatabaseController {
                 insertNotes(rPath, notesLanguage, noteID);
             }
 
-            for (CollectionEnums.Type type : collection.getTypes()) {
+            for (Enums.Type type : collection.getTypes()) {
                 insertCollectionType(rPath, type);
             }
 
-            for (Map.Entry<CollectionEnums.Property, Double> prop : collection.getProperties().entrySet()) {
+            for (Map.Entry<Enums.Property, Double> prop : collection.getProperties().entrySet()) {
                 upsertCollectionProperty(rPath, prop.getKey(), prop.getValue());
             }
 
-            for (Map.Entry<CollectionEnums.Buff, Double> buff : collection.getBuffs().entrySet()) {
+            for (Map.Entry<Enums.Buff, Double> buff : collection.getBuffs().entrySet()) {
                 upsertCollectionBuff(rPath, buff.getKey(), buff.getValue());
             }
 
         }
     }
 
-    private void upsertItems(Map<String, ObservableItem> items, String notesLanguage) throws SQLException {
-        for (Map.Entry<String, ObservableItem> entry : items.entrySet()) {
+    private void upsertItems(Map<String, Item> items, String notesLanguage) throws SQLException {
+        for (Map.Entry<String, Item> entry : items.entrySet()) {
             String rPath = entry.getKey();
-            ObservableItem item = entry.getValue();
+            Item item = entry.getValue();
 
             if (!querier.hasItem(rPath)) {
                 modifier.insertItem(rPath);
@@ -225,10 +226,10 @@ public class DatabaseController {
         }
     }
 
-    private void upsertPlaceables(Map<String, ObservablePlaceable> placeables, String notesLanguage) throws SQLException {
-        for (Map.Entry<String, ObservablePlaceable> entry : placeables.entrySet()) {
+    private void upsertPlaceables(Map<String, Placeable> placeables, String notesLanguage) throws SQLException {
+        for (Map.Entry<String, Placeable> entry : placeables.entrySet()) {
             String rPath = entry.getKey();
-            ObservablePlaceable placeable = entry.getValue();
+            Placeable placeable = entry.getValue();
 
             if (!querier.hasPlaceable(rPath)) {
                 modifier.insertPlaceable(rPath);
@@ -244,10 +245,10 @@ public class DatabaseController {
         }
     }
 
-    private void upsertRecipes(Map<String, ObservableRecipe> recipes) throws SQLException {
-        for (Map.Entry<String, ObservableRecipe> entry : recipes.entrySet()) {
+    private void upsertRecipes(Map<String, Recipe> recipes) throws SQLException {
+        for (Map.Entry<String, Recipe> entry : recipes.entrySet()) {
             String rPath = entry.getKey();
-            ObservableRecipe recipe = entry.getValue();
+            Recipe recipe = entry.getValue();
 
             if (!querier.hasRecipe(rPath)) {
                 modifier.insertRecipe(rPath, recipe.getName());
@@ -263,9 +264,9 @@ public class DatabaseController {
         }
     }
 
-    private void upsertStrings(Map<String, ObservableStrings> strings, String language) throws SQLException {
-        ObservableStrings extractedStrings = strings.get("extracted");
-        ObservableStrings customStrings = strings.get("custom");
+    private void upsertStrings(Map<String, Strings> strings, String language) throws SQLException {
+        Strings extractedStrings = strings.get("extracted");
+        Strings customStrings = strings.get("custom");
 
         if (extractedStrings != null) {
             for (Map.Entry<String, String> entry : extractedStrings.getStrings().entrySet()) {
@@ -295,12 +296,12 @@ public class DatabaseController {
 
     // SETTER HELPERS
 
-    private void insertCollectionType(String rPath, CollectionEnums.Type type) throws SQLException {
+    private void insertCollectionType(String rPath, Enums.Type type) throws SQLException {
         if (!querier.hasCollectionType(rPath, type.name().toUpperCase()))
             modifier.insertCollectionType(rPath, type.name().toUpperCase());
     }
 
-    private void upsertCollectionProperty(String rPath, CollectionEnums.Property prop, double value) throws SQLException {
+    private void upsertCollectionProperty(String rPath, Enums.Property prop, double value) throws SQLException {
         if (!querier.hasCollectionProperty(rPath, prop.name().toUpperCase())) {
             modifier.insertCollectionProperty(rPath, prop.name().toUpperCase(), value);
         } else {
@@ -308,7 +309,7 @@ public class DatabaseController {
         }
     }
 
-    private void upsertCollectionBuff(String rPath, CollectionEnums.Buff buff, double value) throws SQLException {
+    private void upsertCollectionBuff(String rPath, Enums.Buff buff, double value) throws SQLException {
         if (!querier.hasCollectionBuff(rPath, buff.name().toUpperCase())) {
             modifier.insertCollectionBuff(rPath, buff.name().toUpperCase(), value);
         } else {

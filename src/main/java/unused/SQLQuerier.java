@@ -1,5 +1,6 @@
-package datamodel;
+package unused;
 
+import datamodel.Enums;
 import datamodel.objects.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -27,9 +28,9 @@ public class SQLQuerier {
     // note that the recipe-bench links are only shown in benches, and not in recipes.
     // this is to avoid potential conflicting changes
 
-    ObservableMap<String, ObservableBench> getBenches() throws SQLException {
+    ObservableMap<String, Bench> getBenches() throws SQLException {
         // rPath of bench as key
-        ObservableMap<String, ObservableBench> benches = FXCollections.observableHashMap();
+        ObservableMap<String, Bench> benches = FXCollections.observableHashMap();
         ResultSet baseQuery = con.createStatement().executeQuery("select * from Bench");
 
         // iterate through all benches
@@ -62,13 +63,13 @@ public class SQLQuerier {
                 benchCats.put(new String[]{catID, benchIndex}, recipes);
             }
 
-            benches.put(rPath, new ObservableBench(nameID, rPath, benchCats, professionName));
+            benches.put(rPath, new Bench(nameID, rPath, benchCats, professionName));
         }
         return benches;
     }
 
-    ObservableMap<String, ObservableCollection> getCollections(String language) throws SQLException {
-        ObservableMap<String, ObservableCollection> collections = FXCollections.observableHashMap();
+    ObservableMap<String, Collection> getCollections(String language) throws SQLException {
+        ObservableMap<String, Collection> collections = FXCollections.observableHashMap();
         ResultSet baseQuery = con.createStatement().executeQuery("select * from Collection");
 
         while (baseQuery.next()) {
@@ -82,27 +83,27 @@ public class SQLQuerier {
             psTypes.setString(1, rPath);
             ResultSet rsTypes = psTypes.executeQuery();
 
-            List<CollectionEnums.Type> types = new ArrayList<>();
+            List<Enums.Type> types = new ArrayList<>();
             while (rsTypes.next()) {
-                types.add(CollectionEnums.Type.valueOf(rsTypes.getString(1)));
+                types.add(Enums.Type.valueOf(rsTypes.getString(1)));
             }
 
             PreparedStatement psProps = con.prepareStatement("select prop, prop_val from CollectionProperty where rel_path = ?");
             psProps.setString(1, rPath);
             ResultSet rsProps = psProps.executeQuery();
 
-            Map<CollectionEnums.Property, Double> props = new HashMap<>();
+            Map<Enums.Property, Double> props = new HashMap<>();
             while (rsProps.next()) {
-                props.put(CollectionEnums.Property.valueOf(rsProps.getString(1)), rsProps.getDouble(2));
+                props.put(Enums.Property.valueOf(rsProps.getString(1)), rsProps.getDouble(2));
             }
 
             PreparedStatement psBuffs = con.prepareStatement("select buff, buff_val from CollectionBuff where rel_path = ?");
             psBuffs.setString(1, rPath);
             ResultSet rsBuffs = psBuffs.executeQuery();
 
-            Map<CollectionEnums.Buff, Double> buffs = new HashMap<>();
+            Map<Enums.Buff, Double> buffs = new HashMap<>();
             while (rsBuffs.next()) {
-                buffs.put(CollectionEnums.Buff.valueOf(rsBuffs.getString(1)), rsBuffs.getDouble(2));
+                buffs.put(Enums.Buff.valueOf(rsBuffs.getString(1)), rsBuffs.getDouble(2));
             }
 
             PreparedStatement psNotes = con.prepareStatement("select string_id from Notes where rel_path = ?");
@@ -114,13 +115,13 @@ public class SQLQuerier {
                 notes.add(rsNotes.getString(1));
             }
 
-            collections.put(rPath, new ObservableCollection(nameID, descID, rPath, troveMR, geodeMR, types, props, buffs, notes));
+            collections.put(rPath, new Collection(nameID, descID, rPath, troveMR, geodeMR, types, props, buffs, notes));
         }
         return collections;
     }
 
-    ObservableMap<String, ObservableItem> getItems(String language) throws SQLException {
-        ObservableMap<String, ObservableItem> items = FXCollections.observableHashMap();
+    ObservableMap<String, Item> getItems(String language) throws SQLException {
+        ObservableMap<String, Item> items = FXCollections.observableHashMap();
         ResultSet baseQuery = con.createStatement().executeQuery("select * from Item");
 
         while (baseQuery.next()) {
@@ -180,13 +181,13 @@ public class SQLQuerier {
 
             boolean isTradable = tradable == 1;
 
-            items.put(rPath, new ObservableItem(nameID, descID, rPath, unlocks.toArray(new String[0]), decons, common, uncommon, rare, notes, isTradable));
+            items.put(rPath, new Item(nameID, descID, rPath, unlocks.toArray(new String[0]), decons, common, uncommon, rare, notes, isTradable));
         }
         return items;
     }
 
-    ObservableMap<String, ObservablePlaceable> getPlaceables(String language) throws SQLException {
-        ObservableMap<String, ObservablePlaceable> placeables = FXCollections.observableHashMap();
+    ObservableMap<String, Placeable> getPlaceables(String language) throws SQLException {
+        ObservableMap<String, Placeable> placeables = FXCollections.observableHashMap();
         ResultSet baseQuery = con.createStatement().executeQuery("select * from Placeable");
 
         while (baseQuery.next()) {
@@ -205,13 +206,13 @@ public class SQLQuerier {
             }
 
             boolean isTradable = tradable == 1;
-            placeables.put(rPath, new ObservablePlaceable(nameID, descID, rPath, notes, isTradable));
+            placeables.put(rPath, new Placeable(nameID, descID, rPath, notes, isTradable));
         }
         return placeables;
     }
 
-    ObservableMap<String, ObservableRecipe> getRecipes() throws SQLException {
-        ObservableMap<String, ObservableRecipe> recipes = FXCollections.observableHashMap();
+    ObservableMap<String, Recipe> getRecipes() throws SQLException {
+        ObservableMap<String, Recipe> recipes = FXCollections.observableHashMap();
         ResultSet baseQuery = con.createStatement().executeQuery("select rel_path, name from Recipe");
 
         while (baseQuery.next()) {
@@ -236,7 +237,7 @@ public class SQLQuerier {
                 output.put(rsOutput.getString(1), rsOutput.getInt(2));
             }
 
-            recipes.put(rPath, new ObservableRecipe(name, rPath, costs, output));
+            recipes.put(rPath, new Recipe(name, rPath, costs, output));
         }
         return recipes;
     }
@@ -249,8 +250,8 @@ public class SQLQuerier {
      *
      * @return a Map with 2 keys, "extracted" and "custom"
      */
-    Map<String, ObservableStrings> getStrings(String language) throws SQLException {
-        Map<String, ObservableStrings> strings = new HashMap<>();
+    Map<String, Strings> getStrings(String language) throws SQLException {
+        Map<String, Strings> strings = new HashMap<>();
         PreparedStatement extractedQuery = con.prepareStatement("select id, content from ExtractedString where lang = ?");
         PreparedStatement customQuery = con.prepareStatement("select id, content from CustomString where lang = ?");
         extractedQuery.setString(1, language);
@@ -264,8 +265,8 @@ public class SQLQuerier {
         getStringsHelper(extracted, extractedStrings);
         getStringsHelper(custom, customStrings);
 
-        strings.put("extracted", new ObservableStrings("extracted", extractedStrings));
-        strings.put("custom", new ObservableStrings("custom", customStrings));
+        strings.put("extracted", new Strings("extracted", extractedStrings));
+        strings.put("custom", new Strings("custom", customStrings));
 
         return strings;
 //            Map<String, ObservableStrings> strings = new HashMap<>();
