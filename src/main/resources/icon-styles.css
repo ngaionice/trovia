@@ -6,20 +6,16 @@
     -fx-icon-code: "mdi-pencil";
 }
 
-#button-sync .ikonli-font-icon {
-    -fx-icon-code: "mdi-sync";
-}
-
 #button-review .ikonli-font-icon {
     -fx-icon-code: "mdi-checkbox-marked-outline";
 }
 
 #button-load .ikonli-font-icon {
-    -fx-icon-code: "mdi-database";
+    -fx-icon-code: "mdi-file-import";
 }
 
-#button-create .ikonli-font-icon {
-    -fx-icon-code: "mdi-database-plus";
+#button-export .ikonli-font-icon {
+    -fx-icon-code: "mdi-file-export";
 }
 
 #button-logs .ikonli-font-icon {

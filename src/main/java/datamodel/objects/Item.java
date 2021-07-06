@@ -7,7 +7,7 @@ import javafx.collections.ObservableMap;
 
 import java.util.*;
 
-public class ObservableItem extends Observable implements Article, ArticleTable {
+public class Item extends Observable implements Article, ArticleTable {
 
     StringProperty name;
 
@@ -33,16 +33,24 @@ public class ObservableItem extends Observable implements Article, ArticleTable 
      * The map property of the item's rare loot. The wrapped value is nullable.
      */
     MapProperty<String, String> lootRare;
+    IntegerProperty blueprintIndex = null;
+    ListProperty<String> possibleBlueprints;
     ListProperty<String> notes;
     BooleanProperty tradable;
 
-    public ObservableItem(String name, String desc, String rPath, String[] unlocks) {
+    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
         this.notes = new SimpleListProperty<>(FXCollections.observableArrayList());
         this.tradable = new SimpleBooleanProperty(true);
+        if (possibleBlueprints.length >= 1) {
+            blueprintIndex = new SimpleIntegerProperty(0);
+        } else {
+            blueprintIndex = new SimpleIntegerProperty(-1);
+        }
+        this.possibleBlueprints = new SimpleListProperty<>(FXCollections.observableArrayList(possibleBlueprints));
 
         this.decons = new SimpleMapProperty<>(FXCollections.observableHashMap());
         this.lootCommon = new SimpleMapProperty<>(null);
@@ -50,9 +58,9 @@ public class ObservableItem extends Observable implements Article, ArticleTable 
         this.lootRare = new SimpleMapProperty<>(null);
     }
 
-    public ObservableItem(String name, String desc, String rPath, String[] unlocks, Map<String, Integer> decons,
-                          Map<String, String> lootCommon, Map<String, String> lootUncommon, Map<String, String> lootRare,
-                          List<String> notes, boolean isTradable) {
+    public Item(String name, String desc, String rPath, String[] unlocks, Map<String, Integer> decons,
+                Map<String, String> lootCommon, Map<String, String> lootUncommon, Map<String, String> lootRare,
+                List<String> notes, boolean isTradable) {
         this.name = new SimpleStringProperty(name);
         this.desc = desc == null ? new SimpleStringProperty("N/A") : new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
@@ -207,5 +215,29 @@ public class ObservableItem extends Observable implements Article, ArticleTable 
 
     public BooleanProperty tradableProperty() {
         return tradable;
+    }
+
+    public int getBlueprintIndex() {
+        return blueprintIndex.get();
+    }
+
+    public IntegerProperty blueprintIndexProperty() {
+        return blueprintIndex;
+    }
+
+    public void setBlueprintIndex(int blueprintIndex) {
+        this.blueprintIndex.set(blueprintIndex);
+    }
+
+    public ObservableList<String> getPossibleBlueprints() {
+        return possibleBlueprints.get();
+    }
+
+    public ListProperty<String> possibleBlueprintsProperty() {
+        return possibleBlueprints;
+    }
+
+    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
+        this.possibleBlueprints.set(possibleBlueprints);
     }
 }

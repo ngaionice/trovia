@@ -7,14 +7,14 @@ import javafx.collections.ObservableMap;
 import java.util.Map;
 import java.util.Observable;
 
-public class ObservableRecipe extends Observable implements Article, ArticleTable {
+public class Recipe extends Observable implements Article, ArticleTable {
 
     StringProperty name;
     StringProperty rPath;
     MapProperty<String, Integer> costs;
     MapProperty<String, Integer> output;
 
-    public ObservableRecipe(String name, String rPath, Map<String, Integer> costs, Map<String, Integer> output) {
+    public Recipe(String name, String rPath, Map<String, Integer> costs, Map<String, Integer> output) {
         this.name = new SimpleStringProperty(name);
         this.rPath = new SimpleStringProperty(rPath);
 

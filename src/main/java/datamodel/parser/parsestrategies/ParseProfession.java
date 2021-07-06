@@ -1,6 +1,6 @@
 package datamodel.parser.parsestrategies;
 
-import datamodel.objects.ObservableBench;
+import datamodel.objects.Bench;
 import datamodel.parser.Parser;
 import datamodel.objects.Article;
 import local.Markers;
@@ -42,7 +42,7 @@ public class ParseProfession implements ParseStrategy {
         String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
         rPath = rPath.replaceAll("\\\\", "/");
 
-        return new ObservableBench(path, rPath, categories, null);
+        return new Bench(path, rPath, categories, null);
     }
 
 }

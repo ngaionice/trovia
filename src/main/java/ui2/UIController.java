@@ -3,12 +3,10 @@ package ui2;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
-import datamodel.CollectionEnums;
+import datamodel.Enums;
 import datamodel.DataModel;
 import datamodel.objects.*;
-import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.*;
@@ -20,9 +18,7 @@ import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
@@ -31,9 +27,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,65 +38,26 @@ import java.util.stream.Collectors;
 
 public class UIController {
 
-    DataModel model;
-    String benchFilter = "_interactive";
-    String collectionFilter = "";
-    String itemFilter = "";
-    String placeableFilter = "";
-    String stringFilter = "prefabs_";
-    String recipeFilter = "";
+    DataModel model = new DataModel();
+//    String benchFilter = "_interactive";
+    String filter = "";
+//    String stringFilter = "prefabs_";
     List<String> selectedPaths = new ArrayList<>();
     List<String> failedPaths = new ArrayList<>();
 
+//    StringProperty logs = new SimpleStringProperty("");
+
     boolean isBuffering = false;
 
-    boolean loadDatabase(Stage stage, TextArea logger) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Database Files", "*.db"));
-        File selected = fileChooser.showOpenDialog(stage);
-        if (selected != null) {
-            String path = selected.getAbsolutePath();
-            String lang = "en";     // need to make mini-dialog to select language, but setting to english for now
-            try {
-                model = new DataModel(path, lang);
-                print(logger, "Database loaded from " + path);
-                return true;
-            } catch (SQLException e) {
-                print(logger, "Database loading failed due to a SQLException; stack trace below:");
-                Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
-                return false;
-            }
-        }
-        return false;
-    }
-
-    boolean createDatabase(Stage stage, TextArea logger) {
-        DirectoryChooser dirChooser = new DirectoryChooser();
-        dirChooser.setTitle("Select the location to save the database at.");
-        File newDb = dirChooser.showDialog(stage);
-        FileChooser fileChooser = new FileChooser();
-        if (newDb != null) {
-            fileChooser.setTitle("Select your Data Definition Language file.");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("DDL files", "*.ddl"));
-            File ddl = fileChooser.showOpenDialog(stage);
-            if (ddl != null) {
-                String path = newDb.getAbsolutePath() + "\\trove.db";
-                String ddlPath = ddl.getAbsolutePath();
-                String lang = "en";
-                try {
-                    model = new DataModel(path, ddlPath, lang);
-                    print(logger, "Database created at " + path + " using DDL file at " + ddlPath);
-                    return true;
-                } catch (SQLException e) {
-                    print(logger, "Database creation failed due to a SQLException; stack trace below:");
-                    Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
-                    return false;
-                }
-            }
-        }
-
-
-        return false;
+    boolean loadData(Stage stage, TextArea logger) {
+//        FileChooser fileChooser = new FileChooser();
+//        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+//        File selected = fileChooser.showOpenDialog(stage);
+//        if (selected != null) {
+//            String path = selected.getAbsolutePath();
+//        }
+//        return false;
+        return true;
     }
 
     void dumpLogs(Stage stage, TextArea logger) {
@@ -110,7 +67,7 @@ public class UIController {
         if (selected != null) {
             String path = selected.getAbsolutePath();
             LocalDateTime currTime = LocalDateTime.now();
-            String fileName = "log-" + currTime.toString().replace(":", "-").replace(".", "-") + ".txt";
+            String fileName = "log-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".txt";
             try {
                 Path file = Paths.get(path + "\\" + fileName);
                 Files.write(file, Arrays.asList(logger.getText().split("\\n")), StandardCharsets.UTF_8);
@@ -131,46 +88,11 @@ public class UIController {
         buttons.forEach(item -> item.setDisable(true));
     }
 
-    void setFilter(String filter, Parser.ObjectType type) {
-        switch (type) {
-            case BENCH:
-            case PROFESSION:
-                benchFilter = filter;
-            case COLLECTION:
-                collectionFilter = filter;
-            case ITEM:
-                itemFilter = filter;
-            case PLACEABLE:
-                placeableFilter = filter;
-            case RECIPE:
-                recipeFilter = filter;
-            case STRING:
-                stringFilter = filter;
-        }
+    String getFilterText() {
+        return filter;
     }
 
-    String getFilterText(Parser.ObjectType type) {
-        switch (type) {
-            case BENCH:
-            case PROFESSION:
-                return benchFilter;
-            case COLLECTION:
-                return collectionFilter;
-            case ITEM:
-                return itemFilter;
-            case PLACEABLE:
-                return placeableFilter;
-            case RECIPE:
-                return recipeFilter;
-            case STRING:
-                return stringFilter;
-            default:
-                return "";
-        }
-    }
-
-    CheckBoxTreeItem<String> getParseTree(String path, Parser.ObjectType type) {
-        String filter = getFilterText(type);
+    CheckBoxTreeItem<String> getParseTree(String path, Enums.ObjectType type) {
         File dir = new File(path);   // since presenter checks that the input path is a directory, we can assume that here
         List<String> paths = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
                 .map(File::getPath).filter(value -> value.contains(filter)).collect(Collectors.toList());
@@ -192,7 +114,7 @@ public class UIController {
             // else, add path to list if it has the filter keyword
             else {
                 // if npcCheck passes and contains filter word, we process the item
-                boolean npcCheck = !type.equals(Parser.ObjectType.COLLECTION) || !subPath.contains("_npc");
+                boolean npcCheck = !type.equals(Enums.ObjectType.COLLECTION) || !subPath.contains("_npc");
                 if (subPath.contains(filter) && npcCheck) {
                     CheckBoxTreeItem<String> item = new CheckBoxTreeItem<>(subPath);
 
@@ -215,7 +137,7 @@ public class UIController {
         return rootItem;
     }
 
-    void updateParseTree(Parser.ObjectType type, TreeView<String> tree, TextField directory) {
+    void updateParseTree(Enums.ObjectType type, TreeView<String> tree, TextField directory) {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() {
@@ -227,7 +149,7 @@ public class UIController {
         new Thread(task).start();
     }
 
-    void setParseDirectory(Stage stage, TextField directory, TreeView<String> tree, Parser.ObjectType type) {
+    void setParseDirectory(Stage stage, TextField directory, TreeView<String> tree, Enums.ObjectType type) {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select the location to extract data from.");
         File selected = dirChooser.showDialog(stage);
@@ -237,15 +159,21 @@ public class UIController {
         }
     }
 
-    void updateParseDirectory(TextField filter, TextField directory, TreeView<String> tree, Parser.ObjectType type) {
-        setFilter(filter.getText(), type);
-        filter.setText(getFilterText(type));
+    void updateParseDirectory(TextField filterField, TextField directory, TreeView<String> tree, Enums.ObjectType type) {
+        filter = filterField.getText();
         if (directory.getText() != null) {
             updateParseTree(type, tree, directory);
         }
     }
 
-    public void parse(ProgressBar progressBar, Text progressText, TextArea logger, Parser.ObjectType type) {
+    void setParseTypes(ComboBox<String> typeSelect) {
+        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Items", "Placeables", "Professions", "Recipes", "Skins", "Strings");
+        typeSelect.setItems(types);
+        typeSelect.getSelectionModel().selectFirst();
+    }
+
+    public void parse(ProgressBar progressBar, Text progressText, TextArea logger, String typeString) {
+        Enums.ObjectType type = Enums.ObjectType.getType(typeString);
         Task<Void> task = getParseTask(type, logger);
         progressBar.progressProperty().bind(task.progressProperty());
         progressText.textProperty().bind(task.messageProperty());
@@ -255,14 +183,13 @@ public class UIController {
             Platform.runLater(() -> {
                 selectedPaths.clear();
                 if (!failedPaths.isEmpty()) {
-                    failedPaths.forEach(item -> print(logger, "Parse failure: " + item));
                     failedPaths.clear();
                 }
             });
         }).start();
     }
 
-    public Task<Void> getParseTask(Parser.ObjectType type, TextArea logger) {
+    public Task<Void> getParseTask(Enums.ObjectType type, TextArea logger) {
         return new Task<Void>() {
             @Override
             protected Void call() {
@@ -270,17 +197,21 @@ public class UIController {
                 failedPaths.clear();
 
                 // begin parsing
+                StringBuilder errorText = new StringBuilder();
                 int selectedPathsLength = selectedPaths.size();
+                print(logger, "Parsing started.");
                 for (int i = 0; i < selectedPathsLength; i++) {
-                    updateMessage("Parsing " + (i + 1) + "/" + selectedPathsLength + " " + type.toString());
+                    updateMessage("Parsing " + type.toString() + ": " + (i + 1) + "/" + selectedPathsLength);
                     updateProgress(i, selectedPathsLength);
                     try {
                         model.createObject(selectedPaths.get(i), type);
                     } catch (IOException | ParseException e) {
-                        print(logger, e.getMessage());
+                        errorText.append("[").append(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))).append("] ").append("Parse failure: ").append(e.getMessage()).append("\n");
                         failedPaths.add(selectedPaths.get(i));
                     }
                 }
+                print(logger, "Parsing completed.");
+                printPlain(logger, errorText.toString());
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
 
@@ -290,7 +221,11 @@ public class UIController {
     }
 
     void print(TextArea logger, String message) {
-        logger.setText(logger.getText() + "[" + LocalTime.now() + "] " + message + "\n");
+        logger.appendText("[" + LocalTime.now() + "] " + message + "\n");
+    }
+
+    void printPlain(TextArea logger, String message) {
+        logger.appendText(message);
     }
 
     void clearSelectedPaths() {
@@ -300,10 +235,10 @@ public class UIController {
     void setEditTabTable(TableView<ArticleTable> table, TableColumn<ArticleTable, String> rPathCol, TableColumn<ArticleTable, String> nameCol, TabType type) {
         switch (type) {
             case BENCH:
-                ObservableMap<String, ObservableBench> benches = model.getSessionBenches();
+                ObservableMap<String, Bench> benches = model.getSessionBenches();
                 ObservableList<ArticleTable> benchList = FXCollections.observableArrayList(benches.values());
                 table.setItems(benchList);
-                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentBench((ObservableBench) newValue)));
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentBench((Bench) newValue)));
                 model.currentBenchProperty().addListener((((observable, oldValue, newValue) -> {
                     if (newValue == null) {
                         table.getSelectionModel().clearSelection();
@@ -313,10 +248,10 @@ public class UIController {
                 })));
                 break;
             case COLLECTION:
-                ObservableMap<String, ObservableCollection> collections = model.getSessionCollections();
+                ObservableMap<String, Collection> collections = model.getSessionCollections();
                 ObservableList<ArticleTable> collectionList = FXCollections.observableArrayList(collections.values());
                 table.setItems(collectionList);
-                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentCollection((ObservableCollection) newValue)));
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentCollection((Collection) newValue)));
                 model.currentCollectionProperty().addListener((((observable, oldValue, newValue) -> {
                     if (newValue == null) {
                         table.getSelectionModel().clearSelection();
@@ -326,10 +261,10 @@ public class UIController {
                 })));
                 break;
             case ITEM:
-                ObservableMap<String, ObservableItem> items = model.getSessionItems();
+                ObservableMap<String, Item> items = model.getSessionItems();
                 ObservableList<ArticleTable> itemList = FXCollections.observableArrayList(items.values());
                 table.setItems(itemList);
-                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentItem((ObservableItem) newValue)));
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentItem((Item) newValue)));
                 model.currentItemProperty().addListener((((observable, oldValue, newValue) -> {
                     if (newValue == null) {
                         table.getSelectionModel().clearSelection();
@@ -339,10 +274,10 @@ public class UIController {
                 })));
                 break;
             case PLACEABLE:
-                ObservableMap<String, ObservablePlaceable> placeables = model.getSessionPlaceables();
+                ObservableMap<String, Placeable> placeables = model.getSessionPlaceables();
                 ObservableList<ArticleTable> placeableList = FXCollections.observableArrayList(placeables.values());
                 table.setItems(placeableList);
-                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentPlaceable((ObservablePlaceable) newValue)));
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentPlaceable((Placeable) newValue)));
                 model.currentPlaceableProperty().addListener((((observable, oldValue, newValue) -> {
                     if (newValue == null) {
                         table.getSelectionModel().clearSelection();
@@ -352,10 +287,10 @@ public class UIController {
                 })));
                 break;
             case RECIPE:
-                ObservableMap<String, ObservableRecipe> recipes = model.getSessionRecipes();
+                ObservableMap<String, Recipe> recipes = model.getSessionRecipes();
                 ObservableList<ArticleTable> recipeList = FXCollections.observableArrayList(recipes.values());
                 table.setItems(recipeList);
-                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentRecipe((ObservableRecipe) newValue)));
+                table.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> model.setCurrentRecipe((Recipe) newValue)));
                 model.currentRecipeProperty().addListener((((observable, oldValue, newValue) -> {
                     if (newValue == null) {
                         table.getSelectionModel().clearSelection();
@@ -482,7 +417,7 @@ public class UIController {
                     while (c.next()) {
                         if (c.wasUpdated()) {
                             KVPair updated = propertiesEntries.get(c.getFrom());
-                            newValue.updateProperties(CollectionEnums.Property.valueOf(updated.getKey()), updated.getDoubleValue());
+                            newValue.updateProperties(Enums.Property.valueOf(updated.getKey()), updated.getDoubleValue());
                         }
                     }
                 });
@@ -491,7 +426,7 @@ public class UIController {
                     while (c.next()) {
                         if (c.wasUpdated()) {
                             KVPair updated = buffsEntries.get(c.getFrom());
-                            newValue.updateBuffs(CollectionEnums.Buff.valueOf(updated.getKey()), updated.getDoubleValue());
+                            newValue.updateBuffs(Enums.Buff.valueOf(updated.getKey()), updated.getDoubleValue());
                         }
                     }
                 });
@@ -695,6 +630,10 @@ public class UIController {
             }
         }));
     }
+
+//    void setUpLogger(TextArea logger) {
+//        logger.textProperty().bindBidirectional(logs);
+//    }
 
     enum TabType {
         BENCH("bench"),

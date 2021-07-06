@@ -1,94 +1,65 @@
 package datamodel;
 
 import datamodel.objects.*;
+import datamodel.objects.Collection;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 public class DataModel implements Observer {
 
-    Parser parser;
-    DatabaseController database;
-    String language;
+    Parser parser = new Parser();
 
-    ObservableMap<String, ObservableBench> sessionBenches;
-    ObservableMap<String, ObservableCollection> sessionCollections;
-    ObservableMap<String, ObservableItem> sessionItems;
-    ObservableMap<String, ObservablePlaceable> sessionPlaceables;
-    ObservableMap<String, ObservableRecipe> sessionRecipes;
-    Map<String, ObservableStrings> sessionStrings;
+    ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
+    ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
+    ObservableMap<String, Item> sessionItems = FXCollections.observableHashMap();
+    ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
+    ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
+    Map<String, Strings> sessionStrings = new HashMap<>();
 
-    Map<String, ObservableBench> changedBenches = new HashMap<>();
-    Map<String, ObservableCollection> changedCollections = new HashMap<>();
-    Map<String, ObservableItem> changedItems = new HashMap<>();
-    Map<String, ObservablePlaceable> changedPlaceables = new HashMap<>();
-    Map<String, ObservableRecipe> changedRecipes = new HashMap<>();
+    Map<String, Bench> changedBenches = new HashMap<>();
+    Map<String, Collection> changedCollections = new HashMap<>();
+    Map<String, Item> changedItems = new HashMap<>();
+    Map<String, Placeable> changedPlaceables = new HashMap<>();
+    Map<String, Recipe> changedRecipes = new HashMap<>();
     Map<String, String> changedExtractedStrings = new HashMap<>();
     Map<String, String> changedCustomStrings = new HashMap<>();
 
-    final ObjectProperty<ObservableBench> currentBench = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<ObservableCollection> currentCollection = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<ObservableItem> currentItem = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<ObservablePlaceable> currentPlaceable = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<ObservableRecipe> currentRecipe = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Bench> currentBench = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Collection> currentCollection = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Item> currentItem = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Placeable> currentPlaceable = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<Recipe> currentRecipe = new SimpleObjectProperty<>(null);
     private final StringProperty currentString = new SimpleStringProperty(null);
-
-    public DataModel(String newDatabasePath, String ddlPath, String lang) throws SQLException {
-        database = new DatabaseController();
-        parser = new Parser();
-        language = lang;
-        database.createDatabase(newDatabasePath, ddlPath);
-
-        sessionBenches = database.getBenches();
-        sessionCollections = database.getCollections(language);
-        sessionItems = database.getItems(language);
-        sessionPlaceables = database.getPlaceables(language);
-        sessionRecipes = database.getRecipes();
-        sessionStrings = database.getStrings(language);
-    }
-
-    public DataModel(String databasePath, String lang) throws SQLException {
-        database = new DatabaseController();
-        parser = new Parser();
-        language = lang;
-        database.loadDatabase(databasePath);
-
-        sessionBenches = database.getBenches();
-        sessionCollections = database.getCollections(language);
-        sessionItems = database.getItems(language);
-        sessionPlaceables = database.getPlaceables(language);
-        sessionRecipes = database.getRecipes();
-        sessionStrings = database.getStrings(language);
-    }
 
     @Override
     public void update(Observable o, Object arg) {
         // yes, this is not at all OO and is ugly, will refactor eventually
-        if (o instanceof ObservableBench) {
-            ObservableBench object = (ObservableBench) o;
+        if (o instanceof Bench) {
+            Bench object = (Bench) o;
             changedBenches.put(object.getRPath(), object);
-        } else if (o instanceof ObservableCollection) {
-            ObservableCollection object = (ObservableCollection) o;
+        } else if (o instanceof Collection) {
+            Collection object = (Collection) o;
             changedCollections.put(object.getRPath(), object);
-        } else if (o instanceof ObservableItem) {
-            ObservableItem object = (ObservableItem) o;
+        } else if (o instanceof Item) {
+            Item object = (Item) o;
             changedItems.put(object.getRPath(), object);
-        } else if (o instanceof ObservablePlaceable) {
-            ObservablePlaceable object = (ObservablePlaceable) o;
+        } else if (o instanceof Placeable) {
+            Placeable object = (Placeable) o;
             changedPlaceables.put(object.getRPath(), object);
-        } else if (o instanceof ObservableRecipe) {
-            ObservableRecipe object = (ObservableRecipe) o;
+        } else if (o instanceof Recipe) {
+            Recipe object = (Recipe) o;
             changedRecipes.put(object.getRPath(), object);
-        } else if (o instanceof ObservableStrings) {
-            ObservableStrings object = (ObservableStrings) o;
+        } else if (o instanceof Strings) {
+            Strings object = (Strings) o;
             if (arg instanceof String[]) {
                 String[] entry = (String[]) arg;
                 if (object.getName().equals("extracted")) {
@@ -103,23 +74,23 @@ public class DataModel implements Observer {
 
     // CREATING OBJECTS
 
-    public void createObject(String absPath, Parser.ObjectType type) throws IOException, ParseException {
+    public void createObject(String absPath, Enums.ObjectType type) throws IOException, ParseException {
         switch (type) {
             case ITEM:
-                upsertItem((ObservableItem) parser.createObject(absPath, type));
+                upsertItem((Item) parser.createObject(absPath, type));
                 break;
             case PLACEABLE:
-                upsertPlaceable((ObservablePlaceable) parser.createObject(absPath, type));
+                upsertPlaceable((Placeable) parser.createObject(absPath, type));
                 break;
             case BENCH:
             case PROFESSION:
-                upsertBench((ObservableBench) parser.createObject(absPath, type));
+                upsertBench((Bench) parser.createObject(absPath, type));
                 break;
             case RECIPE:
-                upsertRecipe((ObservableRecipe) parser.createObject(absPath, type));
+                upsertRecipe((Recipe) parser.createObject(absPath, type));
                 break;
             case COLLECTION:
-                upsertCollection((ObservableCollection) parser.createObject(absPath, type));
+                upsertCollection((Collection) parser.createObject(absPath, type));
                 break;
             case STRING:
                 insertExtractedStrings((LangFile) parser.createObject(absPath, type));
@@ -127,14 +98,14 @@ public class DataModel implements Observer {
         }
     }
 
-    private void upsertItem(ObservableItem item) {
+    private void upsertItem(Item item) {
         String rPath = item.getRPath();
         if (!sessionItems.containsKey(rPath)) {
             sessionItems.put(item.getRPath(), item);
             changedItems.put(item.getRPath(), item);
         } else {
             // update the name, description, and unlocks
-            ObservableItem existing = sessionItems.get(rPath);
+            Item existing = sessionItems.get(rPath);
             boolean changed = false;
             if (!existing.getName().equals(item.getName())) { // names are not nullable
                 existing.setName(item.getName());
@@ -152,13 +123,13 @@ public class DataModel implements Observer {
         }
     }
 
-    private void upsertPlaceable(ObservablePlaceable placeable) {
+    private void upsertPlaceable(Placeable placeable) {
         String rPath = placeable.getRPath();
         if (!sessionPlaceables.containsKey(rPath)) {
             sessionPlaceables.put(rPath, placeable);
             changedPlaceables.put(rPath, placeable);
         } else {
-            ObservablePlaceable existing = sessionPlaceables.get(rPath);
+            Placeable existing = sessionPlaceables.get(rPath);
             boolean changed = false;
             if (!existing.getName().equals(placeable.getName())) {
                 existing.setName(placeable.getName());
@@ -172,13 +143,13 @@ public class DataModel implements Observer {
         }
     }
 
-    private void upsertRecipe(ObservableRecipe recipe) {
+    private void upsertRecipe(Recipe recipe) {
         String rPath = recipe.getRPath();
         if (!sessionRecipes.containsKey(rPath)) {
             sessionRecipes.put(rPath, recipe);
             changedRecipes.put(rPath, recipe);
         } else {
-            ObservableRecipe existing = sessionRecipes.get(rPath);
+            Recipe existing = sessionRecipes.get(rPath);
             boolean changed = false;
             if (!existing.getName().equals(recipe.getName())) {
                 existing.setName(recipe.getName());
@@ -196,13 +167,13 @@ public class DataModel implements Observer {
         }
     }
 
-    private void upsertBench(ObservableBench bench) {
+    private void upsertBench(Bench bench) {
         String rPath = bench.getRPath();
         if (!sessionBenches.containsKey(rPath)) {
             sessionBenches.put(rPath, bench);
             changedBenches.put(rPath, bench);
         } else {
-            ObservableBench existing = sessionBenches.get(rPath);
+            Bench existing = sessionBenches.get(rPath);
             boolean changed = false;
             if (!existing.getName().equals(bench.getName())) {
                 existing.setName(bench.getName());
@@ -217,13 +188,13 @@ public class DataModel implements Observer {
         }
     }
 
-    private void upsertCollection(ObservableCollection collection) {
+    private void upsertCollection(Collection collection) {
         String rPath = collection.getRPath();
         if (!sessionCollections.containsKey(rPath)) {
             sessionCollections.put(rPath, collection);
             changedCollections.put(rPath, collection);
         } else {
-            ObservableCollection existing = sessionCollections.get(rPath);
+            Collection existing = sessionCollections.get(rPath);
             boolean changed = false;
             if (!existing.getName().equals(collection.getName())) {
                 existing.setName(collection.getName());
@@ -251,7 +222,7 @@ public class DataModel implements Observer {
     }
 
     private void insertExtractedStrings(LangFile newStrings) {
-        ObservableStrings extractedStrings = sessionStrings.get("extracted");
+        Strings extractedStrings = sessionStrings.get("extracted");
         if (extractedStrings != null) {
             newStrings.getStrings().forEach((k, v) -> {
                 extractedStrings.upsertString(k, v);
@@ -275,49 +246,49 @@ public class DataModel implements Observer {
 
     // GETTERS - SESSION DATA
 
-    public ObservableMap<String, ObservableBench> getSessionBenches() {
+    public ObservableMap<String, Bench> getSessionBenches() {
         return sessionBenches;
     }
 
-    public ObservableMap<String, ObservableCollection> getSessionCollections() {
+    public ObservableMap<String, Collection> getSessionCollections() {
         return sessionCollections;
     }
 
-    public ObservableMap<String, ObservableItem> getSessionItems() {
+    public ObservableMap<String, Item> getSessionItems() {
         return sessionItems;
     }
 
-    public ObservableMap<String, ObservablePlaceable> getSessionPlaceables() {
+    public ObservableMap<String, Placeable> getSessionPlaceables() {
         return sessionPlaceables;
     }
 
-    public ObservableMap<String, ObservableRecipe> getSessionRecipes() {
+    public ObservableMap<String, Recipe> getSessionRecipes() {
         return sessionRecipes;
     }
 
-    public Map<String, ObservableStrings> getSessionStrings() {
+    public Map<String, Strings> getSessionStrings() {
         return sessionStrings;
     }
 
     // GETTERS - CHANGED DATA
 
-    public Map<String, ObservableBench> getChangedBenches() {
+    public Map<String, Bench> getChangedBenches() {
         return changedBenches;
     }
 
-    public Map<String, ObservableCollection> getChangedCollections() {
+    public Map<String, Collection> getChangedCollections() {
         return changedCollections;
     }
 
-    public Map<String, ObservableItem> getChangedItems() {
+    public Map<String, Item> getChangedItems() {
         return changedItems;
     }
 
-    public Map<String, ObservablePlaceable> getChangedPlaceables() {
+    public Map<String, Placeable> getChangedPlaceables() {
         return changedPlaceables;
     }
 
-    public Map<String, ObservableRecipe> getChangedRecipes() {
+    public Map<String, Recipe> getChangedRecipes() {
         return changedRecipes;
     }
 
@@ -331,51 +302,51 @@ public class DataModel implements Observer {
 
     // GETTERS AND SETTERS - CURRENTLY SELECTED DATA
 
-    public ObservableBench getCurrentBench() {
+    public Bench getCurrentBench() {
         return currentBench.get();
     }
 
-    public ObjectProperty<ObservableBench> currentBenchProperty() {
+    public ObjectProperty<Bench> currentBenchProperty() {
         return currentBench;
     }
 
-    public void setCurrentBench(ObservableBench currentBench) {
+    public void setCurrentBench(Bench currentBench) {
         this.currentBench.set(currentBench);
     }
 
-    public ObjectProperty<ObservableCollection> currentCollectionProperty() {
+    public ObjectProperty<Collection> currentCollectionProperty() {
         return currentCollection;
     }
 
-    public void setCurrentCollection(ObservableCollection currentCollection) {
+    public void setCurrentCollection(Collection currentCollection) {
         this.currentCollection.set(currentCollection);
     }
 
-    public ObservableItem getCurrentItem() {
+    public Item getCurrentItem() {
         return currentItem.get();
     }
 
-    public ObjectProperty<ObservableItem> currentItemProperty() {
+    public ObjectProperty<Item> currentItemProperty() {
         return currentItem;
     }
 
-    public void setCurrentItem(ObservableItem currentItem) {
+    public void setCurrentItem(Item currentItem) {
         this.currentItem.set(currentItem);
     }
 
-    public ObjectProperty<ObservablePlaceable> currentPlaceableProperty() {
+    public ObjectProperty<Placeable> currentPlaceableProperty() {
         return currentPlaceable;
     }
 
-    public void setCurrentPlaceable(ObservablePlaceable currentPlaceable) {
+    public void setCurrentPlaceable(Placeable currentPlaceable) {
         this.currentPlaceable.set(currentPlaceable);
     }
 
-    public ObjectProperty<ObservableRecipe> currentRecipeProperty() {
+    public ObjectProperty<Recipe> currentRecipeProperty() {
         return currentRecipe;
     }
 
-    public void setCurrentRecipe(ObservableRecipe currentRecipe) {
+    public void setCurrentRecipe(Recipe currentRecipe) {
         this.currentRecipe.set(currentRecipe);
     }
 

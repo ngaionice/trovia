@@ -1,5 +1,6 @@
 package datamodel.parser;
 
+import datamodel.Enums;
 import datamodel.objects.Article;
 import datamodel.parser.parsestrategies.*;
 
@@ -100,9 +101,10 @@ public class Parser {
         return hexRaw.replaceAll("(.{2})", "$1 ").trim();
     }
 
-    public Article createObject(String path, ObjectType itemType) throws IOException, ParseException {
+    public Article createObject(String path, Enums.ObjectType itemType) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
+        System.out.println(itemType.toString());
         switch (itemType) {
             case ITEM:
                 context = new ParseContext(new ParseItem());
@@ -122,6 +124,9 @@ public class Parser {
             case COLLECTION:
                 context = new ParseContext(new ParseCollection());
                 return context.parse(splitString, path);
+            case SKIN:
+                context = new ParseContext(new ParseSkin());
+                return context.parse(splitString, path);
             case STRING:
                 context = new ParseContext(new ParseLangPrefab());
                 return context.parse(splitString, path);
@@ -130,35 +135,4 @@ public class Parser {
         }
     }
 
-    public enum ObjectType {
-        ITEM,
-        BENCH,
-        COLLECTION,
-        STRING,
-        PLACEABLE,
-        RECIPE,
-        PROFESSION;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case ITEM:
-                    return "Item";
-                case BENCH:
-                    return "Bench";
-                case COLLECTION:
-                    return "Collection";
-                case PLACEABLE:
-                    return "Placeable";
-                case PROFESSION:
-                    return "Profession";
-                case RECIPE:
-                    return "Recipe";
-                case STRING:
-                    return "Language File";
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
-    }
 }

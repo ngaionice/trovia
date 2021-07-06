@@ -10,7 +10,7 @@ import javafx.collections.ObservableMap;
 
 import java.util.*;
 
-public class ObservableBench extends Observable implements Article, ArticleTable {
+public class Bench extends Observable implements Article, ArticleTable {
 
     StringProperty name; // the string identifier of the bench's name
     StringProperty rPath;
@@ -21,7 +21,7 @@ public class ObservableBench extends Observable implements Article, ArticleTable
      */
     StringProperty professionName; // the value in the property can be null
 
-    public ObservableBench(String name, String rPath, Map<String[], List<String>> categories, String professionName) {
+    public Bench(String name, String rPath, Map<String[], List<String>> categories, String professionName) {
         this.name = new SimpleStringProperty(name);
         this.rPath = new SimpleStringProperty(rPath);
         this.professionName = new SimpleStringProperty(professionName);

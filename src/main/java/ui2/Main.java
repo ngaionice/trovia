@@ -7,7 +7,12 @@ import javafx.stage.Stage;
 
 import java.util.Objects;
 
-public class Main extends Application{
+public class Main extends Application {
+
+    public static void main(String[] args) {
+        System.setProperty("prism.dirtyopts", "false");
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -25,6 +30,4 @@ public class Main extends Application{
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
-    public static void main(String[] args) { launch(args); }
 }

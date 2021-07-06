@@ -1,7 +1,7 @@
 package datamodel.parser.parsestrategies;
 
 import datamodel.objects.Article;
-import datamodel.objects.ObservableRecipe;
+import datamodel.objects.Recipe;
 import datamodel.parser.Parser;
 import local.Markers;
 
@@ -113,7 +113,7 @@ public class ParseRecipe implements ParseStrategy{
             outputStartIndex = outputEndIndex;
         }
 
-        return new ObservableRecipe(path, rPath, costs, output);
+        return new Recipe(path, rPath, costs, output);
     }
 }
 

@@ -2,12 +2,9 @@ package ui2;
 
 import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
-import datamodel.CollectionEnums;
+import datamodel.Enums;
 import datamodel.objects.ArticleTable;
-import datamodel.objects.ObservableStrings;
-import datamodel.parser.Parser;
 import javafx.application.Platform;
-import javafx.collections.ObservableMap;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -46,19 +43,18 @@ public class Presenter {
         Region spacer = new Region();
         JFXButton parseButton = new JFXButton("Parse");
         JFXButton editButton = new JFXButton("Edit");
-        JFXButton syncButton = new JFXButton("Sync");
         JFXButton reviewButton = new JFXButton("Review");
         JFXButton loadButton = new JFXButton("Load");
-        JFXButton createButton = new JFXButton("Create");
+        JFXButton exportButton = new JFXButton("Export");
         JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
         Separator separator = new Separator();
         Separator separator2 = new Separator();
 
-        List<Button> actionButtons = Arrays.asList(parseButton, editButton, syncButton, reviewButton);
-        List<Button> databaseButtons = Arrays.asList(loadButton, createButton);
-        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, syncButton, reviewButton, loadButton, createButton, logsButton, quitButton);
-        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-sync", "button-review", "button-load", "button-create", "button-logs", "button-quit"};
+        List<Button> actionButtons = Arrays.asList(parseButton, editButton, reviewButton, exportButton);
+        List<Button> databaseButtons = Collections.singletonList(loadButton);
+        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, reviewButton, loadButton, exportButton, logsButton, quitButton);
+        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-review", "button-load", "button-export", "button-logs", "button-quit"};
 
         spacer.prefHeightProperty().bind(scene.heightProperty().multiply(0.125));
         for (int i = 0; i < buttonIds.length; i++) {
@@ -67,8 +63,8 @@ public class Presenter {
             buttonList.get(i).setId(buttonIds[i]);
         }
         navBox.getChildren().addAll(buttonList);
-        navBox.getChildren().add(4, separator);
-        navBox.getChildren().add(7, separator2);
+        navBox.getChildren().add(3, separator);
+        navBox.getChildren().add(6, separator2);
         navBox.getChildren().add(0, spacer);
         navBox.setId("nav-box");
         separator.getStyleClass().add("nav-separator");
@@ -77,22 +73,21 @@ public class Presenter {
         // set button actions
         parseButton.setOnAction(e -> setParseScreen());
         editButton.setOnAction(e -> setEditScreen());
-        syncButton.setOnAction(e -> setSyncScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
         loadButton.setOnAction(e -> {
-            boolean enable = controller.loadDatabase(stage, logger);
+            boolean enable = controller.loadData(stage, logger);
             if (enable) {
                 controller.enableActionButtons(actionButtons);
                 controller.disableActionButtons(databaseButtons);
             }
         });
-        createButton.setOnAction(e -> {
-            boolean enable = controller.createDatabase(stage, logger);
-            if (enable) {
-                controller.enableActionButtons(actionButtons);
-                controller.disableActionButtons(databaseButtons);
-            }
+        exportButton.setOnAction(e -> {
+//            boolean enable = controller.createDatabase(stage, logger);
+//            if (enable) {
+//                controller.enableActionButtons(actionButtons);
+//                controller.disableActionButtons(databaseButtons);
+//            }
         });
 
         logsButton.setOnAction(e -> setLogsScreen());
@@ -109,44 +104,24 @@ public class Presenter {
         Text headerText = new Text("Parse");
 
         header.getChildren().add(headerText);
-
-        JFXTabPane tabs = new JFXTabPane();
-        Tab benches = getParseTab("Benches", Parser.ObjectType.BENCH);
-        Tab collections = getParseTab("Collections", Parser.ObjectType.COLLECTION);
-        Tab items = getParseTab("Items", Parser.ObjectType.ITEM);
-        Tab placeables = getParseTab("Placeables", Parser.ObjectType.PLACEABLE);
-        Tab professions = getParseTab("Professions", Parser.ObjectType.PROFESSION);
-        Tab recipes = getParseTab("Recipes", Parser.ObjectType.RECIPE);
-        Tab strings = getParseTab("Strings", Parser.ObjectType.STRING);
-        tabs.getTabs().addAll(benches, collections, items, placeables, professions, recipes, strings);
-
-        // debatable design choice: clear all selections on tab switch
-        // issue: different types of paths on different tabs, ideally one list for each but might clog things up even more
-//        tabs.getSelectionModel().selectedIndexProperty().addListener(((observable, oldValue, newValue) -> {
-//            if (!newValue.equals(oldValue)) {
-//                controller.clearSelectedPaths();
-//            }
-//        }));
-
         header.getStyleClass().add("header");
         headerText.getStyleClass().add("header-text");
 
         screenRoot.setTop(header);
-        screenRoot.setCenter(tabs);
+        screenRoot.setCenter(getParseScreenContent());
         screenRoot.setBottom(getLogsRegion());
         root.setCenter(screenRoot);
     }
 
-    private Tab getParseTab(String name, Parser.ObjectType type) {
-        Tab tab = new Tab(name);
-
-        StackPane root = new StackPane();
+    private Pane getParseScreenContent() {
+        StackPane center = new StackPane();
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
         JFXTextField directory = new JFXTextField();
         JFXButton dirButton = new JFXButton();
         JFXTextField filter = new JFXTextField();
         JFXButton filterButton = new JFXButton();
+        JFXComboBox<String> typeSelect = new JFXComboBox<>();
         TreeView<String> tree = new TreeView<>();
         JFXButton startButton = new JFXButton();
         JFXProgressBar progressBar = new JFXProgressBar();
@@ -156,14 +131,22 @@ public class Presenter {
         directory.setPromptText("Directory");
         directory.setDisable(true);
         filter.setPromptText("Filter");
-        filter.setText(controller.getFilterText(type));
+        filter.setText(controller.getFilterText());
+        typeSelect.setPromptText("Parse Type");
         progressBar.setProgress(0);
 
-        dirButton.setOnAction(e -> controller.setParseDirectory(stage, directory, tree, type));
-        filterButton.setOnAction(e -> controller.updateParseDirectory(filter, directory, tree, type));
-        startButton.setOnAction(e -> controller.parse(progressBar, progressText, logger, type));
+        controller.setParseTypes(typeSelect);
+        dirButton.setOnAction(e -> {
+            controller.setParseDirectory(stage, directory, tree, Enums.ObjectType.getType(typeSelect.getValue()));
+            controller.clearSelectedPaths();
+        });
+        filterButton.setOnAction(e -> {
+            controller.updateParseDirectory(filter, directory, tree, Enums.ObjectType.getType(typeSelect.getValue()));
+            controller.clearSelectedPaths();
+        });
+        startButton.setOnAction(e -> controller.parse(progressBar, progressText, logger, typeSelect.getValue()));
 
-        root.getStyleClass().add("pane-background");
+        center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
         directory.getStyleClass().add("text-field-dir");
@@ -181,12 +164,11 @@ public class Presenter {
         filterButton.setGraphic(new FontIcon());
         startButton.setGraphic(new FontIcon());
         tree.setCellFactory(CheckBoxTreeCell.forTreeView());
-        tree.prefWidthProperty().bind(root.widthProperty().multiply(0.80));
-        tree.prefHeightProperty().bind(root.heightProperty().multiply(0.68));
-        progressBar.prefWidthProperty().bind(root.widthProperty().multiply(0.80));
+        tree.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
+        tree.prefHeightProperty().bind(center.heightProperty().multiply(0.68));
+        progressBar.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
 
-        tab.setContent(root);
-        root.getChildren().add(anchor);
+        center.getChildren().add(anchor);
         anchor.getChildren().add(grid);
         anchor.getChildren().add(startButton);
         progressBox.getChildren().addAll(progressText, progressBar);
@@ -194,14 +176,15 @@ public class Presenter {
         grid.add(dirButton, 1, 0);
         grid.add(filter, 2, 0);
         grid.add(filterButton, 3, 0);
-        grid.add(progressBox, 0, 1, 4, 1);
-        grid.add(tree, 0, 2, 4, 1);
+        grid.add(typeSelect, 4, 0);
+        grid.add(progressBox, 0, 1, 5, 1);
+        grid.add(tree, 0, 2, 5, 1);
 
         setMaxAnchor(grid);
         setFabAnchor(startButton);
 
         JFXDepthManager.setDepth(anchor, 1);
-        return tab;
+        return center;
     }
 
     private void setEditScreen() {
@@ -289,10 +272,6 @@ public class Presenter {
         }
 
         tab.setContent(root);
-    }
-
-    private void setSyncScreen() {
-
     }
 
     private void setReviewScreen() {

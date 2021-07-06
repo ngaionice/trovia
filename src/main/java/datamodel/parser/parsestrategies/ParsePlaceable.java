@@ -1,7 +1,7 @@
 package datamodel.parser.parsestrategies;
 
 import datamodel.objects.Article;
-import datamodel.objects.ObservablePlaceable;
+import datamodel.objects.Placeable;
 import datamodel.parser.Parser;
 import local.Markers;
 
@@ -61,6 +61,6 @@ public class ParsePlaceable implements ParseStrategy {
         String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
         rPath = rPath.replaceAll("\\\\", "/");
 
-        return new ObservablePlaceable(name, desc, rPath);
+        return new Placeable(name, desc, rPath);
     }
 }

@@ -204,6 +204,7 @@
     -fx-hgap: 12px;
     -fx-vgap: 12px;
     -fx-padding: 24px;
+    /*-fx-alignment: center;*/
 }
 
 .grid-sidebar {

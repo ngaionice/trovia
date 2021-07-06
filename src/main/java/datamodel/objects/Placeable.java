@@ -7,18 +7,20 @@ import javafx.collections.ObservableList;
 import java.util.List;
 import java.util.Observable;
 
-public class ObservablePlaceable extends Observable implements Article, ArticleTable {
+public class Placeable extends Observable implements Article, ArticleTable {
 
     StringProperty name;
     StringProperty desc;
     StringProperty rPath;
     ListProperty<String> notes;
     BooleanProperty tradable;
+    IntegerProperty blueprintIndex = null;
+    ListProperty<String> possibleBlueprints;
 
     /**
      * Constructor for new Placeable creations. Not for database imports.
      */
-    public ObservablePlaceable(String name, String desc, String rPath) {
+    public Placeable(String name, String desc, String rPath) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
@@ -26,7 +28,7 @@ public class ObservablePlaceable extends Observable implements Article, ArticleT
         this.tradable = new SimpleBooleanProperty(true);
     }
 
-    public ObservablePlaceable(String name, String desc, String rPath, List<String> notes, boolean isTradable) {
+    public Placeable(String name, String desc, String rPath, List<String> notes, boolean isTradable) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
@@ -96,5 +98,29 @@ public class ObservablePlaceable extends Observable implements Article, ArticleT
 
     public BooleanProperty tradableProperty() {
         return tradable;
+    }
+
+    public int getBlueprintIndex() {
+        return blueprintIndex.get();
+    }
+
+    public IntegerProperty blueprintIndexProperty() {
+        return blueprintIndex;
+    }
+
+    public void setBlueprintIndex(int blueprintIndex) {
+        this.blueprintIndex.set(blueprintIndex);
+    }
+
+    public ObservableList<String> getPossibleBlueprints() {
+        return possibleBlueprints.get();
+    }
+
+    public ListProperty<String> possibleBlueprintsProperty() {
+        return possibleBlueprints;
+    }
+
+    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
+        this.possibleBlueprints.set(possibleBlueprints);
     }
 }

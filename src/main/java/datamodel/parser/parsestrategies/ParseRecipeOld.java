@@ -1,6 +1,6 @@
 package datamodel.parser.parsestrategies;
 
-import datamodel.objects.ObservableRecipe;
+import datamodel.objects.Recipe;
 import datamodel.parser.Parser;
 import datamodel.objects.Article;
 import local.Markers;
@@ -84,6 +84,6 @@ public class ParseRecipeOld implements ParseStrategy {
         String[] lastEntry = parsedList.get(parsedList.size() - 1);
         product.put(Parser.hexToAscii(lastEntry[0]), Parser.recipeH2D(lastEntry[1], lastEntry[0]));
 
-        return new ObservableRecipe(path, rPath, costs, product);
+        return new Recipe(path, rPath, costs, product);
     }
 }
