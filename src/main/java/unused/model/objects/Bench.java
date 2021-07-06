@@ -1,4 +1,4 @@
-package model.objects;
+package unused.model.objects;
 
 import datamodel.objects.Article;
 

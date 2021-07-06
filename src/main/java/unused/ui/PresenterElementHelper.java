@@ -1,7 +1,7 @@
-package ui;
+package unused.ui;
 
 import com.jfoenix.controls.*;
-import model.ModelController;
+import unused.model.ModelController;
 import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,8 +12,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import model.objects.CollectionEnums;
-import ui.searchables.Searchable;
+import unused.model.objects.CollectionEnums;
+import unused.ui.searchables.Searchable;
 
 import java.util.Collection;
 import java.util.List;

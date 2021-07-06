@@ -1,8 +1,8 @@
-package model.managers;
+package unused.model.managers;
 
-import model.gateways.DatabaseGateway;
-import model.objects.Collection;
-import model.objects.CollectionEnums;
+import unused.model.gateways.DatabaseGateway;
+import unused.model.objects.Collection;
+import unused.model.objects.CollectionEnums;
 
 import java.io.Serializable;
 import java.util.*;

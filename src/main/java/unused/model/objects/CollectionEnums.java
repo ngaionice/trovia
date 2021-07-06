@@ -1,4 +1,4 @@
-package datamodel;
+package unused.model.objects;
 
 import java.io.Serializable;
 
@@ -29,7 +29,6 @@ public class CollectionEnums implements Serializable {
         JP,
         LS, // lasermancy
         LT, // light
-        PR
     }
 
     public enum Property {

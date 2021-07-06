@@ -1,6 +1,6 @@
-package model.managers;
+package unused.model.managers;
 
-import model.gateways.DatabaseGateway;
+import unused.model.gateways.DatabaseGateway;
 import datamodel.objects.LangFile;
 
 import java.io.Serializable;

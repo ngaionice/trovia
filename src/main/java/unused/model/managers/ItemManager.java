@@ -1,7 +1,7 @@
-package model.managers;
+package unused.model.managers;
 
-import model.gateways.DatabaseGateway;
-import model.objects.Item;
+import unused.model.gateways.DatabaseGateway;
+import unused.model.objects.Item;
 
 import java.io.Serializable;
 import java.util.ArrayList;

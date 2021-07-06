@@ -1,8 +1,6 @@
-package model.managers;
+package unused.model.managers;
 
-import model.gateways.DatabaseGateway;
-
-import java.util.Map;
+import unused.model.gateways.DatabaseGateway;
 
 public interface Manager {
 

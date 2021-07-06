@@ -1,11 +1,12 @@
-package model;
+package unused.model;
 
+import datamodel.Enums;
 import datamodel.objects.LangFile;
-import model.gateways.LocalGateway;
-import model.gateways.MongoGateway;
-import model.managers.*;
-import model.objects.*;
-import model.objects.Collection;
+import unused.model.gateways.LocalGateway;
+import unused.model.gateways.MongoGateway;
+import unused.model.managers.*;
+import unused.model.objects.*;
+import unused.model.objects.Collection;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 
@@ -27,7 +28,7 @@ public class ModelController {
 
     // PARSING
 
-    public String createObject(String absPath, Parser.ObjectType type) throws IOException {
+    public String createObject(String absPath, Enums.ObjectType type) throws IOException {
         switch (type) {
             case ITEM:
                 try {
@@ -228,21 +229,21 @@ public class ModelController {
      * @param type     "all", "new", "removed"
      * @return         list of string arrays
      */
-    public List<String[]> getNameAndRPathList(List<Parser.ObjectType> artTypes, String type) {
+    public List<String[]> getNameAndRPathList(List<Enums.ObjectType> artTypes, String type) {
 
         // the ArrayList that will hold the entries
         List<SearchManager> managers = new ArrayList<>();
 
         // add the managers selected
-        if (artTypes.contains(Parser.ObjectType.BENCH)) {
+        if (artTypes.contains(Enums.ObjectType.BENCH)) {
             managers.add(benchM);
         }
 
-        if (artTypes.contains(Parser.ObjectType.COLLECTION)) {
+        if (artTypes.contains(Enums.ObjectType.COLLECTION)) {
             managers.add(colM);
         }
 
-        if (artTypes.contains(Parser.ObjectType.ITEM)) {
+        if (artTypes.contains(Enums.ObjectType.ITEM)) {
             managers.add(itemM);
         }
 

@@ -1,13 +1,14 @@
-package ui;
+package unused.ui;
 
 import com.jfoenix.controls.*;
-import model.ModelController;
+import datamodel.Enums;
+import unused.model.ModelController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import ui.searchables.Searchable;
+import unused.ui.searchables.Searchable;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -21,7 +22,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
-import datamodel.parser.Parser;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -85,12 +85,12 @@ public class Presenter {
 
         // button actions
         cGearBtn.setOnAction(event -> root.setCenter(notImplemented()));
-        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, colSubPath, logic.getColFilter(), Parser.ObjectType.COLLECTION)));
-        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, logic.getBenchFilter(), Parser.ObjectType.BENCH)));
-        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, logic.getItemFilter(), Parser.ObjectType.ITEM)));
-        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, logic.getRecFilter(), Parser.ObjectType.RECIPE)));
-        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, logic.getLangFilter(), Parser.ObjectType.STRING)));
-        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, profSubPath, "", Parser.ObjectType.PROFESSION)));
+        pColBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, colSubPath, logic.getColFilter(), Enums.ObjectType.COLLECTION)));
+        pBenchBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, benchSubPath, logic.getBenchFilter(), Enums.ObjectType.BENCH)));
+        pItemBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, itemSubPath, logic.getItemFilter(), Enums.ObjectType.ITEM)));
+        pRecBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, recSubPath, logic.getRecFilter(), Enums.ObjectType.RECIPE)));
+        pLangBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, langSubPath, logic.getLangFilter(), Enums.ObjectType.STRING)));
+        pProfBtn.setOnAction(event -> root.setCenter(setPaneCreateDirectory(root, profSubPath, "", Enums.ObjectType.PROFESSION)));
         settingsBtn.setOnAction(event -> root.setCenter(setPaneCreateSettings()));
 
         // set-up the pane
@@ -118,12 +118,12 @@ public class Presenter {
         JFXButton languages = new JFXButton("Language files");
 
         // button actions
-        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
+        List<Enums.ObjectType> allArticles = Arrays.asList(Enums.ObjectType.BENCH, Enums.ObjectType.COLLECTION, Enums.ObjectType.ITEM);
 
         articles.setOnAction(event -> root.setCenter(setPaneViewFiles(root, allArticles, "All Entries", false, "all")));
-        items.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.ITEM), "Items", true, "all")));
-        collections.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.COLLECTION), "Collections", true, "all")));
-        benches.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Parser.ObjectType.BENCH), "Benches", true, "all")));
+        items.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Enums.ObjectType.ITEM), "Items", true, "all")));
+        collections.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Enums.ObjectType.COLLECTION), "Collections", true, "all")));
+        benches.setOnAction(event -> root.setCenter(setPaneViewFiles(root, Collections.singletonList(Enums.ObjectType.BENCH), "Benches", true, "all")));
         languages.setOnAction(event -> root.setCenter(notImplemented()));
 
         Button[] options = new Button[]{articles, items, collections, benches, languages};
@@ -137,7 +137,7 @@ public class Presenter {
 
     void callSync(BorderPane root, VBox nav, VBox mainNav) {
 
-        List<Parser.ObjectType> allArticles = Arrays.asList(Parser.ObjectType.BENCH, Parser.ObjectType.COLLECTION, Parser.ObjectType.ITEM);
+        List<Enums.ObjectType> allArticles = Arrays.asList(Enums.ObjectType.BENCH, Enums.ObjectType.COLLECTION, Enums.ObjectType.ITEM);
 
         // update center table
         root.setCenter(setPaneViewFiles(root, allArticles, "New Entries", false, "new"));
@@ -233,7 +233,7 @@ public class Presenter {
         return elements.getAnchorPane(grid, save, false);
     }
 
-    GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Parser.ObjectType type) {
+    GridPane setPaneCreateDirectory(BorderPane root, String subPath, String filter, Enums.ObjectType type) {
 
         StackPane currPane = new StackPane();
         currPane.setBackground(p.backgroundMainPane);
@@ -242,7 +242,7 @@ public class Presenter {
         logic.clearParseList();
 
         // update dirView to show the directory, and put it into the StackPane
-        boolean isCollection = type == Parser.ObjectType.COLLECTION;
+        boolean isCollection = type == Enums.ObjectType.COLLECTION;
         CheckBoxTreeItem<String> content = logic.getFileTree(logic.getDirPath() + subPath, filter, isCollection);
         content.setExpanded(true);
 
@@ -250,7 +250,7 @@ public class Presenter {
         currPane.getChildren().add(dirView);
 
         // create header and progress indicators
-        String plural = type == Parser.ObjectType.BENCH ? "es" : "s";
+        String plural = type == Enums.ObjectType.BENCH ? "es" : "s";
         Text headerText = elements.getTextH1("Parse " + type + plural, p.colorTextHeader);
 
         JFXProgressBar progressBar = new JFXProgressBar();
@@ -303,7 +303,7 @@ public class Presenter {
 
     // VIEW-RELATED
 
-    StackPane setPaneViewFiles(BorderPane root, List<Parser.ObjectType> types, String headerText, boolean modifiable, String mapType) {
+    StackPane setPaneViewFiles(BorderPane root, List<Enums.ObjectType> types, String headerText, boolean modifiable, String mapType) {
 
         // set up StackPane to hold dialog box and TableView
         StackPane tablePane = new StackPane();
@@ -506,7 +506,7 @@ public class Presenter {
 
     // MODIFY-RELATED
 
-    JFXDialog getEditPane(StackPane root, List<String> rPaths, Parser.ObjectType type) {
+    JFXDialog getEditPane(StackPane root, List<String> rPaths, Enums.ObjectType type) {
 
         // create the dialog
         JFXDialogLayout dialogLayout = new JFXDialogLayout();
@@ -535,8 +535,8 @@ public class Presenter {
         JFXButton match = new JFXButton("Match recipes");
 
         Button[] options =
-                type == Parser.ObjectType.ITEM ? new Button[] {selected, decons, lootbox, notes, recipe} :
-                type == Parser.ObjectType.COLLECTION ? new Button[] {selected, mastery, notes, recipe} :
+                type == Enums.ObjectType.ITEM ? new Button[] {selected, decons, lootbox, notes, recipe} :
+                type == Enums.ObjectType.COLLECTION ? new Button[] {selected, mastery, notes, recipe} :
                         new Button[] {selected, name, match};
 
         // button configs
@@ -780,7 +780,7 @@ public class Presenter {
         // set up data
         List<String> itemNames = new ArrayList<>();
 
-        ObservableList<Searchable> nameAndRPathList = logic.getSearchableList(Collections.singletonList(Parser.ObjectType.ITEM), "", "all");
+        ObservableList<Searchable> nameAndRPathList = logic.getSearchableList(Collections.singletonList(Enums.ObjectType.ITEM), "", "all");
         for (Searchable item: nameAndRPathList) {
             itemNames.add(item.getName() + " - " + item.getRPath());
         }

@@ -1,6 +1,6 @@
-package model.gateways;
+package unused.model.gateways;
 
-import model.managers.*;
+import unused.model.managers.*;
 
 import java.io.*;
 

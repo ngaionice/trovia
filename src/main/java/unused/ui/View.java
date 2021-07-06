@@ -1,4 +1,4 @@
-package ui;
+package unused.ui;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDecorator;
@@ -36,7 +36,7 @@ public class View extends Application {
         decorator.setCustomMaximize(true);
         Scene scene = new Scene(decorator, viewWidth, viewHeight);
 
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+//        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         sceneInitSetUp(root);
 

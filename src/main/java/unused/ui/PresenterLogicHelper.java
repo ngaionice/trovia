@@ -1,16 +1,16 @@
-package ui;
+package unused.ui;
 
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
-import model.ModelController;
+import datamodel.Enums;
+import unused.model.ModelController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBoxTreeItem;
-import model.objects.CollectionEnums;
-import datamodel.parser.Parser;
-import ui.searchables.Searchable;
+import unused.model.objects.CollectionEnums;
+import unused.ui.searchables.Searchable;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,7 +116,7 @@ public class PresenterLogicHelper {
         return rootItem;
     }
 
-    public Task<Void> getParseTask(Parser.ObjectType type) {
+    public Task<Void> getParseTask(Enums.ObjectType type) {
         return new Task<Void>() {
             @Override protected Void call() throws IOException {
 
@@ -228,7 +228,7 @@ public class PresenterLogicHelper {
 
     // VIEW
 
-    ObservableList<Searchable> getSearchableList(List<Parser.ObjectType> types, String filter, String mapType) {
+    ObservableList<Searchable> getSearchableList(List<Enums.ObjectType> types, String filter, String mapType) {
         ObservableList<Searchable> searchList = FXCollections.observableArrayList();
         List<String[]> nameAndRPathList = con.getNameAndRPathList(types, mapType);
 
