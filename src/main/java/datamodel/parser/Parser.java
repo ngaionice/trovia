@@ -127,7 +127,7 @@ public class Parser {
                 context = new ParseContext(new ParseSkin());
                 return context.parse(splitString, path);
             case STRING:
-                context = new ParseContext(new ParseLangPrefab());
+                context = new ParseContext(new ParseLangFile());
                 return context.parse(splitString, path);
             default:
                 return null;

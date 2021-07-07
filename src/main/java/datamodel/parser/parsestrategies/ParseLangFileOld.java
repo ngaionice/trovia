@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParseLangPrefab implements ParseStrategy {
+public class ParseLangFileOld implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {

@@ -654,9 +654,7 @@ public class UIController {
                 if (selection[5] != 0) writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
                 if (selection[6] != 0) writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
                 if (selection[7] != 0) writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
-                if (selection[8] != 0) {
-                    // TODO: finish it up
-                }
+                if (selection[8] != 0) writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
                 writer.endObject();
                 writer.close();
                 print(logger, "Data exported to " + path);
@@ -722,11 +720,11 @@ public class UIController {
         writer.endObject();
     }
 
-    void writeStrings(JsonWriter writer, Gson serializer, Map<String, Strings> strings) throws IOException {
+    void writeStrings(JsonWriter writer, Map<String, String> strings) throws IOException {
         writer.name("strings");
         writer.beginObject();
-        for (Map.Entry<String, Strings> entry: strings.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        for (Map.Entry<String, String> entry: strings.entrySet()) {
+            writer.name(entry.getKey()).value(entry.getValue());
         }
         writer.endObject();
     }

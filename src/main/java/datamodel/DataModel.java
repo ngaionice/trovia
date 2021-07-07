@@ -97,7 +97,7 @@ public class DataModel implements Observer {
                 upsertSkin((Skin) parser.createObject(absPath, type));
                 break;
             case STRING:
-                insertExtractedStrings((LangFile) parser.createObject(absPath, type));
+                upsertStrings((LangFile) parser.createObject(absPath, type));
                 break;
         }
     }
@@ -249,9 +249,9 @@ public class DataModel implements Observer {
         }
     }
 
-    private void insertExtractedStrings(LangFile newStrings) {
+    private void upsertStrings(LangFile newStrings) {
         newStrings.getStrings().forEach((k, v) -> {
-            if (sessionStrings.hasString(k) && !sessionStrings.getString(k).equals(v)) {
+            if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v)) {
                 sessionStrings.upsertString(k, v);
                 changedStrings.put(k, v);
             }

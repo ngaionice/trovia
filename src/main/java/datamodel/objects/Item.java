@@ -10,32 +10,19 @@ import java.util.*;
 public class Item extends Observable implements Article, ArticleTable {
 
     StringProperty name;
-
-    /**
-     * The string property of the item's description identifier. The wrapped value is nullable.
-     */
     StringProperty desc;
     StringProperty rPath;
     ListProperty<String> unlocks;
     MapProperty<String, Integer> decons;
-
-    /**
-     * The map property of the item's common loot. The wrapped value is nullable.
-     */
     MapProperty<String, String> lootCommon;
-
-    /**
-     * The map property of the item's uncommon loot. The wrapped value is nullable.
-     */
     MapProperty<String, String> lootUncommon;
-
-    /**
-     * The map property of the item's rare loot. The wrapped value is nullable.
-     */
     MapProperty<String, String> lootRare;
-    IntegerProperty blueprintIndex; 
+    IntegerProperty blueprintIndex;
     ListProperty<String> possibleBlueprints;
     BooleanProperty tradable;
+
+    // nullable properties (the value in the value itself can be null):
+    // desc, all 3 loot stuff
 
     public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox) {
         this.name = new SimpleStringProperty(name);
