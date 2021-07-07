@@ -17,7 +17,7 @@ public class ParseCollection implements ParseStrategy{
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
         // debugging
-        System.out.println("Parsing file " + absPath);
+//        System.out.println("Parsing file " + absPath);
         if (absPath.contains("dev_")) {
             throw new ParseException(absPath + " is a dev mount and is likely to be buggy, skipping it.");
         }

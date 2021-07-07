@@ -277,7 +277,10 @@ public class Presenter {
         JFXTextField directory = new JFXTextField();
         JFXButton dirButton = new JFXButton();
         JFXButton startButton = new JFXButton();
-        JFXToggleButton changedButton = new JFXToggleButton();
+        JFXCheckBox changedButton = new JFXCheckBox();
+        JFXCheckBox prettyPrintButton = new JFXCheckBox();
+        Separator separator = new Separator();
+
         BooleanProperty[] selected = new BooleanProperty[9];
         String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
 
@@ -285,14 +288,16 @@ public class Presenter {
         for (int i = 0; i < selected.length; i++) {
             selected[i] = new SimpleBooleanProperty(true);
             JFXCheckBox cb = new JFXCheckBox(texts[i]);
-            cb.setSelected(true);
+//            cb.setSelected(true);
             cb.selectedProperty().bindBidirectional(selected[i]);
             checkboxes.add(cb);
         }
+        prettyPrintButton.setSelected(true);
 
         directory.setPromptText("Directory");
         directory.setDisable(true);
-        changedButton.setText("Export all data");
+        changedButton.setText("Export everything");
+        prettyPrintButton.setText("Pretty printing");
 
         dirButton.setOnAction(e -> {
             DirectoryChooser dirChooser = new DirectoryChooser();
@@ -304,9 +309,9 @@ public class Presenter {
         });
         changedButton.selectedProperty().addListener(e -> {
             if (changedButton.isSelected()) {
-                changedButton.setText("Export changed data only");
+                changedButton.setText("Export changes");
             } else {
-                changedButton.setText("Export all data");
+                changedButton.setText("Export everything");
             }
         });
         startButton.setOnAction(e -> {
@@ -316,7 +321,7 @@ public class Presenter {
                 for (int i = 0; i < selection.length; i++) {
                     if (selected[i].getValue()) selection[i] = 1;
                 }
-                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), selection, logger);
+                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), prettyPrintButton.selectedProperty().getValue(), selection, logger);
             }
         });
 
@@ -336,8 +341,10 @@ public class Presenter {
         anchor.getChildren().add(startButton);
         grid.add(directory, 0, 0, 2, 1);
         grid.add(dirButton, 2, 0);
-        grid.add(changedButton, 3, 0);
-        int row = 1;
+        grid.add(changedButton, 1, 1);
+        grid.add(prettyPrintButton, 0, 1);
+        grid.add(separator, 0, 2, 3, 1);
+        int row = 3;
         for (int i = 0; i < checkboxes.size(); i++) {
             if ((i % 2) == 0) {
                 grid.add(checkboxes.get(i), 0, row);

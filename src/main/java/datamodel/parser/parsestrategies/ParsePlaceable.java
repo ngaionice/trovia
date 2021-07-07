@@ -14,6 +14,7 @@ public class ParsePlaceable implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) throws ParseException {
         Markers m = new Markers();
 
+        System.out.println("Parsing:" + absPath);
         // check for $prefabs, if does not exist, likely not obtainable
         if (!splitString.contains(m.prefab)) {
             throw new ParseException("No name found, entity likely not obtainable.");

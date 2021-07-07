@@ -6,7 +6,6 @@ import datamodel.parser.Parser;
 import local.Markers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,9 +87,6 @@ public class ParseItem implements ParseStrategy {
             else bTxt.addAll(options);
         }
 
-
-
-
         // identify if collection exists
         if (splitString.contains(m.collection)) {
             List<String> collection = new ArrayList<>();
@@ -117,11 +113,7 @@ public class ParseItem implements ParseStrategy {
         // identify if lootbox exists
         boolean lootbox = splitString.contains(m.lootbox);
 
-        if (lootbox) {
-            return new Item(name, desc, rPath, unlocks, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new ArrayList<>(), true);
-        }
-        return new Item(name, desc, rPath, unlocks, bTxt.toArray(new String[0]));
-
+        return new Item(name, desc, rPath, unlocks, bTxt.toArray(new String[0]), lootbox);
     }
 
     // creating a new item:

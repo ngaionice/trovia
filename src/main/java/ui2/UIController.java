@@ -657,8 +657,8 @@ public class UIController {
      *                  8: strings
      * @param logger the TextArea used for logging
      */
-    void serialize(File selected, boolean changedOnly, int[] selection, TextArea logger) {
-        Gson serializer = Serializer.getSerializer();
+    void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
+        Gson serializer = Serializer.getSerializer(usePrettyPrint);
         if (selected != null) {
             if (selection.length != 9) {
                 print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
@@ -696,7 +696,7 @@ public class UIController {
         writer.name("benches");
         writer.beginObject();
         for (Map.Entry<String, Bench> entry: benches.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -705,7 +705,7 @@ public class UIController {
         writer.name("collections");
         writer.beginObject();
         for (Map.Entry<String, Collection> entry: collections.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -714,7 +714,7 @@ public class UIController {
         writer.name("items");
         writer.beginObject();
         for (Map.Entry<String, Item> entry: items.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -723,7 +723,7 @@ public class UIController {
         writer.name("placeables");
         writer.beginObject();
         for (Map.Entry<String, Placeable> entry: placeables.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -732,7 +732,7 @@ public class UIController {
         writer.name("recipes");
         writer.beginObject();
         for (Map.Entry<String, Recipe> entry: recipes.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -741,7 +741,7 @@ public class UIController {
         writer.name("skins");
         writer.beginObject();
         for (Map.Entry<String, Skin> entry: skins.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }
@@ -750,7 +750,7 @@ public class UIController {
         writer.name("strings");
         writer.beginObject();
         for (Map.Entry<String, Strings> entry: strings.entrySet()) {
-            writer.name(entry.getKey()).value(serializer.toJson(entry.getValue()));
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
     }

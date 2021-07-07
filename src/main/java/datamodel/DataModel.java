@@ -98,6 +98,9 @@ public class DataModel implements Observer {
             case COLLECTION:
                 upsertCollection((Collection) parser.createObject(absPath, type));
                 break;
+            case SKIN:
+                upsertSkin((Skin) parser.createObject(absPath, type));
+                break;
             case STRING:
                 insertExtractedStrings((LangFile) parser.createObject(absPath, type));
                 break;
@@ -224,6 +227,30 @@ public class DataModel implements Observer {
                 changed = true;
             }
             if (changed) changedCollections.put(rPath, existing);
+        }
+    }
+
+    private void upsertSkin(Skin skin) {
+        String rPath = skin.getRPath();
+        if (!sessionSkins.containsKey(rPath)) {
+            sessionSkins.put(rPath, skin);
+            changedSkins.put(rPath, skin);
+        } else {
+            Skin existing = sessionSkins.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(skin.getName())) {
+                existing.setName(skin.getName());
+                changed = true;
+            }
+            if (existing.getDesc() == null || (skin.getDesc() != null || !existing.getDesc().equals(skin.getDesc()))) {
+                existing.setDesc(skin.getDesc());
+                changed = true;
+            }
+            if (!existing.getBlueprint().equals(skin.getBlueprint())) {
+                existing.setBlueprint(skin.getBlueprint());
+                changed = true;
+            }
+            if (changed) changedSkins.put(rPath, existing);
         }
     }
 

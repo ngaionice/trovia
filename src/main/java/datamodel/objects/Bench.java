@@ -14,7 +14,7 @@ public class Bench extends Observable implements Article, ArticleTable {
 
     StringProperty name; // the string identifier of the bench's name
     StringProperty rPath;
-    MapProperty<List<String>, ObservableList<String>> categories; // key: [category #, category path]; value: list of recipe file names
+    MapProperty<List<String>, ObservableList<String>> categories; // key: [category path, category #]; value: list of recipe file names
 
     /**
      * The name property of the profession. The value wrapped inside is nullable.

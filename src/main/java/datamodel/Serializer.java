@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class Serializer {
 
-    public static Gson getSerializer() {
+    public static Gson getSerializer(boolean usePrettyPrint) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Bench.class, new BenchSerializer());
         builder.registerTypeAdapter(Collection.class, new CollectionSerializer());
@@ -21,6 +21,7 @@ public class Serializer {
         builder.registerTypeAdapter(Strings.class, new StringsSerializer());
 
         builder.serializeNulls();
+        if (usePrettyPrint) builder.setPrettyPrinting();
 
         return builder.create();
     }
@@ -35,10 +36,10 @@ public class Serializer {
 
             JsonObject categories = new JsonObject();
             for (Map.Entry<List<String>, ObservableList<String>> entry : bench.getCategories().entrySet()) {
-                String bench_index = entry.getKey().get(0);
+                String bench_index = entry.getKey().get(1);
 
                 JsonObject value = new JsonObject();
-                value.add("name_id", new JsonPrimitive(entry.getKey().get(1)));
+                value.add("name_id", new JsonPrimitive(entry.getKey().get(0)));
                 JsonArray recipes = new JsonArray();
                 entry.getValue().forEach(recipes::add);
                 value.add("recipes", recipes);
@@ -57,13 +58,13 @@ public class Serializer {
             JsonObject obj = new JsonObject();
             obj.add("rel_path", new JsonPrimitive(collection.getRPath()));
             obj.add("name", new JsonPrimitive(collection.getName()));
-            obj.add("desc", new JsonPrimitive(collection.getDesc()));
+            obj.add("desc", collection.getDesc() != null ? new JsonPrimitive(collection.getDesc()) : null);
             obj.add("trove_mr", new JsonPrimitive(collection.getTroveMR()));
             obj.add("geode_mr", new JsonPrimitive(collection.getGeodeMR()));
-            obj.add("bp_index", new JsonPrimitive(collection.getBlueprintIndex()));
+//            obj.add("bp_index", new JsonPrimitive(collection.getBlueprintIndex()));
 
-            JsonArray blueprints = new JsonArray();
-            collection.getPossibleBlueprints().forEach(blueprints::add);
+//            JsonArray blueprints = new JsonArray();
+//            collection.getPossibleBlueprints().forEach(blueprints::add);
 
             JsonArray types = new JsonArray();
             collection.getTypes().forEach(i -> types.add(i.toString()));
@@ -74,7 +75,7 @@ public class Serializer {
             JsonObject buffs = new JsonObject();
             collection.getBuffs().forEach((k, v) -> buffs.add(k.toString(), new JsonPrimitive(v)));
 
-            obj.add("blueprints", blueprints);
+//            obj.add("blueprints", blueprints);
             obj.add("types", types);
             obj.add("properties", properties);
             obj.add("buffs", buffs);
@@ -90,7 +91,7 @@ public class Serializer {
             JsonObject obj = new JsonObject();
             obj.add("rel_path", new JsonPrimitive(item.getRPath()));
             obj.add("name", new JsonPrimitive(item.getName()));
-            obj.add("desc", new JsonPrimitive(item.getDesc())); // TODO: handle what happens when this is null
+            obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
             obj.add("tradable", new JsonPrimitive(item.isTradable() ? 1 : 0));
             obj.add("bp_index", new JsonPrimitive(item.getBlueprintIndex()));
 
@@ -104,30 +105,28 @@ public class Serializer {
             obj.add("unlocks", unlocks);
 
             JsonObject loot = new JsonObject();
-            boolean lootFlag = true;
+            boolean lootFlag = false;
             JsonObject lootCommon = new JsonObject();
             if (item.getLootCommon() != null) {
                 item.getLootCommon().forEach((k, v) -> lootCommon.add(k, new JsonPrimitive(v)));
                 loot.add("common", lootCommon);
-            } else {
-                lootFlag = false;
+                lootFlag = true;
             }
 
             JsonObject lootUncommon = new JsonObject();
             if (item.getLootUncommon() != null) {
                 item.getLootUncommon().forEach((k, v) -> lootUncommon.add(k, new JsonPrimitive(v)));
                 loot.add("uncommon", lootUncommon);
-            } else {
-                lootFlag = false;
+                lootFlag = true;
             }
 
             JsonObject lootRare = new JsonObject();
             if (item.getLootRare() != null) {
                 item.getLootRare().forEach((k, v) -> lootRare.add(k, new JsonPrimitive(v)));
                 loot.add("rare", lootRare);
-            } else {
-                lootFlag = false;
+                lootFlag = true;
             }
+
             if (lootFlag) obj.add("loot", loot);
 
             return obj;
@@ -141,14 +140,14 @@ public class Serializer {
             JsonObject obj = new JsonObject();
             obj.add("rel_path", new JsonPrimitive(placeable.getRPath()));
             obj.add("name", new JsonPrimitive(placeable.getName()));
-            obj.add("desc", new JsonPrimitive(placeable.getDesc()));
+            obj.add("desc", placeable.getDesc() != null ? new JsonPrimitive(placeable.getDesc()) : null);
             obj.add("tradable", new JsonPrimitive(placeable.isTradable() ? 1 : 0));
-            obj.add("bp_index", new JsonPrimitive(placeable.getBlueprintIndex()));
-
-            JsonArray blueprints = new JsonArray();
-            placeable.getPossibleBlueprints().forEach(blueprints::add);
-
-            obj.add("blueprints", blueprints);
+//            obj.add("bp_index", new JsonPrimitive(placeable.getBlueprintIndex()));
+//
+//            JsonArray blueprints = new JsonArray();
+//            placeable.getPossibleBlueprints().forEach(blueprints::add);
+//
+//            obj.add("blueprints", blueprints);
             return obj;
         }
     }
@@ -181,7 +180,7 @@ public class Serializer {
             JsonObject obj = new JsonObject();
             obj.add("rel_path", new JsonPrimitive(skin.getRPath()));
             obj.add("name", new JsonPrimitive(skin.getName()));
-            obj.add("desc", new JsonPrimitive(skin.getDesc()));
+            obj.add("desc", skin.getDesc() != null ? new JsonPrimitive(skin.getDesc()) : null);
             obj.add("blueprint", new JsonPrimitive(skin.getBlueprint()));
 
             return obj;

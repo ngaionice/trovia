@@ -38,7 +38,7 @@ public class Item extends Observable implements Article, ArticleTable {
     ListProperty<String> notes;
     BooleanProperty tradable;
 
-    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints) {
+    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
@@ -53,16 +53,16 @@ public class Item extends Observable implements Article, ArticleTable {
         this.possibleBlueprints = new SimpleListProperty<>(FXCollections.observableArrayList(possibleBlueprints));
 
         this.decons = new SimpleMapProperty<>(FXCollections.observableHashMap());
-        this.lootCommon = new SimpleMapProperty<>(null);
-        this.lootUncommon = new SimpleMapProperty<>(null);
-        this.lootRare = new SimpleMapProperty<>(null);
+        this.lootCommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
+        this.lootUncommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
+        this.lootRare = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
     }
 
     public Item(String name, String desc, String rPath, String[] unlocks, Map<String, Integer> decons,
                 Map<String, String> lootCommon, Map<String, String> lootUncommon, Map<String, String> lootRare,
                 List<String> notes, boolean isTradable) {
         this.name = new SimpleStringProperty(name);
-        this.desc = desc == null ? new SimpleStringProperty("N/A") : new SimpleStringProperty(desc);
+        this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
         this.notes = new SimpleListProperty<>(FXCollections.observableArrayList(notes));
