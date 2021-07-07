@@ -33,9 +33,8 @@ public class Item extends Observable implements Article, ArticleTable {
      * The map property of the item's rare loot. The wrapped value is nullable.
      */
     MapProperty<String, String> lootRare;
-    IntegerProperty blueprintIndex = null; // TODO: add bp stuff to the second initializer as well
+    IntegerProperty blueprintIndex; 
     ListProperty<String> possibleBlueprints;
-    ListProperty<String> notes;
     BooleanProperty tradable;
 
     public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox) {
@@ -43,45 +42,14 @@ public class Item extends Observable implements Article, ArticleTable {
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
-        this.notes = new SimpleListProperty<>(FXCollections.observableArrayList());
         this.tradable = new SimpleBooleanProperty(true);
-        if (possibleBlueprints.length >= 1) {
-            blueprintIndex = new SimpleIntegerProperty(0);
-        } else {
-            blueprintIndex = new SimpleIntegerProperty(-1);
-        }
+        this.blueprintIndex = new SimpleIntegerProperty(possibleBlueprints.length >= 1 ? 0 : -1);
         this.possibleBlueprints = new SimpleListProperty<>(FXCollections.observableArrayList(possibleBlueprints));
 
         this.decons = new SimpleMapProperty<>(FXCollections.observableHashMap());
         this.lootCommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
         this.lootUncommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
         this.lootRare = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
-    }
-
-    public Item(String name, String desc, String rPath, String[] unlocks, Map<String, Integer> decons,
-                Map<String, String> lootCommon, Map<String, String> lootUncommon, Map<String, String> lootRare,
-                List<String> notes, boolean isTradable) {
-        this.name = new SimpleStringProperty(name);
-        this.desc = new SimpleStringProperty(desc);
-        this.rPath = new SimpleStringProperty(rPath);
-        this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
-        this.notes = new SimpleListProperty<>(FXCollections.observableArrayList(notes));
-
-        ObservableMap<String, Integer> tempDecons = FXCollections.observableHashMap();
-        ObservableMap<String, String> tempLootC = FXCollections.observableHashMap();
-        ObservableMap<String, String> tempLootU = FXCollections.observableHashMap();
-        ObservableMap<String, String> tempLootR = FXCollections.observableHashMap();
-
-        decons.forEach(tempDecons::put);
-        lootCommon.forEach(tempLootC::put);
-        lootUncommon.forEach(tempLootU::put);
-        lootRare.forEach(tempLootR::put);
-
-        this.decons = new SimpleMapProperty<>(tempDecons);
-        this.lootCommon = new SimpleMapProperty<>(tempLootC);
-        this.lootUncommon = new SimpleMapProperty<>(tempLootU);
-        this.lootRare = new SimpleMapProperty<>(tempLootR);
-        this.tradable = new SimpleBooleanProperty(isTradable);
     }
 
     public void setName(String name) {
@@ -128,10 +96,6 @@ public class Item extends Observable implements Article, ArticleTable {
         this.unlocks.setValue(FXCollections.observableArrayList(unlocks));
     }
 
-    public void addNote(String noteID) {
-        this.notes.getValue().add(noteID);
-        notifyObservers();
-    }
 
     public void setTradable(boolean tradable) {
         this.tradable.set(tradable);
@@ -201,13 +165,6 @@ public class Item extends Observable implements Article, ArticleTable {
         return lootRare;
     }
 
-    public ObservableList<String> getNotes() {
-        return notes.get();
-    }
-
-    public ListProperty<String> notesProperty() {
-        return notes;
-    }
 
     public boolean isTradable() {
         return tradable.get();

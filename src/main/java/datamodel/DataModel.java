@@ -26,7 +26,7 @@ public class DataModel implements Observer {
     ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
     ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
     ObservableMap<String, Skin> sessionSkins = FXCollections.observableHashMap();
-    Map<String, Strings> sessionStrings = new HashMap<>();
+    Strings sessionStrings = new Strings("en", new HashMap<>());
 
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
@@ -36,8 +36,7 @@ public class DataModel implements Observer {
     Map<String, Placeable> changedPlaceables = new HashMap<>();
     Map<String, Recipe> changedRecipes = new HashMap<>();
     Map<String, Skin> changedSkins = new HashMap<>();
-    Map<String, String> changedExtractedStrings = new HashMap<>();
-    Map<String, String> changedCustomStrings = new HashMap<>();
+    Map<String, String> changedStrings = new HashMap<>();
 
     private final ObjectProperty<Bench> currentBench = new SimpleObjectProperty<>(null);
     private final ObjectProperty<Collection> currentCollection = new SimpleObjectProperty<>(null);
@@ -68,11 +67,7 @@ public class DataModel implements Observer {
             Strings object = (Strings) o;
             if (arg instanceof String[]) {
                 String[] entry = (String[]) arg;
-                if (object.getName().equals("extracted")) {
-                    changedExtractedStrings.put(entry[0], entry[1]);
-                } else {
-                    changedCustomStrings.put(entry[0], entry[1]);
-                }
+                changedStrings.put(entry[0], entry[1]);
             }
 
         }
@@ -255,13 +250,12 @@ public class DataModel implements Observer {
     }
 
     private void insertExtractedStrings(LangFile newStrings) {
-        Strings extractedStrings = sessionStrings.get("extracted");
-        if (extractedStrings != null) {
-            newStrings.getStrings().forEach((k, v) -> {
-                extractedStrings.upsertString(k, v);
-                changedExtractedStrings.put(k, v);
-            });
-        }
+        newStrings.getStrings().forEach((k, v) -> {
+            if (sessionStrings.hasString(k) && !sessionStrings.getString(k).equals(v)) {
+                sessionStrings.upsertString(k, v);
+                changedStrings.put(k, v);
+            }
+        });
     }
 
     /**
@@ -299,7 +293,7 @@ public class DataModel implements Observer {
         return sessionRecipes;
     }
 
-    public Map<String, Strings> getSessionStrings() {
+    public Strings getSessionStrings() {
         return sessionStrings;
     }
 
@@ -337,12 +331,8 @@ public class DataModel implements Observer {
         return changedRecipes;
     }
 
-    public Map<String, String> getChangedExtractedStrings() {
-        return changedExtractedStrings;
-    }
-
-    public Map<String, String> getChangedCustomStrings() {
-        return changedCustomStrings;
+    public Map<String, String> getChangedStrings() {
+        return changedStrings;
     }
 
     public Map<String, Object> getChangedCollectionIndices() {

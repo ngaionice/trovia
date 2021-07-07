@@ -192,7 +192,6 @@ public class Serializer {
         @Override
         public JsonElement serialize(Strings s, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
-            obj.add("type", new JsonPrimitive(s.getName()));
             obj.add("lang", new JsonPrimitive(s.getLang()));
 
             JsonObject strings = new JsonObject();

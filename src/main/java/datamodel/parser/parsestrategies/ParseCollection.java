@@ -145,7 +145,7 @@ public class ParseCollection implements ParseStrategy{
 //            return new Collection(name, desc, rPath, types, properties, dragonBuffs);
 //        }
 //        return new Collection(name, desc, rPath, types, properties);
-        return new Collection(name, desc, rPath, 0, 0, types, properties, dragonBuffs, new ArrayList<>());
+        return new Collection(name, desc, rPath, 0, 0, types, properties, dragonBuffs);
     }
 
 

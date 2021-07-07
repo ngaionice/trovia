@@ -11,19 +11,14 @@ import java.util.Observable;
 public class Strings extends Observable {
 
     // the key is the identifier, and the value is the content
-    String name;
-    String lang = "en";
+    String lang;
     MapProperty<String, String> strings;
 
-    public Strings(String name, Map<String, String> strings) {
+    public Strings(String lang, Map<String, String> strings) {
+        this.lang = lang;
         ObservableMap<String, String> temp = FXCollections.observableHashMap();
         strings.forEach(temp::put);
-        this.name = name;
         this.strings = new SimpleMapProperty<>(temp);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String getLang() {
@@ -40,6 +35,14 @@ public class Strings extends Observable {
 
     public MapProperty<String, String> stringsProperty() {
         return strings;
+    }
+
+    public boolean hasString(String id) {
+        return strings.containsKey(id);
+    }
+
+    public String getString(String id) {
+        return strings.get(id);
     }
 
     public void upsertString(String id, String content) {

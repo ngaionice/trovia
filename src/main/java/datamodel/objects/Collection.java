@@ -22,19 +22,17 @@ public class Collection extends Observable implements Article, ArticleTable {
     MapProperty<Enums.Buff, Double> buffs;
     IntegerProperty blueprintIndex = null;
     ListProperty<String> possibleBlueprints;
-    ListProperty<String> notes;
 
     public Collection(String name, String desc, String rPath, int troveMR, int geodeMR,
                       List<Enums.Type> types,
                       Map<Enums.Property, Double> properties,
-                      Map<Enums.Buff, Double> buffs, List<String> notes) {
+                      Map<Enums.Buff, Double> buffs) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.troveMR = new SimpleIntegerProperty(troveMR);
         this.geodeMR = new SimpleIntegerProperty(geodeMR);
         this.types = new SimpleListProperty<>(FXCollections.observableArrayList(types));
-        this.notes = new SimpleListProperty<>(FXCollections.observableArrayList(notes));
 
         ObservableMap<Enums.Property, Double> tempProps = FXCollections.observableHashMap();
         ObservableMap<Enums.Buff, Double> tempBuffs = FXCollections.observableHashMap();
@@ -59,11 +57,6 @@ public class Collection extends Observable implements Article, ArticleTable {
 
     public void updateBuffs(Enums.Buff key, double val) {
         buffs.getValue().put(key, val);
-        notifyObservers();
-    }
-
-    public void addNote(String noteID) {
-        notes.getValue().add(noteID);
         notifyObservers();
     }
 
@@ -99,9 +92,6 @@ public class Collection extends Observable implements Article, ArticleTable {
         return buffs;
     }
 
-    public ListProperty<String> notesProperty() {
-        return notes;
-    }
 
     public IntegerProperty blueprintIndexProperty() {
         return blueprintIndex;
@@ -180,9 +170,6 @@ public class Collection extends Observable implements Article, ArticleTable {
         this.buffs.set(buffs);
     }
 
-    public ObservableList<String> getNotes() {
-        return notes.get();
-    }
 
     public int getBlueprintIndex() {
         return blueprintIndex.get();

@@ -314,38 +314,21 @@ public class UIController {
         nameCol.setCellValueFactory(cellData -> cellData.getValue().nameProperty()); // TODO: when extracted strings become available, map to the names, else use identifier
     }
 
-    void setEditTabStringsTable(JFXComboBox<String> comboBox, TableView<KVPair> table, TableColumn<KVPair, String> idCol, TableColumn<KVPair, String> contentCol) {
-        comboBox.setItems(FXCollections.observableArrayList("Extracted", "Custom"));
+    void setEditTabStringsTable(TableView<KVPair> table, TableColumn<KVPair, String> idCol, TableColumn<KVPair, String> contentCol) {
         ObservableList<KVPair> stringEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.stringValueProperty()});
         idCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
         contentCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
         table.setItems(stringEntries);
-
-        comboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue.equals("Extracted")) {
-                stringEntries.clear();
-                model.getSessionStrings().get("extracted").getStrings().forEach((k, v) -> stringEntries.add(new KVPair(k, v)));
-            } else {
-                stringEntries.clear();
-                model.getSessionStrings().get("custom").getStrings().forEach((k, v) -> stringEntries.add(new KVPair(k, v)));
-            }
-        }));
+        model.getSessionStrings().getStrings().forEach((k, v) -> stringEntries.add(new KVPair(k, v)));
 
         stringEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
             while (c.next()) {
                 if (c.wasUpdated()) {
                     KVPair updated = stringEntries.get(c.getFrom());
-                    ReadOnlyObjectProperty<String> type = comboBox.getSelectionModel().selectedItemProperty();
-                    if (type.get().equals("Extracted")) {
-                        model.getSessionStrings().get("extracted").upsertString(updated.getKey(), updated.getStringValue());
-                    } else {
-                        model.getSessionStrings().get("custom").upsertString(updated.getKey(), updated.getStringValue());
-                    }
+                    model.getSessionStrings().upsertString(updated.getKey(), updated.getStringValue());
                 }
             }
         });
-
-        comboBox.getSelectionModel().selectFirst();
     }
 
     void setEditTabBenchSidebar(TextField rPathField, TextField nameField, TextField professionNameField, ComboBox<String> categoryComboBox, ListView<String> categories) {
@@ -388,7 +371,7 @@ public class UIController {
                                      TableColumn<KVPair, Double> propValCol,
                                      TableView<KVPair> buffs,
                                      TableColumn<KVPair, String> buffCol,
-                                     TableColumn<KVPair, Double> buffValCol, TextArea notes) {
+                                     TableColumn<KVPair, Double> buffValCol) {
         model.currentCollectionProperty().addListener(((observable, oldValue, newValue) -> {
             types.getItems().clear();
             properties.getItems().clear();
@@ -406,15 +389,12 @@ public class UIController {
                 descField.setText("");
                 troveMRField.setText("");
                 geodeMRField.setText("");
-                notes.setText("");
             } else {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 troveMRField.textProperty().bindBidirectional(newValue.troveMRProperty(), new NumberStringConverter());
                 geodeMRField.textProperty().bindBidirectional(newValue.geodeMRProperty(), new NumberStringConverter());
-
-                // TODO: finish notes
                 newValue.getTypes().forEach(item -> types.getItems().add(item.toString()));
 
                 ObservableList<KVPair> propertiesEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.doubleValueProperty()});
@@ -455,7 +435,7 @@ public class UIController {
     void setEditTabItemSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox,
                                TableView<KVPair> decons, TableColumn<KVPair, String> deconCol, TableColumn<KVPair, Integer> deconValCol,
                                ComboBox<String> lootComboBox, TableView<KVPair> loot, TableColumn<KVPair, String> lootCol,
-                               TableColumn<KVPair, String> lootValCol, JFXTextArea notes) {
+                               TableColumn<KVPair, String> lootValCol) {
         lootComboBox.getItems().addAll("Common", "Uncommon", "Rare");
 
         deconCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
@@ -481,13 +461,11 @@ public class UIController {
                 nameField.setText("");
                 descField.setText("");
                 tradableBox.setSelected(false);
-                notes.setText("");
             } else {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
-                // TODO: finish notes
 
                 ObservableList<KVPair> deconEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
                 decons.setItems(deconEntries);
@@ -549,7 +527,7 @@ public class UIController {
         });
     }
 
-    void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox, JFXTextArea notes) {
+    void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox) {
         model.currentPlaceableProperty().addListener(((observable, oldValue, newValue) -> {
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
@@ -562,13 +540,11 @@ public class UIController {
                 nameField.setText("");
                 descField.setText("");
                 tradableBox.setSelected(false);
-                notes.setText("");
             } else {
                 rPathField.textProperty().bindBidirectional(newValue.rPathProperty());
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
-                // TODO: finish notes
             }
         }));
     }

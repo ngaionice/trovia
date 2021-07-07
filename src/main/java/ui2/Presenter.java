@@ -463,7 +463,6 @@ public class Presenter {
 
     private void setEditTabStringsTable(StackPane tablePane, TableView<UIController.KVPair> table) {
         BorderPane border = new BorderPane();
-        JFXComboBox<String> comboBox = new JFXComboBox<>();
         table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
         TableColumn<UIController.KVPair, String> idCol = new TableColumn<>("Identifier");
         TableColumn<UIController.KVPair, String> contentCol = new TableColumn<>("Content");
@@ -471,14 +470,12 @@ public class Presenter {
         table.getColumns().setAll(Arrays.asList(idCol, contentCol));
         table.setPlaceholder(new Label("No strings imported."));
 
-        controller.setEditTabStringsTable(comboBox, table, idCol, contentCol);
+        controller.setEditTabStringsTable(table, idCol, contentCol);
 
-        BorderPane.setMargin(comboBox, new Insets(0, 0, 4, 0));
         idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.32));
         contentCol.prefWidthProperty().bind(table.widthProperty().multiply(0.64));
         border.prefHeightProperty().bind(tablePane.heightProperty());
 
-        border.setTop(comboBox);
         border.setCenter(table);
         tablePane.getChildren().add(border);
     }
@@ -513,7 +510,6 @@ public class Presenter {
         JFXTextField descField = new JFXTextField();
         JFXTextField troveMRField = new JFXTextField();
         JFXTextField geodeMRField = new JFXTextField();
-        JFXTextArea notes = new JFXTextArea();
         VBox typesBox = new VBox();
         Text typesLabel = new Text("Collection types");
         ListView<String> types = new ListView<>();
@@ -540,7 +536,6 @@ public class Presenter {
         descField.setPromptText("Description");
         troveMRField.setPromptText("Trove Mastery");
         geodeMRField.setPromptText("Geode Mastery");
-        notes.setPromptText("Notes");
         properties.setEditable(true);
         buffs.setEditable(true);
         propValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -565,10 +560,9 @@ public class Presenter {
         sidebar.add(typesBox, 0, 4, 2, 1);
         sidebar.add(propertiesBox, 0, 5, 2, 1);
         sidebar.add(buffsBox, 0, 6, 2, 1);
-        sidebar.add(notes, 0, 7, 2, 1);
 
         controller.setEditTabCollectionSidebar(rPathField, nameField, descField, troveMRField, geodeMRField,
-                types, properties, propCol, propValCol, buffs, buffCol, buffValCol, notes);
+                types, properties, propCol, propValCol, buffs, buffCol, buffValCol);
     }
 
     private void setEditTabItemSidebar(GridPane sidebar) {
@@ -587,7 +581,6 @@ public class Presenter {
         TableView<UIController.KVPair> loot = new TableView<>();
         TableColumn<UIController.KVPair, String> lootCol = new TableColumn<>("Object");
         TableColumn<UIController.KVPair, String> lootValCol = new TableColumn<>("Qty");
-        JFXTextArea notes = new JFXTextArea();
 
         deconBox.getChildren().addAll(deconLabel, decons);
         lootBox.getChildren().addAll(lootLabel, lootComboBox, loot);
@@ -597,7 +590,6 @@ public class Presenter {
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
-        notes.setPromptText("Notes");
         decons.setEditable(true);
         loot.setEditable(true);
 
@@ -616,9 +608,8 @@ public class Presenter {
         sidebar.add(tradableBox, 0, 3);
         sidebar.add(deconBox, 0, 4);
         sidebar.add(lootBox, 0, 5);
-        sidebar.add(notes, 0, 6);
 
-        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, deconCol, deconValCol, lootComboBox, loot, lootCol, lootValCol, notes);
+        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, deconCol, deconValCol, lootComboBox, loot, lootCol, lootValCol);
     }
 
     private void setEditTabPlaceableSidebar(GridPane sidebar) {
@@ -626,12 +617,10 @@ public class Presenter {
         JFXTextField nameField = new JFXTextField();
         JFXTextField descField = new JFXTextField();
         JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
-        JFXTextArea notes = new JFXTextArea();
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
-        notes.setPromptText("Notes");
 
         Arrays.asList(rPathField, nameField, descField).forEach(item -> item.getStyleClass().add("sidebar-text"));
 
@@ -639,9 +628,9 @@ public class Presenter {
         sidebar.add(nameField, 0, 1);
         sidebar.add(descField, 0, 2);
         sidebar.add(tradableBox, 0, 3);
-        sidebar.add(notes, 0, 4);
 
-        controller.setEditTabPlaceableSidebar(rPathField, nameField, descField, tradableBox, notes);
+
+        controller.setEditTabPlaceableSidebar(rPathField, nameField, descField, tradableBox);
     }
 
     private void setEditTabRecipeSidebar(GridPane sidebar) {
