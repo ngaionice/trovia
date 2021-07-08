@@ -171,7 +171,7 @@ public class UIController {
     }
 
     void setParseTypes(ComboBox<String> typeSelect) {
-        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Items", "Placeables", "Professions", "Recipes", "Skins", "Strings");
+        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Items", "Gear styles","Placeables", "Professions", "Recipes", "Skins", "Strings");
         typeSelect.setItems(types);
         typeSelect.getSelectionModel().selectFirst();
     }
@@ -650,6 +650,7 @@ public class UIController {
                 if (selection[0] != 0) writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
                 if (selection[1] != 0) writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
                 // add collection indices and gear styles later
+                if (selection[3] != 0) writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
                 if (selection[4] != 0) writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
                 if (selection[5] != 0) writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
                 if (selection[6] != 0) writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
@@ -679,6 +680,15 @@ public class UIController {
         writer.name("collections");
         writer.beginObject();
         for (Map.Entry<String, Collection> entry: collections.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeGearStyles(JsonWriter writer, Gson serializer, Map<String, GearStyleType> styles) throws IOException {
+        writer.name("gear_styles");
+        writer.beginObject();
+        for (Map.Entry<String, GearStyleType> entry: styles.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();

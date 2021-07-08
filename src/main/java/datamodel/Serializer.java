@@ -14,6 +14,7 @@ public class Serializer {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Bench.class, new BenchSerializer());
         builder.registerTypeAdapter(Collection.class, new CollectionSerializer());
+        builder.registerTypeAdapter(GearStyleType.class, new GearStyleTypeSerializer());
         builder.registerTypeAdapter(Item.class, new ItemSerializer());
         builder.registerTypeAdapter(Placeable.class, new PlaceableSerializer());
         builder.registerTypeAdapter(Recipe.class, new RecipeSerializer());
@@ -80,6 +81,38 @@ public class Serializer {
             obj.add("properties", properties);
             obj.add("buffs", buffs);
 
+            return obj;
+        }
+    }
+
+    public static class GearStyleTypeSerializer implements JsonSerializer<GearStyleType> {
+
+        @Override
+        public JsonElement serialize(GearStyleType gearStyleType, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject obj = new JsonObject();
+            obj.add("rel_path", new JsonPrimitive(gearStyleType.getRPath()));
+            obj.add("type", new JsonPrimitive(gearStyleType.getType()));
+
+            JsonObject styles = new JsonObject();
+            for (Map.Entry<String, Map<String, String[]>> entry: gearStyleType.getStyles().entrySet()) {
+                String category = entry.getKey();
+                JsonObject categoryStyles = new JsonObject();
+                for (Map.Entry<String, String[]> styleEntry: entry.getValue().entrySet()) {
+                    String blueprint = styleEntry.getKey();
+                    String[] values = styleEntry.getValue();
+                    String name = values[0];
+                    String desc = values[1];
+                    String info = values[2];
+                    JsonObject objectProps = new JsonObject();
+                    objectProps.add("name", values[0] != null ? new JsonPrimitive(name) : null);
+                    objectProps.add("desc", values[0] != null ? new JsonPrimitive(desc) : null);
+                    objectProps.add("additional_info", values[0] != null ? new JsonPrimitive(info) : null);
+                    categoryStyles.add(blueprint, objectProps);
+                }
+                styles.add(category, categoryStyles);
+            }
+
+            obj.add("styles", styles);
             return obj;
         }
     }
