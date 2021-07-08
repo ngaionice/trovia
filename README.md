@@ -1,17 +1,20 @@
-# Trovia - Data Extraction and Management
+# Trovia - Data Extractor
 
-This is a 2-part project. This repository focuses on extracting and managing data extracted from client files of Trove, a voxel MMO. The actual website code is in [a separate repository](https://github.com/ngaionice/trovia-s).
+This application allows the extraction of data from `.binfab` files, which are obtained by extracting the archives of Trove.
 
-## Current progress
+## Current functionality
 
-Currently, item, recipe, bench/workstation, collection and English language files parsing have been implemented. 
+Extraction of
+- Benches
+- Collections
+- Equipment styles
+- Items
+- Professions
+- Skins
+- Strings/Language files
 
-## To-do:
+The extracted data can be exported as JSON objects.
 
-- Parse gear files
-- Create a text UI to edit and manage existing entries.
+## Notes
 
-## Possible extensions
-
-- create a market tracking bot using OCR
-- create a Discord bot for easy querying in Discord
+A few files that are essential for the compilation of the project have not been committed. They will eventually be committed when a release is available.
