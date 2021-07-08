@@ -105,23 +105,26 @@ public class Parser {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
+            case BENCH:
+                context = new ParseContext(new ParseBench());
+                return context.parse(splitString, path);
+            case COLLECTION:
+                context = new ParseContext(new ParseCollection());
+                return context.parse(splitString, path);
+            case GEAR_STYLE:
+                context = new ParseContext(new ParseGearStyle());
+                return context.parse(splitString, path);
             case ITEM:
                 context = new ParseContext(new ParseItem());
                 return context.parse(splitString, path);
             case PLACEABLE:
                 context = new ParseContext(new ParsePlaceable());
                 return context.parse(splitString, path);
-            case RECIPE:
-                context = new ParseContext(new ParseRecipe());
-                return context.parse(splitString, path);
-            case BENCH:
-                context = new ParseContext(new ParseBench());
-                return context.parse(splitString, path);
             case PROFESSION:
                 context = new ParseContext(new ParseProfession());
                 return context.parse(splitString, path);
-            case COLLECTION:
-                context = new ParseContext(new ParseCollection());
+            case RECIPE:
+                context = new ParseContext(new ParseRecipe());
                 return context.parse(splitString, path);
             case SKIN:
                 context = new ParseContext(new ParseSkin());
@@ -132,6 +135,18 @@ public class Parser {
             default:
                 return null;
         }
+    }
+
+    public static String extractRPath(String absPath) throws ParseException {
+        String rPath;
+        if (absPath.contains("prefabs\\")) {
+            rPath = absPath.substring(absPath.indexOf("prefabs\\") + 8, absPath.indexOf(".binfab"));
+        } else if (absPath.contains("language")){
+            rPath = absPath.substring(absPath.indexOf("language"), absPath.indexOf(".binfab"));
+        } else {
+            throw new ParseException(absPath + " could not be used to form a valid relative path.");
+        }
+        return rPath.replaceAll("\\\\", "/");
     }
 
 }

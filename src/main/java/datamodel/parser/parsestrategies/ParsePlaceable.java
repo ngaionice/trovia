@@ -59,8 +59,7 @@ public class ParsePlaceable implements ParseStrategy {
             desc = Parser.hexToAscii(splitString.substring(startIndices[1], overallEndIndex));
         }
 
-        String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        String rPath = Parser.extractRPath(absPath);
 
         return new Placeable(name, desc, rPath);
     }

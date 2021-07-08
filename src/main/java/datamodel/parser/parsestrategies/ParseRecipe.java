@@ -18,8 +18,7 @@ public class ParseRecipe implements ParseStrategy{
         Markers m = new Markers();
 
         String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
-        String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        String rPath = Parser.extractRPath(absPath);
 
         Map<String, Integer> costs = new HashMap<>();
         Map<String, Integer> output = new HashMap<>();

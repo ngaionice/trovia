@@ -129,6 +129,7 @@ public class Enums {
         ITEM,
         BENCH,
         COLLECTION,
+        GEAR_STYLE,
         STRING,
         PLACEABLE,
         RECIPE,
@@ -140,6 +141,7 @@ public class Enums {
             if (inputCleaned.contains("item")) return ITEM;
             else if (inputCleaned.contains("bench")) return BENCH;
             else if (inputCleaned.contains("collection")) return COLLECTION;
+            else if (inputCleaned.contains("gear style")) return GEAR_STYLE;
             else if (inputCleaned.contains("placeable")) return PLACEABLE;
             else if (inputCleaned.contains("profession")) return PROFESSION;
             else if (inputCleaned.contains("recipe")) return RECIPE;
@@ -157,6 +159,8 @@ public class Enums {
                     return "Bench";
                 case COLLECTION:
                     return "Collection";
+                case GEAR_STYLE:
+                    return "Gear style";
                 case PLACEABLE:
                     return "Placeable";
                 case PROFESSION:

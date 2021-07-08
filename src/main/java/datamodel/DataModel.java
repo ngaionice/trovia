@@ -21,7 +21,7 @@ public class DataModel implements Observer {
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
     ObservableMap<String, Object> sessionCollectionIndices = FXCollections.observableHashMap();
-    ObservableMap<String, String[]> sessionGearStyles = FXCollections.observableHashMap();
+    ObservableMap<String, GearStyleType> sessionGearStyles = FXCollections.observableHashMap();
     ObservableMap<String, Item> sessionItems = FXCollections.observableHashMap();
     ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
     ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
@@ -31,7 +31,7 @@ public class DataModel implements Observer {
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
     Map<String, Object> changedCollectionIndices = new HashMap<>();
-    Map<String, String[]> changedGearStyles = new HashMap<>();
+    Map<String, GearStyleType> changedGearStyles = new HashMap<>();
     Map<String, Item> changedItems = new HashMap<>();
     Map<String, Placeable> changedPlaceables = new HashMap<>();
     Map<String, Recipe> changedRecipes = new HashMap<>();
@@ -77,21 +77,24 @@ public class DataModel implements Observer {
 
     public void createObject(String absPath, Enums.ObjectType type) throws IOException, ParseException {
         switch (type) {
+            case BENCH:
+            case PROFESSION:
+                upsertBench((Bench) parser.createObject(absPath, type));
+                break;
+            case COLLECTION:
+                upsertCollection((Collection) parser.createObject(absPath, type));
+                break;
+            case GEAR_STYLE:
+                upsertGearStyleType((GearStyleType) parser.createObject(absPath, type));
+                break;
             case ITEM:
                 upsertItem((Item) parser.createObject(absPath, type));
                 break;
             case PLACEABLE:
                 upsertPlaceable((Placeable) parser.createObject(absPath, type));
                 break;
-            case BENCH:
-            case PROFESSION:
-                upsertBench((Bench) parser.createObject(absPath, type));
-                break;
             case RECIPE:
                 upsertRecipe((Recipe) parser.createObject(absPath, type));
-                break;
-            case COLLECTION:
-                upsertCollection((Collection) parser.createObject(absPath, type));
                 break;
             case SKIN:
                 upsertSkin((Skin) parser.createObject(absPath, type));
@@ -99,6 +102,70 @@ public class DataModel implements Observer {
             case STRING:
                 upsertStrings((LangFile) parser.createObject(absPath, type));
                 break;
+        }
+    }
+
+    private void upsertBench(Bench bench) {
+        String rPath = bench.getRPath();
+        if (!sessionBenches.containsKey(rPath)) {
+            sessionBenches.put(rPath, bench);
+            changedBenches.put(rPath, bench);
+        } else {
+            Bench existing = sessionBenches.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(bench.getName())) {
+                existing.setName(bench.getName());
+                changed = true;
+            }
+            // don't compare the profession name, since it always starts as null
+            if (!existing.getCategories().equals(bench.getCategories())) {
+                existing.setCategories(bench.getCategories());
+                changed = true;
+            }
+            if (changed) changedBenches.put(rPath, existing);
+        }
+    }
+
+    private void upsertCollection(Collection collection) {
+        String rPath = collection.getRPath();
+        if (!sessionCollections.containsKey(rPath)) {
+            sessionCollections.put(rPath, collection);
+            changedCollections.put(rPath, collection);
+        } else {
+            Collection existing = sessionCollections.get(rPath);
+            boolean changed = false;
+            if (!existing.getName().equals(collection.getName())) {
+                existing.setName(collection.getName());
+                changed = true;
+            }
+            if (existing.getDesc() == null || (collection.getDesc() != null || !existing.getDesc().equals(collection.getDesc()))) {
+                existing.setDesc(collection.getDesc());
+                changed = true;
+            }
+            // ignore the mastery values as they are always added manually
+            if (!existing.getTypes().equals(collection.getTypes())) {
+                existing.setTypes(collection.getTypes());
+                changed = true;
+            }
+            if (!existing.getBuffs().equals(collection.getBuffs())) {
+                existing.setBuffs(collection.getBuffs());
+                changed = true;
+            }
+            if (!existing.getProperties().equals(collection.getProperties())) {
+                existing.setProperties(collection.getProperties());
+                changed = true;
+            }
+            if (changed) changedCollections.put(rPath, existing);
+        }
+    }
+
+    private void upsertGearStyleType(GearStyleType gearStyleType) {
+        String rPath = gearStyleType.getRPath();
+        if (!sessionGearStyles.containsKey(rPath)) {
+            sessionGearStyles.put(rPath, gearStyleType);
+            changedGearStyles.put(rPath, gearStyleType);
+        } else {
+            // TODO: some tedious code checking each pair for changes, but first by checking hashcode
         }
     }
 
@@ -168,60 +235,6 @@ public class DataModel implements Observer {
                 changed = true;
             }
             if (changed) changedRecipes.put(rPath, recipe);
-        }
-    }
-
-    private void upsertBench(Bench bench) {
-        String rPath = bench.getRPath();
-        if (!sessionBenches.containsKey(rPath)) {
-            sessionBenches.put(rPath, bench);
-            changedBenches.put(rPath, bench);
-        } else {
-            Bench existing = sessionBenches.get(rPath);
-            boolean changed = false;
-            if (!existing.getName().equals(bench.getName())) {
-                existing.setName(bench.getName());
-                changed = true;
-            }
-            // don't compare the profession name, since it always starts as null
-            if (!existing.getCategories().equals(bench.getCategories())) {
-                existing.setCategories(bench.getCategories());
-                changed = true;
-            }
-            if (changed) changedBenches.put(rPath, existing);
-        }
-    }
-
-    private void upsertCollection(Collection collection) {
-        String rPath = collection.getRPath();
-        if (!sessionCollections.containsKey(rPath)) {
-            sessionCollections.put(rPath, collection);
-            changedCollections.put(rPath, collection);
-        } else {
-            Collection existing = sessionCollections.get(rPath);
-            boolean changed = false;
-            if (!existing.getName().equals(collection.getName())) {
-                existing.setName(collection.getName());
-                changed = true;
-            }
-            if (existing.getDesc() == null || (collection.getDesc() != null || !existing.getDesc().equals(collection.getDesc()))) {
-                existing.setDesc(collection.getDesc());
-                changed = true;
-            }
-            // ignore the mastery values as they are always added manually
-            if (!existing.getTypes().equals(collection.getTypes())) {
-                existing.setTypes(collection.getTypes());
-                changed = true;
-            }
-            if (!existing.getBuffs().equals(collection.getBuffs())) {
-                existing.setBuffs(collection.getBuffs());
-                changed = true;
-            }
-            if (!existing.getProperties().equals(collection.getProperties())) {
-                existing.setProperties(collection.getProperties());
-                changed = true;
-            }
-            if (changed) changedCollections.put(rPath, existing);
         }
     }
 
@@ -301,7 +314,7 @@ public class DataModel implements Observer {
         return sessionCollectionIndices;
     }
 
-    public ObservableMap<String, String[]> getSessionGearStyles() {
+    public ObservableMap<String, GearStyleType> getSessionGearStyles() {
         return sessionGearStyles;
     }
 
@@ -339,7 +352,7 @@ public class DataModel implements Observer {
         return changedCollectionIndices;
     }
 
-    public Map<String, String[]> getChangedGearStyles() {
+    public Map<String, GearStyleType> getChangedGearStyles() {
         return changedGearStyles;
     }
 

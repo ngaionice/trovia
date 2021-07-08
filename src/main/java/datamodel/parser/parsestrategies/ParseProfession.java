@@ -39,8 +39,7 @@ public class ParseProfession implements ParseStrategy {
 
         // creating the Bench object
         String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
-        String rPath = absPath.substring(absPath.indexOf("prefabs\\")+8, absPath.indexOf(m.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        String rPath = Parser.extractRPath(absPath);
 
         return new Bench(path, rPath, categories, null);
     }

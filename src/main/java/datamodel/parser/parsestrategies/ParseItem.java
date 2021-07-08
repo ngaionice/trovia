@@ -3,6 +3,7 @@ package datamodel.parser.parsestrategies;
 import datamodel.objects.Article;
 import datamodel.objects.Item;
 import datamodel.parser.Parser;
+import datamodel.parser.Regexes;
 import local.Markers;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class ParseItem implements ParseStrategy {
 
         // instantiate the stuff needed to parse
         Markers m = new Markers();
+        Regexes r = new Regexes();
         String recPathStartMarker = "item\\";
         String recPathEndMarker = ".binfab";
 
@@ -32,21 +34,13 @@ public class ParseItem implements ParseStrategy {
         String name, desc, rPath;
         String[] unlocks = new String[0];
 
-        // subset relative path
-        int rPathStart = absPath.indexOf(recPathStartMarker);
-        int rPathEnd = absPath.indexOf(recPathEndMarker);
-
-        if (rPathStart != -1 && rPathEnd != -1) {
-            rPath = absPath.substring(rPathStart, rPathEnd);
-            rPath = rPath.replaceAll("\\\\", "/");
-        } else {
-            throw new ParseException(absPath + "could not be used to form a proper relative path.");
-        }
+        // extract relative path
+        rPath = Parser.extractRPath(absPath);
 
         // identify name and desc paths
-        Pattern ndp = Pattern.compile("[0-9]8 ([0-9A-F][0-9A-F]) (24 ([0-9A-F][0-9A-F] )+)([0-9A-F][0-9A-F] )+?(00 |([0-9A-F][0-9A-F]) (24 ([0-9A-F][0-9A-F] )+))68 00 80");
-        Pattern bp = Pattern.compile("[0-9]8 ([0-9A-F][0-9A-F]) (([0-9A-F][0-9A-F] )+)2E 62 6C 75 65 70 72 69 6E 74");
-        Pattern bp2 = Pattern.compile("[0-9]8 ([0-9A-F][0-9A-F]) (((3[0-9]|4[0-9A-F]|5[0-9AF]|6[1-9A-F]|7[0-9A]) )+)");
+        Pattern ndp = Pattern.compile(r.itemNDExtractor);
+        Pattern bp = Pattern.compile(r.itemBpExtractor);
+        Pattern bp2 = Pattern.compile(r.itemBpExtractorLowAcc);
 
         int ndEnd = splitString.indexOf("68 00 80");
         if (ndEnd == -1) {

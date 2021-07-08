@@ -4,6 +4,7 @@ import datamodel.objects.Article;
 import datamodel.objects.LangFile;
 import datamodel.parser.Outliers;
 import datamodel.parser.Parser;
+import datamodel.parser.Regexes;
 import local.Markers;
 
 import java.util.HashMap;
@@ -14,17 +15,15 @@ import java.util.regex.Pattern;
 public class ParseLangFile implements ParseStrategy{
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
-        System.out.println("Parsing " + absPath);
-
-        Pattern p = Pattern.compile("BE 03 0[0-9A-F] 0[0-9A-F] 0[0-9A-F] 1E");
-        Pattern ep = Pattern.compile("08 ([0-9A-F][0-9A-F] )+?(24 ([0-9A-F][0-9A-F] )+?)18 (00 |([0-9A-F][0-9A-F]) (0[0-9A-F] )?(([0-9A-F][0-9A-F] )+))");
+        Regexes r = new Regexes();
+        Pattern p = Pattern.compile(r.langSplitter);
+        Pattern ep = Pattern.compile(r.langExtractor);
         Matcher m = p.matcher(splitString);
         Markers mk = new Markers();
         Outliers o = new Outliers();
 
         String name = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(mk.endFile));
-        String rPath = absPath.substring(absPath.indexOf("language"), absPath.indexOf(mk.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        String rPath = Parser.extractRPath(absPath);
 
         Map<String, String> strings = new HashMap<>();
 
@@ -39,7 +38,7 @@ public class ParseLangFile implements ParseStrategy{
                 if (o.strings.contains(currString)) {
                     em.reset(o.replacements.get(o.strings.indexOf(currString))).find();
                 } else {
-                    throw new ParseException(absPath + " has an invalid string pattern: " + currString);
+                    throw new ParseException(absPath + " has an unrecognized invalid string pattern: " + currString);
                 }
             }
             key = Parser.hexToAscii(em.group(2));

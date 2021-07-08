@@ -29,8 +29,7 @@ public class ParseCollection implements ParseStrategy{
         Map<Enums.Property, Double> properties = new HashMap<>(10);
 
         // obtain relative path
-        String rPath = absPath.substring(absPath.indexOf("prefabs\\") + 8, absPath.indexOf(m.endFile));
-        rPath = rPath.replaceAll("\\\\", "/");
+        String rPath = Parser.extractRPath(absPath);
 
 //        System.out.println("Identified relative path.");
 
