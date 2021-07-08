@@ -105,8 +105,8 @@ public class Serializer {
                     String info = values[2];
                     JsonObject objectProps = new JsonObject();
                     objectProps.add("name", values[0] != null ? new JsonPrimitive(name) : null);
-                    objectProps.add("desc", values[0] != null ? new JsonPrimitive(desc) : null);
-                    objectProps.add("additional_info", values[0] != null ? new JsonPrimitive(info) : null);
+                    objectProps.add("desc", values[1] != null ? new JsonPrimitive(desc) : null);
+                    objectProps.add("additional_info", values[2] != null ? new JsonPrimitive(info) : null);
                     categoryStyles.add(blueprint, objectProps);
                 }
                 styles.add(category, categoryStyles);
