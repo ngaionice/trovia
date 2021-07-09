@@ -18,8 +18,8 @@ public class ParseGearStyle implements ParseStrategy{
         String rPath = Parser.extractRPath(absPath);
         String type = rPath.substring(rPath.lastIndexOf("/") + 1).replace("weapon_", "");
 
-        Matcher cm = Pattern.compile(r.gearStyleCat).matcher(splitString);
-        Matcher em = Pattern.compile(r.gearStyleExtractor).matcher("");
+        Matcher cm = Pattern.compile(r.gearStyleCatExtractor).matcher(splitString);
+        Matcher em = Pattern.compile(r.gearStyleInfoExtractor).matcher("");
 
         Map<String, String> categories = new HashMap<>();
         Map<String, Map<String, String[]>> styles = new HashMap<>();

@@ -13,7 +13,7 @@ public class ParseSkin implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) throws ParseException {
         String rPath = Parser.extractRPath(absPath);
         Regexes r = new Regexes();
-        Pattern p = Pattern.compile(r.skinExtractor);
+        Pattern p = Pattern.compile(r.skinInfoExtractor);
         Matcher mt = p.matcher(splitString);
         if (!mt.find()) {
             throw new ParseException(rPath + ": invalid skin structure; if this is not a bomb skin, then this is an issue.");

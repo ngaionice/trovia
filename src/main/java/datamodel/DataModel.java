@@ -20,7 +20,7 @@ public class DataModel implements Observer {
 
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
-    ObservableMap<String, Object> sessionCollectionIndices = FXCollections.observableHashMap();
+    ObservableMap<String, CollectionIndex> sessionCollectionIndices = FXCollections.observableHashMap();
     ObservableMap<String, GearStyleType> sessionGearStyles = FXCollections.observableHashMap();
     ObservableMap<String, Item> sessionItems = FXCollections.observableHashMap();
     ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
@@ -30,7 +30,7 @@ public class DataModel implements Observer {
 
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
-    Map<String, Object> changedCollectionIndices = new HashMap<>();
+    Map<String, CollectionIndex> changedCollectionIndices = new HashMap<>();
     Map<String, GearStyleType> changedGearStyles = new HashMap<>();
     Map<String, Item> changedItems = new HashMap<>();
     Map<String, Placeable> changedPlaceables = new HashMap<>();
@@ -83,6 +83,9 @@ public class DataModel implements Observer {
                 break;
             case COLLECTION:
                 upsertCollection((Collection) parser.createObject(absPath, type));
+                break;
+            case COLL_INDEX:
+                upsertCollectionIndex((CollectionIndex) parser.createObject(absPath, type));
                 break;
             case GEAR_STYLE:
                 upsertGearStyleType((GearStyleType) parser.createObject(absPath, type));
@@ -156,6 +159,16 @@ public class DataModel implements Observer {
                 changed = true;
             }
             if (changed) changedCollections.put(rPath, existing);
+        }
+    }
+
+    private void upsertCollectionIndex(CollectionIndex index) {
+        String rPath = index.getRPath();
+        if (!sessionCollectionIndices.containsKey(rPath)) {
+            sessionCollectionIndices.put(rPath, index);
+            changedCollectionIndices.put(rPath, index);
+        } else {
+            // TODO: some tedious code checking each pair for changes, but first by checking hashcode
         }
     }
 
@@ -310,7 +323,7 @@ public class DataModel implements Observer {
         return sessionStrings;
     }
 
-    public ObservableMap<String, Object> getSessionCollectionIndices() {
+    public ObservableMap<String, CollectionIndex> getSessionCollectionIndices() {
         return sessionCollectionIndices;
     }
 
@@ -348,7 +361,7 @@ public class DataModel implements Observer {
         return changedStrings;
     }
 
-    public Map<String, Object> getChangedCollectionIndices() {
+    public Map<String, CollectionIndex> getChangedCollectionIndices() {
         return changedCollectionIndices;
     }
 

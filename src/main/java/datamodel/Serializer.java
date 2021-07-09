@@ -14,6 +14,7 @@ public class Serializer {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Bench.class, new BenchSerializer());
         builder.registerTypeAdapter(Collection.class, new CollectionSerializer());
+        builder.registerTypeAdapter(CollectionIndex.class, new CollectionIndexSerializer());
         builder.registerTypeAdapter(GearStyleType.class, new GearStyleTypeSerializer());
         builder.registerTypeAdapter(Item.class, new ItemSerializer());
         builder.registerTypeAdapter(Placeable.class, new PlaceableSerializer());
@@ -81,6 +82,38 @@ public class Serializer {
             obj.add("properties", properties);
             obj.add("buffs", buffs);
 
+            return obj;
+        }
+    }
+
+    public static class CollectionIndexSerializer implements JsonSerializer<CollectionIndex> {
+
+        @Override
+        public JsonElement serialize(CollectionIndex index, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject obj = new JsonObject();
+            obj.add("rel_path", new JsonPrimitive(index.getRPath()));
+            obj.add("type", new JsonPrimitive(index.getType()));
+
+            JsonObject categories = new JsonObject();
+            for (Map.Entry<String, String> nameEntry: index.getNames().entrySet()) {
+                String key = nameEntry.getKey();
+
+                JsonObject category = new JsonObject();
+                category.add("display_name", new JsonPrimitive(nameEntry.getValue()));
+
+                JsonArray entries = new JsonArray();
+                JsonObject additionalInfo = new JsonObject();
+                for (Map.Entry<String, String> infoEntry: index.getCategories().get(key).entrySet()) {
+                    entries.add(infoEntry.getKey());
+                    if (infoEntry.getValue() != null) {
+                        additionalInfo.add(infoEntry.getKey(), new JsonPrimitive(infoEntry.getValue()));
+                    }
+                }
+                category.add("entries", entries);
+                category.add("additional_info", additionalInfo);
+                categories.add(key, category);
+            }
+            obj.add("categories", categories);
             return obj;
         }
     }

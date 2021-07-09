@@ -111,6 +111,9 @@ public class Parser {
             case COLLECTION:
                 context = new ParseContext(new ParseCollection());
                 return context.parse(splitString, path);
+            case COLL_INDEX:
+                context = new ParseContext(new ParseCollectionIndex());
+                return context.parse(splitString, path);
             case GEAR_STYLE:
                 context = new ParseContext(new ParseGearStyle());
                 return context.parse(splitString, path);

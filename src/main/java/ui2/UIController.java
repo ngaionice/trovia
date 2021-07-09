@@ -171,7 +171,7 @@ public class UIController {
     }
 
     void setParseTypes(ComboBox<String> typeSelect) {
-        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Items", "Gear styles","Placeables", "Professions", "Recipes", "Skins", "Strings");
+        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Collection indices", "Items", "Gear styles","Placeables", "Professions", "Recipes", "Skins", "Strings");
         typeSelect.setItems(types);
         typeSelect.getSelectionModel().selectFirst();
     }
@@ -649,7 +649,7 @@ public class UIController {
                 writer.beginObject();
                 if (selection[0] != 0) writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
                 if (selection[1] != 0) writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
-                // add collection indices and gear styles later
+                if (selection[2] != 0) writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
                 if (selection[3] != 0) writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
                 if (selection[4] != 0) writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
                 if (selection[5] != 0) writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
@@ -680,6 +680,15 @@ public class UIController {
         writer.name("collections");
         writer.beginObject();
         for (Map.Entry<String, Collection> entry: collections.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    void writeCollectionIndices(JsonWriter writer, Gson serializer, Map<String, CollectionIndex> indices) throws IOException {
+        writer.name("collection_indices");
+        writer.beginObject();
+        for (Map.Entry<String, CollectionIndex> entry: indices.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
