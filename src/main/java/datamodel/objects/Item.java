@@ -3,93 +3,45 @@ package datamodel.objects;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 
-import java.util.*;
+import java.util.List;
+import java.util.Observable;
 
 public class Item extends Observable implements Article, ArticleTable {
 
     StringProperty name;
-    StringProperty desc;
+    StringProperty desc; // nullable
     StringProperty rPath;
     ListProperty<String> unlocks;
-    MapProperty<String, Integer> decons;
-    MapProperty<String, String> lootCommon;
-    MapProperty<String, String> lootUncommon;
-    MapProperty<String, String> lootRare;
     IntegerProperty blueprintIndex;
     ListProperty<String> possibleBlueprints;
     BooleanProperty tradable;
+    BooleanProperty isLootbox;
+    BooleanProperty willDecay;
+    BooleanProperty badBlueprint;
 
-    // nullable properties (the value in the value itself can be null):
-    // desc, all 3 loot stuff
-
-    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox) {
+    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox, boolean willDecay) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
-        this.tradable = new SimpleBooleanProperty(true);
+
         this.blueprintIndex = new SimpleIntegerProperty(possibleBlueprints.length >= 1 ? 0 : -1);
         this.possibleBlueprints = new SimpleListProperty<>(FXCollections.observableArrayList(possibleBlueprints));
 
-        this.decons = new SimpleMapProperty<>(FXCollections.observableHashMap());
-        this.lootCommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
-        this.lootUncommon = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
-        this.lootRare = new SimpleMapProperty<>(isLootbox ? FXCollections.observableHashMap() : null);
+        this.tradable = new SimpleBooleanProperty(true);
+        this.isLootbox = new SimpleBooleanProperty(isLootbox);
+        this.willDecay = new SimpleBooleanProperty(willDecay);
+        this.badBlueprint = new SimpleBooleanProperty(false);
+    }
+
+    public String getName() {
+        return name.get();
     }
 
     public void setName(String name) {
         this.name.set(name);
         notifyObservers();
-    }
-
-    public void setDesc(String desc) {
-        this.desc.set(desc);
-        notifyObservers();
-    }
-
-    public void setRPath(String rPath) {
-        this.rPath.set(rPath);
-        notifyObservers();
-    }
-
-    public void addUnlocks(String unlock) {
-        this.unlocks.getValue().add(unlock);
-        notifyObservers();
-    }
-
-    public void upsertDecon(String itemRPath, int quantity) {
-        this.decons.getValue().put(itemRPath, quantity);
-        notifyObservers();
-    }
-
-    public void upsertLootCommon(String itemRPath, String quantity) {
-        this.lootCommon.getValue().put(itemRPath, quantity);
-        notifyObservers();
-    }
-
-    public void upsertLootUncommon(String itemRPath, String quantity) {
-        this.lootUncommon.getValue().put(itemRPath, quantity);
-        notifyObservers();
-    }
-
-    public void upsertLootRare(String itemRPath, String quantity) {
-        this.lootRare.getValue().put(itemRPath, quantity);
-        notifyObservers();
-    }
-
-    public void setUnlocks(List<String> unlocks) {
-        this.unlocks.setValue(FXCollections.observableArrayList(unlocks));
-    }
-
-
-    public void setTradable(boolean tradable) {
-        this.tradable.set(tradable);
-    }
-
-    public String getName() {
-        return name.get();
     }
 
     public StringProperty nameProperty() {
@@ -100,12 +52,22 @@ public class Item extends Observable implements Article, ArticleTable {
         return desc.get();
     }
 
+    public void setDesc(String desc) {
+        this.desc.set(desc);
+        notifyObservers();
+    }
+
     public StringProperty descProperty() {
         return desc;
     }
 
     public String getRPath() {
         return rPath.get();
+    }
+
+    public void setRPath(String rPath) {
+        this.rPath.set(rPath);
+        notifyObservers();
     }
 
     public StringProperty rPathProperty() {
@@ -116,45 +78,27 @@ public class Item extends Observable implements Article, ArticleTable {
         return unlocks.get();
     }
 
+    public void addUnlock(String unlock) {
+        this.unlocks.add(unlock);
+        notifyObservers();
+    }
+
+    public void setUnlocks(List<String> unlocks) {
+        this.unlocks.setValue(FXCollections.observableArrayList(unlocks));
+        notifyObservers();
+    }
+
     public ListProperty<String> unlocksProperty() {
         return unlocks;
     }
 
-    public ObservableMap<String, Integer> getDecons() {
-        return decons.get();
-    }
-
-    public MapProperty<String, Integer> deconsProperty() {
-        return decons;
-    }
-
-    public ObservableMap<String, String> getLootCommon() {
-        return lootCommon.get();
-    }
-
-    public MapProperty<String, String> lootCommonProperty() {
-        return lootCommon;
-    }
-
-    public ObservableMap<String, String> getLootUncommon() {
-        return lootUncommon.get();
-    }
-
-    public MapProperty<String, String> lootUncommonProperty() {
-        return lootUncommon;
-    }
-
-    public ObservableMap<String, String> getLootRare() {
-        return lootRare.get();
-    }
-
-    public MapProperty<String, String> lootRareProperty() {
-        return lootRare;
-    }
-
-
     public boolean isTradable() {
         return tradable.get();
+    }
+
+    public void setTradable(boolean tradable) {
+        this.tradable.set(tradable);
+        notifyObservers();
     }
 
     public BooleanProperty tradableProperty() {
@@ -165,23 +109,64 @@ public class Item extends Observable implements Article, ArticleTable {
         return blueprintIndex.get();
     }
 
-    public IntegerProperty blueprintIndexProperty() {
-        return blueprintIndex;
-    }
-
     public void setBlueprintIndex(int blueprintIndex) {
         this.blueprintIndex.set(blueprintIndex);
+        notifyObservers();
+    }
+
+    public IntegerProperty blueprintIndexProperty() {
+        return blueprintIndex;
     }
 
     public ObservableList<String> getPossibleBlueprints() {
         return possibleBlueprints.get();
     }
 
+    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
+        this.possibleBlueprints.set(possibleBlueprints);
+        notifyObservers();
+    }
+
     public ListProperty<String> possibleBlueprintsProperty() {
         return possibleBlueprints;
     }
 
-    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
-        this.possibleBlueprints.set(possibleBlueprints);
+    public boolean isLootbox() {
+        return isLootbox.get();
+    }
+
+    public BooleanProperty isLootboxProperty() {
+        return isLootbox;
+    }
+
+    public void setIsLootbox(boolean isLootbox) {
+        this.isLootbox.set(isLootbox);
+        notifyObservers();
+    }
+
+    public boolean willDecay() {
+        return willDecay.get();
+    }
+
+    public BooleanProperty willDecayProperty() {
+        return willDecay;
+    }
+
+    public void setWillDecay(boolean willDecay) {
+        this.willDecay.set(willDecay);
+        notifyObservers();
+    }
+
+    public boolean hasBadBlueprint() {
+        return badBlueprint.get();
+    }
+
+    public BooleanProperty badBlueprintProperty() {
+        return badBlueprint;
+    }
+
+    public void setBadBlueprint(boolean badBlueprint) {
+        this.badBlueprint.set(badBlueprint);
+        notifyObservers();
     }
 }

@@ -62,7 +62,7 @@ public class UIController {
         fileChooser.setTitle(promptText);
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType, fileExtension));
         File selected = fileChooser.showOpenDialog(stage);
-        return selected.getAbsolutePath();
+        return selected == null ? null : selected.getAbsolutePath();
     }
 
     /**
@@ -72,7 +72,7 @@ public class UIController {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle(promptText);
         File selected = dirChooser.showDialog(stage);
-        return selected.getAbsolutePath();
+        return selected == null ? null : selected.getAbsolutePath();
     }
 
     void dumpLogs(Stage stage, TextArea logger) {
@@ -121,13 +121,14 @@ public class UIController {
      *                  6: recipes
      *                  7: skins
      *                  8: strings
+     *                  9: blueprints
      * @param logger the TextArea used for logging
      */
     void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(usePrettyPrint);
         if (selected != null) {
-            if (selection.length != 9) {
+            if (selection.length != 10) {
                 print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
                 return;
             }
@@ -154,6 +155,21 @@ public class UIController {
                 print(logger, "Export failed due to an IOException; stack trace below:");
                 List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
                 printList(logger, errorList);
+            }
+            if (selection[9] != 0) {
+                try {
+                    String path = dirPath + "\\" + "trove-blueprint-paths-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
+                    JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
+                    writer.beginArray();
+                    for (String bp : model.getBlueprintPaths()) writer.value(bp);
+                    writer.endArray();
+                    writer.close();
+                    print(logger, "Data exported to " + path);
+                } catch (IOException e) {
+                    print(logger, "Export failed due to an IOException; stack trace below:");
+                    List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+                    printList(logger, errorList);
+                }
             }
         }
     }
@@ -499,24 +515,9 @@ public class UIController {
         buffValCol.setCellValueFactory(cd -> cd.getValue().doubleValueProperty().asObject());
     }
 
-    void setEditTabItemSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox,
-                               TableView<KVPair> decons, TableColumn<KVPair, String> deconCol, TableColumn<KVPair, Integer> deconValCol,
-                               ComboBox<String> lootComboBox, TableView<KVPair> loot, TableColumn<KVPair, String> lootCol,
-                               TableColumn<KVPair, String> lootValCol) {
-        lootComboBox.getItems().addAll("Common", "Uncommon", "Rare");
+    void setEditTabItemSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox) {
 
-        deconCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
-        deconValCol.setCellValueFactory(cd -> cd.getValue().intValueProperty().asObject());
-        lootCol.setCellValueFactory(cd -> cd.getValue().keyProperty());
-        lootValCol.setCellValueFactory(cd -> cd.getValue().stringValueProperty());
-
-        ObservableList<KVPair> lootEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.stringValueProperty()});
         model.currentItemProperty().addListener(((observable, oldValue, newValue) -> {
-            isBuffering = true;
-            decons.getItems().clear();
-            loot.getItems().clear();
-            lootEntries.clear();
-            isBuffering = false;
             if (oldValue != null) {
                 rPathField.textProperty().unbindBidirectional(oldValue.rPathProperty());
                 nameField.textProperty().unbindBidirectional(oldValue.nameProperty());
@@ -533,65 +534,8 @@ public class UIController {
                 nameField.textProperty().bindBidirectional(newValue.nameProperty());
                 descField.textProperty().bindBidirectional(newValue.descProperty());
                 tradableBox.selectedProperty().bindBidirectional(newValue.tradableProperty());
-
-                ObservableList<KVPair> deconEntries = FXCollections.observableArrayList(kv -> new Observable[]{kv.keyProperty(), kv.intValueProperty()});
-                decons.setItems(deconEntries);
-
-                deconEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
-                    while (c.next()) {
-                        if (c.wasUpdated()) {
-                            KVPair updated = deconEntries.get(c.getFrom());
-                            newValue.upsertDecon(updated.getKey(), updated.getIntValue());
-                        }
-                    }
-                });
-
-                newValue.getDecons().forEach((key, value) -> deconEntries.add(new KVPair(key, value)));
-                lootComboBox.getSelectionModel().selectFirst();
             }
         }));
-        lootComboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            isBuffering = true;
-            lootEntries.clear();
-            KVPair curr = loot.getSelectionModel().selectedItemProperty().get();
-            if (newValue != null && curr != null) {
-                ObservableMap<String, String> lootMap = null;
-                switch (newValue) {
-                    case "Common":
-                        lootMap = model.getCurrentItem().getLootCommon();
-                        break;
-                    case "Uncommon":
-                        lootMap = model.getCurrentItem().getLootUncommon();
-                        break;
-                    case "Rare":
-                        lootMap = model.getCurrentItem().getLootRare();
-                        break;
-                }
-                if (lootMap != null) {
-                    lootMap.forEach((k, v) -> lootEntries.add(new KVPair(k, v)));
-                }
-            }
-            isBuffering = false;
-        }));
-        lootEntries.addListener((ListChangeListener.Change<? extends KVPair> c) -> {
-            while (c.next()) {
-                if (!isBuffering && c.wasUpdated()) {
-                    KVPair updated = lootEntries.get(c.getFrom());
-                    String currRarity = lootComboBox.getSelectionModel().selectedItemProperty().get();
-                    switch (currRarity) {
-                        case "Common":
-                            model.getCurrentItem().upsertLootCommon(updated.getKey(), updated.getStringValue());
-                            break;
-                        case "Uncommon":
-                            model.getCurrentItem().upsertLootUncommon(updated.getKey(), updated.getStringValue());
-                            break;
-                        case "Rare":
-                            model.getCurrentItem().upsertLootRare(updated.getKey(), updated.getStringValue());
-                            break;
-                    }
-                }
-            }
-        });
     }
 
     void setEditTabPlaceableSidebar(TextField rPathField, TextField nameField, TextField descField, CheckBox tradableBox) {

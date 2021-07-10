@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ParseItem implements ParseStrategy {
 
@@ -60,10 +61,36 @@ public class ParseItem implements ParseStrategy {
         }
 
         String remaining = splitString.substring(ndm.end());
+
+        // identify if collection exists
+        if (remaining.contains(m.collection)) {
+            List<String> collection = new ArrayList<>();
+
+            // locate all the markers
+            int colIndex = remaining.indexOf(m.collection);
+            String currString = remaining.substring(colIndex);
+
+            while (currString.contains(m.collection)) {
+                int index = currString.indexOf(" 28 00");
+                collection.add(Parser.hexToAscii(currString.substring(0, index)));
+
+                // go to next collection
+                if (currString.substring(index).contains(m.collection)) {
+                    currString = currString.substring(currString.indexOf(m.collection, index));
+                } else {
+                    remaining = currString.substring(index);
+                    break;
+                }
+            }
+
+            unlocks = collection.toArray(new String[0]);
+        }
+
+        // identify blueprint
         List<String> bTxt = new ArrayList<>();
         int bLen;
 
-        Matcher bm = bp.matcher(remaining);
+        Matcher bm = bp.matcher(splitString);
         boolean idealBp = false;
         if (bm.find()) {
             bLen = Integer.parseInt(bm.group(1), 16);
@@ -78,43 +105,25 @@ public class ParseItem implements ParseStrategy {
             List<String> options = new ArrayList<>();
             while (bm2.find()) {
                 bLen = Integer.parseInt(bm2.group(1), 16);
-                if (bLen == 3 * Parser.hexToAscii(bm2.group(2)).length()) {
+                if (bLen == Parser.hexToAscii(bm2.group(2)).length()) {
                     options.add(Parser.hexToAscii(bm2.group(2)));
                 }
-//                options.add(Parser.hexToAscii(bm2.group(2).length() <= 3 * bLen ? bm2.group(2) : bm2.group(2).substring(0, 3 * bLen)));
             }
 
             if (options.size() == 0) throw new ParseException(rPath + ": no possible blueprint found.");
             else bTxt.addAll(options);
-        }
 
-        // identify if collection exists
-        if (splitString.contains(m.collection)) {
-            List<String> collection = new ArrayList<>();
-
-            // locate all the markers
-            int colIndex = splitString.indexOf(m.collection);
-            String currString = splitString.substring(colIndex);
-
-            while (currString.contains(m.collection)) {
-                int index = currString.indexOf(" 28 00");
-                collection.add(Parser.hexToAscii(currString.substring(0, index)));
-
-                // go to next collection
-                if (currString.substring(index).contains(m.collection)) {
-                    currString = currString.substring(currString.indexOf(m.collection, index));
-                } else {
-                    break;
-                }
-            }
-
-            unlocks = collection.toArray(new String[0]);
+            // filter out known unwanted strings
+            bTxt = bTxt.stream().filter(p -> !m.itemBpFilters.contains(p)).collect(Collectors.toList());
         }
 
         // identify if lootbox exists
         boolean lootbox = splitString.contains(m.lootbox);
 
-        return new Item(name, desc, rPath, unlocks, bTxt.toArray(new String[0]), lootbox);
+        // identify if this item has decay
+        boolean decay = splitString.contains(m.decay);
+
+        return new Item(name, desc, rPath, unlocks, bTxt.toArray(new String[0]), lootbox, decay);
     }
 
     // creating a new item:

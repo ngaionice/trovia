@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import datamodel.objects.*;
 import javafx.collections.ObservableList;
+import testtools.Tester;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -243,6 +244,11 @@ public class Serializer {
             obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
             obj.add("tradable", new JsonPrimitive(item.isTradable() ? 1 : 0));
             obj.add("bp_index", new JsonPrimitive(item.getBlueprintIndex()));
+            obj.add("lootbox", new JsonPrimitive(item.isLootbox()));
+            obj.add("decay", new JsonPrimitive(item.willDecay()));
+            if (item.hasBadBlueprint()) {
+                obj.add("bad_blueprint", new JsonPrimitive(true));
+            }
 
             JsonArray blueprints = new JsonArray();
             item.getPossibleBlueprints().forEach(blueprints::add);
@@ -252,31 +258,6 @@ public class Serializer {
 
             obj.add("blueprints", blueprints);
             obj.add("unlocks", unlocks);
-
-            JsonObject loot = new JsonObject();
-            boolean lootFlag = false;
-            JsonObject lootCommon = new JsonObject();
-            if (item.getLootCommon() != null) {
-                item.getLootCommon().forEach((k, v) -> lootCommon.add(k, new JsonPrimitive(v)));
-                loot.add("common", lootCommon);
-                lootFlag = true;
-            }
-
-            JsonObject lootUncommon = new JsonObject();
-            if (item.getLootUncommon() != null) {
-                item.getLootUncommon().forEach((k, v) -> lootUncommon.add(k, new JsonPrimitive(v)));
-                loot.add("uncommon", lootUncommon);
-                lootFlag = true;
-            }
-
-            JsonObject lootRare = new JsonObject();
-            if (item.getLootRare() != null) {
-                item.getLootRare().forEach((k, v) -> lootRare.add(k, new JsonPrimitive(v)));
-                loot.add("rare", lootRare);
-                lootFlag = true;
-            }
-
-            if (lootFlag) obj.add("loot", loot);
 
             return obj;
         }

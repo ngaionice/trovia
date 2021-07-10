@@ -83,11 +83,11 @@ public class Presenter {
         quitButton.setOnAction(e -> runQuitSequence());
 
         controller.disableActionButtons(actionButtons);
-        root.setCenter(getScreenBorderPane("Load", getLoadScreenContent(), true));
+        root.setCenter(getScreenBorderPane("Load", getLoadScreenContent(actionButtons), true));
         return navBox;
     }
 
-    private Pane getLoadScreenContent() {
+    private Pane getLoadScreenContent(List<Button> actionButtons) {
         StackPane center = new StackPane();
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
@@ -117,10 +117,13 @@ public class Presenter {
             }
         });
         startButton.setOnAction(e -> {
-            if (blueprintDir.getText() != null && !blueprintDir.getText().equals("")) {
-                controller.loadBlueprints(blueprintDir.getText());
+            String bpDirPath = blueprintDir.getText();
+            if (bpDirPath != null && !bpDirPath.equals("")) {
+                controller.loadBlueprints(bpDirPath);
+                controller.print(logger, "Blueprint database constructed from " + bpDirPath);
             }
             controller.disableActionButtons(Arrays.asList(bpLocButton, dataLocButton, bpDirButton, startButton));
+            controller.enableActionButtons(actionButtons);
         });
 
         // element styling
@@ -357,8 +360,8 @@ public class Presenter {
         JFXCheckBox prettyPrintButton = new JFXCheckBox();
         Separator separator = new Separator();
 
-        BooleanProperty[] selected = new BooleanProperty[9];
-        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
+        BooleanProperty[] selected = new BooleanProperty[10];
+        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings", "Blueprints"};
 
         List<JFXCheckBox> checkboxes = new ArrayList<>();
         for (int i = 0; i < selected.length; i++) {
@@ -372,7 +375,7 @@ public class Presenter {
 
         directory.setPromptText("Directory");
         directory.setDisable(true);
-        changedButton.setText("Export everything");
+        changedButton.setText("Export changes only");
         prettyPrintButton.setText("Pretty printing");
 
         dirButton.setOnAction(e -> {
@@ -381,13 +384,6 @@ public class Presenter {
             File selectedPath = dirChooser.showDialog(stage);
             if (selectedPath != null) {
                 directory.setText(selectedPath.getAbsolutePath());
-            }
-        });
-        changedButton.selectedProperty().addListener(e -> {
-            if (changedButton.isSelected()) {
-                changedButton.setText("Export changes");
-            } else {
-                changedButton.setText("Export everything");
             }
         });
         startButton.setOnAction(e -> {
@@ -646,46 +642,19 @@ public class Presenter {
         JFXTextField nameField = new JFXTextField();
         JFXTextField descField = new JFXTextField();
         JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
-        VBox deconBox = new VBox();
-        Text deconLabel = new Text("Deconstructs into");
-        TableView<UIController.KVPair> decons = new TableView<>();
-        TableColumn<UIController.KVPair, String> deconCol = new TableColumn<>("Article");
-        TableColumn<UIController.KVPair, Integer> deconValCol = new TableColumn<>("Qty");
-        VBox lootBox = new VBox();
-        Text lootLabel = new Text("Lootbox contents (if applicable)");
-        JFXComboBox<String> lootComboBox = new JFXComboBox<>();
-        TableView<UIController.KVPair> loot = new TableView<>();
-        TableColumn<UIController.KVPair, String> lootCol = new TableColumn<>("Object");
-        TableColumn<UIController.KVPair, String> lootValCol = new TableColumn<>("Qty");
-
-        deconBox.getChildren().addAll(deconLabel, decons);
-        lootBox.getChildren().addAll(lootLabel, lootComboBox, loot);
-        decons.getColumns().addAll(Arrays.asList(deconCol, deconValCol));
-        loot.getColumns().addAll(Arrays.asList(lootCol, lootValCol));
 
         rPathField.setPromptText("Relative Path");
         nameField.setPromptText("Name");
         descField.setPromptText("Description");
-        decons.setEditable(true);
-        loot.setEditable(true);
 
-        Arrays.asList(rPathField, nameField, descField, lootComboBox).forEach(item -> item.getStyleClass().add("sidebar-text"));
-        Arrays.asList(deconLabel, lootLabel).forEach(item -> item.getStyleClass().add("text-normal"));
-        decons.getStyleClass().add("sidebar-list-medium");
-        loot.getStyleClass().add("sidebar-list-long");
-        deconCol.prefWidthProperty().bind(decons.widthProperty().multiply(0.8));
-        deconValCol.prefWidthProperty().bind(decons.widthProperty().multiply(0.16));
-        lootCol.prefWidthProperty().bind(loot.widthProperty().multiply(0.8));
-        lootValCol.prefWidthProperty().bind(loot.widthProperty().multiply(0.16));
+        Arrays.asList(rPathField, nameField, descField).forEach(item -> item.getStyleClass().add("sidebar-text"));
 
         sidebar.add(rPathField, 0, 0);
         sidebar.add(nameField, 0, 1);
         sidebar.add(descField, 0, 2);
         sidebar.add(tradableBox, 0, 3);
-        sidebar.add(deconBox, 0, 4);
-        sidebar.add(lootBox, 0, 5);
 
-        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox, decons, deconCol, deconValCol, lootComboBox, loot, lootCol, lootValCol);
+        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox);
     }
 
     private void setEditTabPlaceableSidebar(GridPane sidebar) {
@@ -704,7 +673,6 @@ public class Presenter {
         sidebar.add(nameField, 0, 1);
         sidebar.add(descField, 0, 2);
         sidebar.add(tradableBox, 0, 3);
-
 
         controller.setEditTabPlaceableSidebar(rPathField, nameField, descField, tradableBox);
     }
