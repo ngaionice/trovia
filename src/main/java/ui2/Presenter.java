@@ -7,7 +7,6 @@ import datamodel.objects.ArticleTable;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -49,17 +48,15 @@ public class Presenter {
         JFXButton parseButton = new JFXButton("Parse");
         JFXButton editButton = new JFXButton("Edit");
         JFXButton reviewButton = new JFXButton("Review");
-        JFXButton loadButton = new JFXButton("Load");
+        Separator separator = new Separator();
         JFXButton exportButton = new JFXButton("Export");
+        Separator separator2 = new Separator();
         JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
-        Separator separator = new Separator();
-        Separator separator2 = new Separator();
 
         List<Button> actionButtons = Arrays.asList(parseButton, editButton, reviewButton, exportButton);
-        List<Button> databaseButtons = Collections.singletonList(loadButton);
-        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, reviewButton, loadButton, exportButton, logsButton, quitButton);
-        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-review", "button-load", "button-export", "button-logs", "button-quit"};
+        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, reviewButton, exportButton, logsButton, quitButton);
+        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-review", "button-export", "button-logs", "button-quit"};
 
         spacer.prefHeightProperty().bind(scene.heightProperty().multiply(0.125));
         for (int i = 0; i < buttonIds.length; i++) {
@@ -69,7 +66,7 @@ public class Presenter {
         }
         navBox.getChildren().addAll(buttonList);
         navBox.getChildren().add(3, separator);
-        navBox.getChildren().add(6, separator2);
+        navBox.getChildren().add(5, separator2);
         navBox.getChildren().add(0, spacer);
         navBox.setId("nav-box");
         separator.getStyleClass().add("nav-separator");
@@ -80,25 +77,104 @@ public class Presenter {
         editButton.setOnAction(e -> setEditScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
-        loadButton.setOnAction(e -> {
-            boolean enable = controller.loadData(stage, logger);
-            if (enable) {
-                controller.enableActionButtons(actionButtons);
-                controller.disableActionButtons(databaseButtons);
-            }
-        });
         exportButton.setOnAction(e -> setExportScreen());
 
         logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
 
         controller.disableActionButtons(actionButtons);
-
+        root.setCenter(getScreenBorderPane("Load", getLoadScreenContent(), true));
         return navBox;
     }
 
+    private Pane getLoadScreenContent() {
+        StackPane center = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = new GridPane();
+
+        Text externalText = new Text("Load external data (coming soon)");
+        JFXTextField blueprintLoc = new JFXTextField();
+        JFXTextField dataLoc = new JFXTextField();
+
+        JFXButton bpLocButton = new JFXButton();
+        JFXButton dataLocButton = new JFXButton();
+
+        Separator sep = new Separator();
+
+        Text buildText = new Text("Build blueprint repository");
+        JFXTextField blueprintDir = new JFXTextField();
+        JFXButton bpDirButton = new JFXButton();
+
+        Separator sep2 = new Separator();
+        Text ignoreText = new Text("Press the start button to load in the data, or to skip data loading and start parsing data.\nIf you do not load data now, you will not be able to do so later.");
+
+        JFXButton startButton = new JFXButton();
+
+        bpDirButton.setOnAction(e -> {
+            String bpDirPath = controller.loadDirectory(stage, "Select the directory with the .blueprint files.");
+            if (bpDirPath != null) {
+                blueprintDir.setText(bpDirPath);
+            }
+        });
+        startButton.setOnAction(e -> {
+            if (blueprintDir.getText() != null && !blueprintDir.getText().equals("")) {
+                controller.loadBlueprints(blueprintDir.getText());
+            }
+            controller.disableActionButtons(Arrays.asList(bpLocButton, dataLocButton, bpDirButton, startButton));
+        });
+
+        // element styling
+        {
+            blueprintLoc.setPromptText("Blueprint JSON file location");
+            dataLoc.setPromptText("Entity JSON file location");
+            blueprintDir.setPromptText("Blueprint folder location");
+            Arrays.asList(blueprintLoc, dataLoc, blueprintDir).forEach(field -> {
+                field.getStyleClass().add("text-field-dir");
+                field.setDisable(true);
+            });
+            startButton.getStyleClass().addAll("floating-button", "button-start");
+            Arrays.asList(bpLocButton, dataLocButton, bpDirButton).forEach(button -> {
+                button.getStyleClass().addAll("button-inline", "color-subtle");
+                button.setId("button-set-dir");
+            });
+            Arrays.asList(externalText, buildText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
+            center.getStyleClass().add("pane-background");
+            anchor.getStyleClass().add("card-backing");
+            grid.getStyleClass().add("grid-content");
+
+            dataLocButton.setGraphic(new FontIcon());
+            bpLocButton.setGraphic(new FontIcon());
+            bpDirButton.setGraphic(new FontIcon());
+            startButton.setGraphic(new FontIcon());
+        }
+
+        // placing items into grid
+        {
+            center.getChildren().add(anchor);
+            anchor.getChildren().add(grid);
+            anchor.getChildren().add(startButton);
+            grid.add(externalText, 0, 0);
+            grid.add(blueprintLoc, 0, 1);
+            grid.add(bpLocButton, 1,1);
+            grid.add(dataLoc, 0, 2);
+            grid.add(dataLocButton, 1, 2);
+            grid.add(sep, 0, 3, 2, 1);
+            grid.add(buildText, 0, 4);
+            grid.add(blueprintDir, 0, 5);
+            grid.add(bpDirButton, 1, 5);
+            grid.add(sep2, 0, 6, 2, 1);
+            grid.add(ignoreText, 0, 7, 2, 1);
+        }
+
+        setMaxAnchor(grid);
+        setFabAnchor(startButton);
+
+        JFXDepthManager.setDepth(anchor, 1);
+        return center;
+    }
+
     private void setParseScreen() {
-        setScreenBorderPane("Parse", getParseScreenContent(), true);
+        root.setCenter(getScreenBorderPane("Parse", getParseScreenContent(), true));
     }
 
     private Pane getParseScreenContent() {
@@ -267,7 +343,7 @@ public class Presenter {
     }
 
     private void setExportScreen() {
-        setScreenBorderPane("Export", getExportScreenContent(), true);
+        root.setCenter(getScreenBorderPane("Export", getExportScreenContent(), true));
     }
 
     private Pane getExportScreenContent() {
@@ -288,8 +364,8 @@ public class Presenter {
         for (int i = 0; i < selected.length; i++) {
             selected[i] = new SimpleBooleanProperty(true);
             JFXCheckBox cb = new JFXCheckBox(texts[i]);
-//            cb.setSelected(true);
             cb.selectedProperty().bindBidirectional(selected[i]);
+            cb.setSelected(false);
             checkboxes.add(cb);
         }
         prettyPrintButton.setSelected(true);
@@ -361,7 +437,7 @@ public class Presenter {
         return center;
     }
 
-    private void setScreenBorderPane(String headerString, Node content, boolean showLogger) {
+    private BorderPane getScreenBorderPane(String headerString, Node content, boolean showLogger) {
         BorderPane screenRoot = new BorderPane();
         HBox header = new HBox();
         Text headerText = new Text(headerString);
@@ -373,7 +449,7 @@ public class Presenter {
         screenRoot.setTop(header);
         screenRoot.setCenter(content);
         if (showLogger) screenRoot.setBottom(getLogsRegion());
-        root.setCenter(screenRoot);
+        return screenRoot;
     }
 
     private void setLogsScreen() {

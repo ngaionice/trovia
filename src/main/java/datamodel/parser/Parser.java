@@ -4,13 +4,11 @@ import datamodel.Enums;
 import datamodel.objects.Article;
 import datamodel.parser.parsestrategies.*;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Parser {
 
@@ -152,4 +150,18 @@ public class Parser {
         return rPath.replaceAll("\\\\", "/");
     }
 
+    public Set<String> getAllBlueprintPathsFromDir(String baseDirPath, String currDirPath) {
+        Set<String> set = new HashSet<>();
+        File dir = new File(currDirPath);
+        File[] files = Objects.requireNonNull(dir.listFiles());
+        for (File file : files) {
+            if (file.isDirectory()) {
+                Set<String> subDirSet = getAllBlueprintPathsFromDir(baseDirPath, file.getAbsolutePath());
+                set.addAll(subDirSet);
+            } else {
+                set.add(file.getAbsolutePath().replace(baseDirPath, ""));
+            }
+        }
+        return set;
+    }
 }

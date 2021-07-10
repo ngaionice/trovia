@@ -1,16 +1,18 @@
 package datamodel;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import datamodel.objects.*;
 import javafx.collections.ObservableList;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
 public class Serializer {
 
-    public static Gson getSerializer(boolean usePrettyPrint) {
+    public Gson getSerializer(boolean usePrettyPrint) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Bench.class, new BenchSerializer());
         builder.registerTypeAdapter(Collection.class, new CollectionSerializer());
@@ -26,6 +28,87 @@ public class Serializer {
         if (usePrettyPrint) builder.setPrettyPrinting();
 
         return builder.create();
+    }
+
+    public void writeBenches(JsonWriter writer, Gson serializer, Map<String, Bench> benches) throws IOException {
+        writer.name("benches");
+        writer.beginObject();
+        for (Map.Entry<String, Bench> entry: benches.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeCollections(JsonWriter writer, Gson serializer, Map<String, Collection> collections) throws IOException {
+        writer.name("collections");
+        writer.beginObject();
+        for (Map.Entry<String, Collection> entry: collections.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeCollectionIndices(JsonWriter writer, Gson serializer, Map<String, CollectionIndex> indices) throws IOException {
+        writer.name("collection_indices");
+        writer.beginObject();
+        for (Map.Entry<String, CollectionIndex> entry: indices.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeGearStyles(JsonWriter writer, Gson serializer, Map<String, GearStyleType> styles) throws IOException {
+        writer.name("gear_styles");
+        writer.beginObject();
+        for (Map.Entry<String, GearStyleType> entry: styles.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeItems(JsonWriter writer, Gson serializer, Map<String, Item> items) throws IOException {
+        writer.name("items");
+        writer.beginObject();
+        for (Map.Entry<String, Item> entry: items.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writePlaceables(JsonWriter writer, Gson serializer, Map<String, Placeable> placeables) throws IOException {
+        writer.name("placeables");
+        writer.beginObject();
+        for (Map.Entry<String, Placeable> entry: placeables.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeRecipes(JsonWriter writer, Gson serializer, Map<String, Recipe> recipes) throws IOException {
+        writer.name("recipes");
+        writer.beginObject();
+        for (Map.Entry<String, Recipe> entry: recipes.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeSkins(JsonWriter writer, Gson serializer, Map<String, Skin> skins) throws IOException {
+        writer.name("skins");
+        writer.beginObject();
+        for (Map.Entry<String, Skin> entry: skins.entrySet()) {
+            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
+        }
+        writer.endObject();
+    }
+
+    public void writeStrings(JsonWriter writer, Map<String, String> strings) throws IOException {
+        writer.name("strings");
+        writer.beginObject();
+        for (Map.Entry<String, String> entry: strings.entrySet()) {
+            writer.name(entry.getKey()).value(entry.getValue());
+        }
+        writer.endObject();
     }
 
     public static class BenchSerializer implements JsonSerializer<Bench> {
@@ -109,8 +192,8 @@ public class Serializer {
                         additionalInfo.add(infoEntry.getKey(), new JsonPrimitive(infoEntry.getValue()));
                     }
                 }
-                category.add("entries", entries);
-                category.add("additional_info", additionalInfo);
+                if (entries.size() > 0) category.add("entries", entries);
+                if (additionalInfo.size() > 0) category.add("additional_info", additionalInfo);
                 categories.add(key, category);
             }
             obj.add("categories", categories);

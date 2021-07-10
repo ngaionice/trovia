@@ -23,6 +23,7 @@ import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 
@@ -53,15 +54,25 @@ public class UIController {
 
     boolean isBuffering = false;
 
-    boolean loadData(Stage stage, TextArea logger) {
-//        FileChooser fileChooser = new FileChooser();
-//        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-//        File selected = fileChooser.showOpenDialog(stage);
-//        if (selected != null) {
-//            String path = selected.getAbsolutePath();
-//        }
-//        return false;
-        return true;
+    /**
+     * Can return null.
+     */
+    String loadFile(Stage stage, String fileType, String fileExtension, String promptText) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(promptText);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType, fileExtension));
+        File selected = fileChooser.showOpenDialog(stage);
+        return selected.getAbsolutePath();
+    }
+
+    /**
+     * Can return null.
+     */
+    String loadDirectory(Stage stage, String promptText) {
+        DirectoryChooser dirChooser = new DirectoryChooser();
+        dirChooser.setTitle(promptText);
+        File selected = dirChooser.showDialog(stage);
+        return selected.getAbsolutePath();
     }
 
     void dumpLogs(Stage stage, TextArea logger) {
@@ -92,10 +103,62 @@ public class UIController {
         buttons.forEach(item -> item.setDisable(true));
     }
 
-    String getFilterText() {
-        return filter;
+    void loadBlueprints(String dirPath) {
+        model.createBlueprintPaths(dirPath);
     }
 
+    /**
+     *
+     * @param selected the selected file from the file selector
+     * @param changedOnly if true, export changed data only; else exports everything stored
+     * @param selection an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
+     *                  0: benches
+     *                  1: collections
+     *                  2: collection indices
+     *                  3: gear styles
+     *                  4: items
+     *                  5: placeables
+     *                  6: recipes
+     *                  7: skins
+     *                  8: strings
+     * @param logger the TextArea used for logging
+     */
+    void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
+        Serializer s = new Serializer();
+        Gson serializer = s.getSerializer(usePrettyPrint);
+        if (selected != null) {
+            if (selection.length != 9) {
+                print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
+                return;
+            }
+            String dirPath = selected.getAbsolutePath();
+            LocalDateTime currTime = LocalDateTime.now();
+            String fileName = "trove-entity-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
+            try {
+                String path = dirPath + "\\" + fileName;
+                JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
+                writer.beginObject();
+                if (selection[0] != 0) s.writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
+                if (selection[1] != 0) s.writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
+                if (selection[2] != 0) s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
+                if (selection[3] != 0) s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
+                if (selection[4] != 0) s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
+                if (selection[5] != 0) s.writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
+                if (selection[6] != 0) s.writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
+                if (selection[7] != 0) s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
+                if (selection[8] != 0) s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
+                writer.endObject();
+                writer.close();
+                print(logger, "Data exported to " + path);
+            } catch (IOException e) {
+                print(logger, "Export failed due to an IOException; stack trace below:");
+                List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+                printList(logger, errorList);
+            }
+        }
+    }
+
+    // PARSING
     CheckBoxTreeItem<String> getParseTree(String path, Enums.ObjectType type) {
         File dir = new File(path);   // since presenter checks that the input path is a directory, we can assume that here
         List<String> paths = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
@@ -154,11 +217,9 @@ public class UIController {
     }
 
     void setParseDirectory(Stage stage, TextField directory, TreeView<String> tree, Enums.ObjectType type) {
-        DirectoryChooser dirChooser = new DirectoryChooser();
-        dirChooser.setTitle("Select the location to extract data from.");
-        File selected = dirChooser.showDialog(stage);
+        String selected = loadDirectory(stage, "Select the location to extract data from.");
         if (selected != null) {
-            directory.setText(selected.getAbsolutePath());
+            directory.setText(selected);
             updateParseTree(type, tree, directory);
         }
     }
@@ -224,6 +285,15 @@ public class UIController {
         };
     }
 
+    String getFilterText() {
+        return filter;
+    }
+
+    void clearSelectedPaths() {
+        selectedPaths.clear();
+    }
+
+    // LOGGING
     void print(TextArea logger, String message) {
         logger.appendText("[" + LocalTime.now() + "] " + message + "\n");
     }
@@ -238,10 +308,7 @@ public class UIController {
         logger.appendText(builder.toString());
     }
 
-    void clearSelectedPaths() {
-        selectedPaths.clear();
-    }
-
+    // UI CONFIG
     void setEditTabTable(TableView<ArticleTable> table, TableColumn<ArticleTable, String> rPathCol, TableColumn<ArticleTable, String> nameCol, TabType type) {
         switch (type) {
             case BENCH:
@@ -616,139 +683,6 @@ public class UIController {
             }
         }));
     }
-
-    /**
-     *
-     * @param selected the selected file from the file selector
-     * @param changedOnly if true, export changed data only; else exports everything stored
-     * @param selection an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
-     *                  0: benches
-     *                  1: collections
-     *                  2: collection indices
-     *                  3: gear styles
-     *                  4: items
-     *                  5: placeables
-     *                  6: recipes
-     *                  7: skins
-     *                  8: strings
-     * @param logger the TextArea used for logging
-     */
-    void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
-        Gson serializer = Serializer.getSerializer(usePrettyPrint);
-        if (selected != null) {
-            if (selection.length != 9) {
-                print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
-                return;
-            }
-            String dirPath = selected.getAbsolutePath();
-            LocalDateTime currTime = LocalDateTime.now();
-            String fileName = "trove-extract-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
-            try {
-                String path = dirPath + "\\" + fileName;
-                JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
-                writer.beginObject();
-                if (selection[0] != 0) writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
-                if (selection[1] != 0) writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
-                if (selection[2] != 0) writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
-                if (selection[3] != 0) writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
-                if (selection[4] != 0) writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
-                if (selection[5] != 0) writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
-                if (selection[6] != 0) writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
-                if (selection[7] != 0) writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
-                if (selection[8] != 0) writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
-                writer.endObject();
-                writer.close();
-                print(logger, "Data exported to " + path);
-            } catch (IOException e) {
-                print(logger, "Export failed due to an IOException; stack trace below:");
-                List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
-                printList(logger, errorList);
-            }
-        }
-    }
-
-    void writeBenches(JsonWriter writer, Gson serializer, Map<String, Bench> benches) throws IOException {
-        writer.name("benches");
-        writer.beginObject();
-        for (Map.Entry<String, Bench> entry: benches.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeCollections(JsonWriter writer, Gson serializer, Map<String, Collection> collections) throws IOException {
-        writer.name("collections");
-        writer.beginObject();
-        for (Map.Entry<String, Collection> entry: collections.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeCollectionIndices(JsonWriter writer, Gson serializer, Map<String, CollectionIndex> indices) throws IOException {
-        writer.name("collection_indices");
-        writer.beginObject();
-        for (Map.Entry<String, CollectionIndex> entry: indices.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeGearStyles(JsonWriter writer, Gson serializer, Map<String, GearStyleType> styles) throws IOException {
-        writer.name("gear_styles");
-        writer.beginObject();
-        for (Map.Entry<String, GearStyleType> entry: styles.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeItems(JsonWriter writer, Gson serializer, Map<String, Item> items) throws IOException {
-        writer.name("items");
-        writer.beginObject();
-        for (Map.Entry<String, Item> entry: items.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writePlaceables(JsonWriter writer, Gson serializer, Map<String, Placeable> placeables) throws IOException {
-        writer.name("placeables");
-        writer.beginObject();
-        for (Map.Entry<String, Placeable> entry: placeables.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeRecipes(JsonWriter writer, Gson serializer, Map<String, Recipe> recipes) throws IOException {
-        writer.name("recipes");
-        writer.beginObject();
-        for (Map.Entry<String, Recipe> entry: recipes.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeSkins(JsonWriter writer, Gson serializer, Map<String, Skin> skins) throws IOException {
-        writer.name("skins");
-        writer.beginObject();
-        for (Map.Entry<String, Skin> entry: skins.entrySet()) {
-            writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
-        }
-        writer.endObject();
-    }
-
-    void writeStrings(JsonWriter writer, Map<String, String> strings) throws IOException {
-        writer.name("strings");
-        writer.beginObject();
-        for (Map.Entry<String, String> entry: strings.entrySet()) {
-            writer.name(entry.getKey()).value(entry.getValue());
-        }
-        writer.endObject();
-    }
-
-
 
     enum TabType {
         BENCH("bench"),

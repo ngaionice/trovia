@@ -27,8 +27,6 @@ public class ParseItem implements ParseStrategy {
         // instantiate the stuff needed to parse
         Markers m = new Markers();
         Regexes r = new Regexes();
-        String recPathStartMarker = "item\\";
-        String recPathEndMarker = ".binfab";
 
         // instantiate the variables
         String name, desc, rPath;
@@ -66,15 +64,24 @@ public class ParseItem implements ParseStrategy {
         int bLen;
 
         Matcher bm = bp.matcher(remaining);
+        boolean idealBp = false;
         if (bm.find()) {
             bLen = Integer.parseInt(bm.group(1), 16);
-            bTxt.add(Parser.hexToAscii(bm.group(2).length() <= 3 * bLen ? bm.group(2) : bm.group(2).substring(0, 3 * bLen)));
-        } else {
+            if (Parser.hexToAscii(bm.group(2)).length() == bLen - 10) {
+                bTxt.add(Parser.hexToAscii(bm.group(2)));
+                idealBp = true;
+            }
+        }
+
+        if (!idealBp) {
             Matcher bm2 = bp2.matcher(remaining);
             List<String> options = new ArrayList<>();
             while (bm2.find()) {
                 bLen = Integer.parseInt(bm2.group(1), 16);
-                options.add(Parser.hexToAscii(bm2.group(2).length() <= 3 * bLen ? bm2.group(2) : bm2.group(2).substring(0, 3 * bLen)));
+                if (bLen == 3 * Parser.hexToAscii(bm2.group(2)).length()) {
+                    options.add(Parser.hexToAscii(bm2.group(2)));
+                }
+//                options.add(Parser.hexToAscii(bm2.group(2).length() <= 3 * bLen ? bm2.group(2) : bm2.group(2).substring(0, 3 * bLen)));
             }
 
             if (options.size() == 0) throw new ParseException(rPath + ": no possible blueprint found.");

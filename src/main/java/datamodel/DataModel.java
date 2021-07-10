@@ -18,6 +18,8 @@ public class DataModel implements Observer {
 
     Parser parser = new Parser();
 
+    Set<String> blueprintPaths = null;
+
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
     ObservableMap<String, CollectionIndex> sessionCollectionIndices = FXCollections.observableHashMap();
@@ -71,6 +73,17 @@ public class DataModel implements Observer {
             }
 
         }
+    }
+
+    public void createBlueprintPaths(String dirPath) {
+        blueprintPaths = parser.getAllBlueprintPathsFromDir(dirPath, dirPath);
+    }
+
+    public Set<String> getBlueprintPaths() {
+        if (blueprintPaths == null) {
+            blueprintPaths = new HashSet<>();
+        }
+        return blueprintPaths;
     }
 
     // CREATING OBJECTS
