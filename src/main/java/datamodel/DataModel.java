@@ -1,13 +1,9 @@
 package datamodel;
 
-import datamodel.objects.*;
 import datamodel.objects.Collection;
+import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -17,10 +13,8 @@ import java.util.*;
 public class DataModel implements Observer {
 
     Parser parser = new Parser();
-
     Set<String> blueprintPaths = null;
     Map<String, String> blueprintMap = null;
-
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
     ObservableMap<String, CollectionIndex> sessionCollectionIndices = FXCollections.observableHashMap();
@@ -30,7 +24,6 @@ public class DataModel implements Observer {
     ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
     ObservableMap<String, Skin> sessionSkins = FXCollections.observableHashMap();
     Strings sessionStrings = new Strings("en", new HashMap<>());
-
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
     Map<String, CollectionIndex> changedCollectionIndices = new HashMap<>();
@@ -40,13 +33,6 @@ public class DataModel implements Observer {
     Map<String, Recipe> changedRecipes = new HashMap<>();
     Map<String, Skin> changedSkins = new HashMap<>();
     Map<String, String> changedStrings = new HashMap<>();
-
-    private final ObjectProperty<Bench> currentBench = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<Collection> currentCollection = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<Item> currentItem = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<Placeable> currentPlaceable = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<Recipe> currentRecipe = new SimpleObjectProperty<>(null);
-    private final StringProperty currentString = new SimpleStringProperty(null);
 
     @Override
     public void update(Observable o, Object arg) {
@@ -394,63 +380,4 @@ public class DataModel implements Observer {
     public Map<String, Skin> getChangedSkins() {
         return changedSkins;
     }
-
-    // GETTERS AND SETTERS - CURRENTLY SELECTED DATA
-
-    public Bench getCurrentBench() {
-        return currentBench.get();
-    }
-
-    public ObjectProperty<Bench> currentBenchProperty() {
-        return currentBench;
-    }
-
-    public void setCurrentBench(Bench currentBench) {
-        this.currentBench.set(currentBench);
-    }
-
-    public ObjectProperty<Collection> currentCollectionProperty() {
-        return currentCollection;
-    }
-
-    public void setCurrentCollection(Collection currentCollection) {
-        this.currentCollection.set(currentCollection);
-    }
-
-    public Item getCurrentItem() {
-        return currentItem.get();
-    }
-
-    public ObjectProperty<Item> currentItemProperty() {
-        return currentItem;
-    }
-
-    public void setCurrentItem(Item currentItem) {
-        this.currentItem.set(currentItem);
-    }
-
-    public ObjectProperty<Placeable> currentPlaceableProperty() {
-        return currentPlaceable;
-    }
-
-    public void setCurrentPlaceable(Placeable currentPlaceable) {
-        this.currentPlaceable.set(currentPlaceable);
-    }
-
-    public ObjectProperty<Recipe> currentRecipeProperty() {
-        return currentRecipe;
-    }
-
-    public void setCurrentRecipe(Recipe currentRecipe) {
-        this.currentRecipe.set(currentRecipe);
-    }
-
-    public StringProperty currentStringProperty() {
-        return currentString;
-    }
-
-    public void setCurrentString(String currentString) {
-        this.currentString.set(currentString);
-    }
-
 }

@@ -3,27 +3,25 @@ package ui2;
 import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
 import datamodel.Enums;
-import datamodel.objects.ArticleTable;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Presenter {
@@ -88,7 +86,7 @@ public class Presenter {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
 
-        Text externalText = new Text("Load external data (coming soon)");
+        Text externalText = new Text("Load existing data (coming soon)");
         JFXTextField dataLoc = new JFXTextField();
         JFXButton dataLocButton = new JFXButton();
 
@@ -249,7 +247,7 @@ public class Presenter {
         Separator separator = new Separator();
 
         BooleanProperty[] selected = new BooleanProperty[9];
-        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
+        String[] texts = new String[]{"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
 
         List<JFXCheckBox> checkboxes = new ArrayList<>();
         for (int i = 0; i < selected.length; i++) {

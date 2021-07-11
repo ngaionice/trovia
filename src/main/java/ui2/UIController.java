@@ -2,30 +2,19 @@ package ui2;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextArea;
-import com.jfoenix.controls.JFXTextField;
 import datamodel.DataModel;
 import datamodel.Enums;
 import datamodel.Serializer;
-import datamodel.objects.*;
-import datamodel.objects.Collection;
-import datamodel.objects.Skin;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
-import javafx.beans.Observable;
-import javafx.beans.property.*;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.NumberStringConverter;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,7 +27,10 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UIController {
@@ -132,20 +124,19 @@ public class UIController {
     }
 
     /**
-     *
-     * @param selected the selected file from the file selector
+     * @param selected    the selected file from the file selector
      * @param changedOnly if true, export changed data only; else exports everything stored
-     * @param selection an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
-     *                  0: benches
-     *                  1: collections
-     *                  2: collection indices
-     *                  3: gear styles
-     *                  4: items
-     *                  5: placeables
-     *                  6: recipes
-     *                  7: skins
-     *                  8: strings
-     * @param logger the TextArea used for logging
+     * @param selection   an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
+     *                    0: benches
+     *                    1: collections
+     *                    2: collection indices
+     *                    3: gear styles
+     *                    4: items
+     *                    5: placeables
+     *                    6: recipes
+     *                    7: skins
+     *                    8: strings
+     * @param logger      the TextArea used for logging
      */
     void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
         Serializer s = new Serializer();
@@ -162,15 +153,24 @@ public class UIController {
                 String path = dirPath + "\\" + fileName;
                 JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
                 writer.beginObject();
-                if (selection[0] != 0) s.writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
-                if (selection[1] != 0) s.writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
-                if (selection[2] != 0) s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
-                if (selection[3] != 0) s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
-                if (selection[4] != 0) s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
-                if (selection[5] != 0) s.writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
-                if (selection[6] != 0) s.writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
-                if (selection[7] != 0) s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
-                if (selection[8] != 0) s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
+                if (selection[0] != 0)
+                    s.writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
+                if (selection[1] != 0)
+                    s.writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
+                if (selection[2] != 0)
+                    s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
+                if (selection[3] != 0)
+                    s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
+                if (selection[4] != 0)
+                    s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
+                if (selection[5] != 0)
+                    s.writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
+                if (selection[6] != 0)
+                    s.writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
+                if (selection[7] != 0)
+                    s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
+                if (selection[8] != 0)
+                    s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
                 writer.endObject();
                 writer.close();
                 print(logger, "Data exported to " + path);
@@ -256,7 +256,7 @@ public class UIController {
     }
 
     void setParseTypes(ComboBox<String> typeSelect) {
-        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Collection indices", "Items", "Gear styles","Placeables", "Professions", "Recipes", "Skins", "Strings");
+        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Collection indices", "Items", "Gear styles", "Placeables", "Professions", "Recipes", "Skins", "Strings");
         typeSelect.setItems(types);
         typeSelect.getSelectionModel().selectFirst();
     }

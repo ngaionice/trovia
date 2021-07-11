@@ -6,11 +6,11 @@ import datamodel.Enums;
 import datamodel.objects.Article;
 import datamodel.parser.parsestrategies.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Parser {
 
@@ -73,6 +73,18 @@ public class Parser {
         }
     }
 
+    public static String extractRPath(String absPath) throws ParseException {
+        String rPath;
+        if (absPath.contains("prefabs\\")) {
+            rPath = absPath.substring(absPath.indexOf("prefabs\\") + 8, absPath.indexOf(".binfab"));
+        } else if (absPath.contains("language")) {
+            rPath = absPath.substring(absPath.indexOf("language"), absPath.indexOf(".binfab"));
+        } else {
+            throw new ParseException(absPath + " could not be used to form a valid relative path.");
+        }
+        return rPath.replaceAll("\\\\", "/");
+    }
+
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
         return javax.xml.bind.DatatypeConverter.printHexBinary(array);
@@ -121,18 +133,6 @@ public class Parser {
         }
     }
 
-    public static String extractRPath(String absPath) throws ParseException {
-        String rPath;
-        if (absPath.contains("prefabs\\")) {
-            rPath = absPath.substring(absPath.indexOf("prefabs\\") + 8, absPath.indexOf(".binfab"));
-        } else if (absPath.contains("language")){
-            rPath = absPath.substring(absPath.indexOf("language"), absPath.indexOf(".binfab"));
-        } else {
-            throw new ParseException(absPath + " could not be used to form a valid relative path.");
-        }
-        return rPath.replaceAll("\\\\", "/");
-    }
-
     public Set<String> getAllBlueprintPathsFromDir(String baseDirPath, String currDirPath) {
         Set<String> set = new HashSet<>();
         File dir = new File(currDirPath);
@@ -152,7 +152,7 @@ public class Parser {
         Map<String, String> map = new HashMap<>();
 
         String[] fileNames = new String[]{"blocks", "plants", "gardening", "signs", "torches", "trophies"};
-        for (String name: fileNames) {
+        for (String name : fileNames) {
             Map<String, String> result = getOBMappingFromFile(dirPath + "\\" + name + ".binfab", name.equals("plants") || name.equals("gardening"));
             if (result != null) result.forEach(map::put);
         }
@@ -171,11 +171,12 @@ public class Parser {
         String splitter = "80 3F 1E ";
         String[] segments = splitString.split(splitter);
 
-        for (String str:segments) {
+        for (String str : segments) {
             if (m.reset(str).find()) {
                 String bp = useAltPosition ? Parser.hexToAscii(m.group(4)) : m.group(5).equals("00 ") ? null : Parser.hexToAscii(m.group(7));
                 // basic filter to filter out unwanted junk from gardening.binfab
-                if (bp != null && (Character.isLetter(bp.charAt(0)) || Character.isDigit(bp.charAt(0)))) map.put(Parser.hexToAscii(m.group(2)), bp);
+                if (bp != null && (Character.isLetter(bp.charAt(0)) || Character.isDigit(bp.charAt(0))))
+                    map.put(Parser.hexToAscii(m.group(2)), bp);
             }
         }
         return map;

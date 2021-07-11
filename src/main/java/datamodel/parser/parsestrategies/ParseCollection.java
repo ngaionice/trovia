@@ -1,11 +1,11 @@
 package datamodel.parser.parsestrategies;
 
-import datamodel.objects.Collection;
-import datamodel.parser.Parser;
-import datamodel.objects.Article;
 import datamodel.Enums;
-import datamodel.parser.Regexes;
+import datamodel.objects.Article;
+import datamodel.objects.Collection;
 import datamodel.parser.Markers;
+import datamodel.parser.Parser;
+import datamodel.parser.Regexes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParseCollection implements ParseStrategy{
+public class ParseCollection implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
@@ -78,7 +78,7 @@ public class ParseCollection implements ParseStrategy{
         // mount
         if (splitString.contains(m.groundSpeed)) {
             int indexG = splitString.indexOf(m.groundSpeed);
-            properties.put(Enums.Property.GROUND_MS, Parser.collectionH2D(splitString.substring(indexG-6, indexG-1)));
+            properties.put(Enums.Property.GROUND_MS, Parser.collectionH2D(splitString.substring(indexG - 6, indexG - 1)));
             types.add(Enums.Type.MOUNT);
         }
 
@@ -88,10 +88,10 @@ public class ParseCollection implements ParseStrategy{
             int indexGlide = splitString.indexOf(m.glide);
 
             if (indexA != -1 && indexGlide != -1) {
-                properties.put(Enums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA-6, indexA-1)));
+                properties.put(Enums.Property.AIR_MS, Parser.collectionH2D(splitString.substring(indexA - 6, indexA - 1)));
                 types.add(Enums.Type.WINGS);
 
-                properties.put(Enums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide-6, indexGlide-1)));
+                properties.put(Enums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide - 6, indexGlide - 1)));
             } else {
                 throw new ParseException(rPath + ": incomplete wings property identified.");
             }
@@ -100,7 +100,7 @@ public class ParseCollection implements ParseStrategy{
         // mag rider
         if (splitString.contains(m.mag)) {
             int indexM = splitString.indexOf(m.mag);
-            properties.put(Enums.Property.MAG_MS, Parser.collectionH2D(splitString.substring(indexM+3, indexM+9)));
+            properties.put(Enums.Property.MAG_MS, Parser.collectionH2D(splitString.substring(indexM + 3, indexM + 9)));
             types.add(Enums.Type.MAG);
         }
 
@@ -109,10 +109,10 @@ public class ParseCollection implements ParseStrategy{
             types.add(Enums.Type.BOAT);
 
             int indexW = splitString.indexOf(m.waterSpeed);
-            properties.put(Enums.Property.WATER_MS, Parser.collectionH2D(splitString.substring(indexW-6, indexW-1)));
+            properties.put(Enums.Property.WATER_MS, Parser.collectionH2D(splitString.substring(indexW - 6, indexW - 1)));
 
             int indexT = splitString.indexOf(m.turnRate);
-            properties.put(Enums.Property.TURN_RATE, Parser.collectionH2D(splitString.substring(indexT-6, indexT-1)));
+            properties.put(Enums.Property.TURN_RATE, Parser.collectionH2D(splitString.substring(indexT - 6, indexT - 1)));
 
             int indexAc = splitString.indexOf("24", indexT + m.turnRate.length());
             properties.put(Enums.Property.ACCEL, Parser.collectionH2D(splitString.substring(indexAc + 9, indexAc + 15)));
@@ -239,31 +239,4 @@ public class ParseCollection implements ParseStrategy{
         }
 
     }
-    // parsing collection files:
-
-    // done:
-    // identify relative path for item matching
-    // identify name & description
-    // identify ground/air move speed/glide for mounts
-    // identify speed, turning rate, acceleration for boats
-    // identify power rank and stat boosts if applicable (dragons/badges) -> if stats are from badges, these won't show up for the dragon
-    // add empty slot for trove, geode mr
-
-    // not done
-    // identify the blueprint; needed to match image later
-    // no straightforward way found atm, might be an extension for later
-
-    // blueprints:
-
-    // tomes are not functional
-    // sails don't seem to have a specified blueprint
-
-    // C_MT marker seems to be a possible option, but is only applicable to mounts
-
-    // C_C_ for pets folder seems to be ok; though need to skip any files with npc in name
-
-    //
-
-
-
 }
