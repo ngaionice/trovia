@@ -12,17 +12,16 @@ public class Placeable extends Observable implements Article, ArticleTable {
     StringProperty name;
     StringProperty desc;
     StringProperty rPath;
+    StringProperty blueprint;
     BooleanProperty tradable;
-    IntegerProperty blueprintIndex = null;
-    ListProperty<String> possibleBlueprints;
 
-    public Placeable(String name, String desc, String rPath) {
+    public Placeable(String name, String desc, String rPath, String blueprint) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
+        this.blueprint = new SimpleStringProperty(blueprint);
         this.tradable = new SimpleBooleanProperty(true);
     }
-
 
     public void setName(String name) {
         this.name.set(name);
@@ -67,7 +66,6 @@ public class Placeable extends Observable implements Article, ArticleTable {
         return rPath;
     }
 
-
     public boolean isTradable() {
         return tradable.get();
     }
@@ -76,27 +74,15 @@ public class Placeable extends Observable implements Article, ArticleTable {
         return tradable;
     }
 
-    public int getBlueprintIndex() {
-        return blueprintIndex.get();
+    public String getBlueprint() {
+        return blueprint.get();
     }
 
-    public IntegerProperty blueprintIndexProperty() {
-        return blueprintIndex;
+    public StringProperty blueprintProperty() {
+        return blueprint;
     }
 
-    public void setBlueprintIndex(int blueprintIndex) {
-        this.blueprintIndex.set(blueprintIndex);
-    }
-
-    public ObservableList<String> getPossibleBlueprints() {
-        return possibleBlueprints.get();
-    }
-
-    public ListProperty<String> possibleBlueprintsProperty() {
-        return possibleBlueprints;
-    }
-
-    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
-        this.possibleBlueprints.set(possibleBlueprints);
+    public void setBlueprint(String blueprint) {
+        this.blueprint.set(blueprint);
     }
 }

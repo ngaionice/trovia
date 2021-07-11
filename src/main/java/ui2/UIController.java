@@ -107,6 +107,26 @@ public class UIController {
         model.createBlueprintPaths(dirPath);
     }
 
+    void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable) {
+        Task<Void> task = getLoadTask();
+        new Thread(() -> {
+            task.run();
+            Platform.runLater(() -> {
+                disableActionButtons(buttonsToDisable);
+                enableActionButtons(buttonsToEnable);
+            });
+        }).start();
+    }
+
+    Task<Void> getLoadTask() {
+        return new Task<Void>() {
+            @Override
+            protected Void call() {
+                return null;
+            }
+        };
+    }
+
     /**
      *
      * @param selected the selected file from the file selector
@@ -275,8 +295,8 @@ public class UIController {
                         failedPaths.add(selectedPaths.get(i));
                     }
                 }
-                print(logger, "Parsing completed.");
                 printPlain(logger, errorText.toString());
+                print(logger, "Parsing completed.");
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
 

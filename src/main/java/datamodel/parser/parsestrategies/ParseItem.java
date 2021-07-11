@@ -28,7 +28,7 @@ public class ParseItem implements ParseStrategy {
         rPath = Parser.extractRPath(absPath);
 
         // identify name and desc paths
-        Pattern ndp = Pattern.compile(r.itemNDExtractor);
+        Pattern ndp = Pattern.compile(r.nameDescExtractor);
         Pattern bp = Pattern.compile(r.blueprintExtractor);
 
         int ndEnd = splitString.indexOf("68 00 80");

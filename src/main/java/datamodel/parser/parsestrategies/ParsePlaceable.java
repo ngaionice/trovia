@@ -3,6 +3,7 @@ package datamodel.parser.parsestrategies;
 import datamodel.objects.Article;
 import datamodel.objects.Placeable;
 import datamodel.parser.Parser;
+import datamodel.parser.Regexes;
 import local.Markers;
 
 import java.util.regex.Matcher;
@@ -12,55 +13,43 @@ public class ParsePlaceable implements ParseStrategy {
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
+
+        Regexes r = new Regexes();
         Markers m = new Markers();
-
-        System.out.println("Parsing:" + absPath);
-        // check for $prefabs, if does not exist, likely not obtainable
-        if (!splitString.contains(m.prefab)) {
-            throw new ParseException("No name found, entity likely not obtainable.");
-        }
-
-        Pattern p = Pattern.compile(m.prefab);
-        Matcher mt = p.matcher(splitString);
-        int i = 0;
-        int[] startIndices = new int[]{-1, -1};
-
-        // identifies the first 2 $prefabs, corresponding to the start of the identifier for name and desc.
-        while (mt.find()) {
-            if (i > 2) break;
-            startIndices[i] = mt.start();
-            i++;
-        }
-
-        // identify 28 0\d, which marks the end of the name
-        p = Pattern.compile("28 0\\d");
-        mt = p.matcher(splitString);
-        int nameEndIndex;
-        if (mt.find()) {
-            nameEndIndex = mt.start();
-        } else {
-            throw new ParseException("No end-of-name marker found.");
-        }
-        if (startIndices[0] == -1)
-            throw new ParseException("No name found.");
-        String name = Parser.hexToAscii(splitString.substring(startIndices[0], nameEndIndex));
-
-        // identify overall end marker
-        p = Pattern.compile(m.endNameDesc);
-        mt = p.matcher(splitString);
-        int overallEndIndex;
-        if (mt.find()) {
-            overallEndIndex = mt.start();
-        } else {
-            throw new ParseException("No end-of-name/desc marker found.");
-        }
-        String desc = null;
-        if (startIndices[1] != -1) {
-            desc = Parser.hexToAscii(splitString.substring(startIndices[1], overallEndIndex));
-        }
 
         String rPath = Parser.extractRPath(absPath);
 
-        return new Placeable(name, desc, rPath);
+        String name, desc;
+        String blueprint = null;
+
+        // identify name and desc paths
+        Pattern ndp = Pattern.compile(r.nameDescExtractor);
+        Pattern bp = Pattern.compile(r.blueprintExtractor);
+
+        int ndEnd = splitString.indexOf("68 00 80");
+        if (ndEnd == -1) {
+            throw new ParseException(rPath + " did not have an end marker.");
+        }
+
+        Matcher ndm = ndp.matcher(splitString.substring(0, ndEnd + 8));
+        if (!ndm.find()) {
+            throw new ParseException(rPath + " did not match the pattern for name and description; does it satisfy the assumptions?");
+        }
+        int nLen = Integer.parseInt(ndm.group(1), 16);
+        name = Parser.hexToAscii(ndm.group(2).length() <= 3 * nLen ? ndm.group(2) : ndm.group(2).substring(0, 3 * nLen));
+
+        if (ndm.group(5).equals("00 ")) {
+            desc = null;
+        } else {
+            int dLen = Integer.parseInt(ndm.group(6), 16);
+            desc = Parser.hexToAscii(ndm.group(7).length() <= 3 * dLen ? ndm.group(7) : ndm.group(7).substring(0, 3 * dLen));
+        }
+
+        Matcher bm = bp.matcher(splitString);
+        if (bm.find()) {
+            blueprint = Parser.hexToAscii(bm.group(2)).replace(".blueprint", "");
+        }
+
+        return new Placeable(name, desc, rPath, blueprint);
     }
 }

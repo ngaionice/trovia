@@ -43,7 +43,7 @@ public class ParseCollection implements ParseStrategy{
         Map<Enums.Property, Double> properties = new HashMap<>(10);
 
         // identify name and desc paths
-        Pattern ndp = Pattern.compile(r.itemNDExtractor);
+        Pattern ndp = Pattern.compile(r.nameDescExtractor);
         Pattern bp = Pattern.compile(r.blueprintExtractor);
 
         int ndEnd = splitString.indexOf("68 00 80");

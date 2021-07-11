@@ -101,10 +101,7 @@ public class Presenter {
 
         JFXButton startButton = new JFXButton();
 
-        startButton.setOnAction(e -> {
-            controller.disableActionButtons(Arrays.asList(dataLocButton, startButton));
-            controller.enableActionButtons(actionButtons);
-        });
+        startButton.setOnAction(e -> controller.loadData(Arrays.asList(dataLocButton, startButton), actionButtons));
 
         // element styling
         {

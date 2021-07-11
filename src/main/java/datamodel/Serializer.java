@@ -261,12 +261,8 @@ public class Serializer {
             obj.add("name", new JsonPrimitive(placeable.getName()));
             obj.add("desc", placeable.getDesc() != null ? new JsonPrimitive(placeable.getDesc()) : null);
             obj.add("tradable", new JsonPrimitive(placeable.isTradable() ? 1 : 0));
-//            obj.add("bp_index", new JsonPrimitive(placeable.getBlueprintIndex()));
-//
-//            JsonArray blueprints = new JsonArray();
-//            placeable.getPossibleBlueprints().forEach(blueprints::add);
-//
-//            obj.add("blueprints", blueprints);
+            obj.add("blueprint", placeable.getBlueprint() != null ? new JsonPrimitive(placeable.getBlueprint()) : null);
+
             return obj;
         }
     }
