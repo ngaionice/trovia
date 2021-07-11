@@ -1,17 +1,8 @@
 @font-face {
-    font-family: "Roboto Light";
-    src: url("fonts/RobotoLight.ttf");
-}
-
-@font-face {
     font-family: "Roboto";
     src: url("fonts/RobotoRegular.ttf");
 }
 
-@font-face {
-    font-family: "Roboto Thin";
-    src: url("fonts/RobotoThin.ttf");
-}
 
 @font-face {
     font-family: "Roboto Medium";
@@ -21,6 +12,22 @@
 @font-face {
     font-family: "Roboto Mono";
     src: url("fonts/RobotoMono-Regular.ttf");
+}
+
+.root {
+    -fx-accent: #FF9800;
+    -fx-accent-dark: #C25E00;
+    -fx-font-family: "Roboto";
+    /* to be factored out maybe */
+    -fx-material: #212121;
+    -fx-material-dark: #1B1B1B;
+    -fx-material-light: #424242;
+    -fx-content: #EEEEEE;
+    -fx-content-light: #FAFAFA;
+    -fx-content-dark: #C7C7C7;
+    -fx-background-color: -fx-material-dark;
+    -fx-unfocus: -fx-material-light;
+    -fx-subtle: -fx-material-light;
 }
 
 .label {
@@ -63,14 +70,6 @@
     -fx-table-cell-border-color: transparent;
 }
 
-.jfx-snackbar-content {
-    -fx-background-color: #EEEEEE;
-}
-
-.jfx-snackbar-toast {
-    -fx-text-fill: #000000;
-}
-
 .text-area {
     -fx-background-insets: 0;
     -fx-text-box-border: transparent;
@@ -100,33 +99,6 @@
 
 .combo-box .list-cell:filled:hover {
     -fx-background-color: #FF9800;
-}
-
-.jfx-autocomplete-popup .list-cell:filled:selected {
-    -fx-background-color: #FF9800;
-}
-
-/*Change cells of autocomplete popup*/
-.jfx-autocomplete-popup .list-cell {
-    -fx-background-color: #FFFFFF;
-}
-
-/*--------------------------------------     New stuff down here     --------------------------------------*/
-
-.root {
-    -fx-accent: #FF9800;
-    -fx-accent-dark: #C25E00;
-    -fx-font-family: "Roboto";
-    /* to be factored out maybe */
-    -fx-material: #212121;
-    -fx-material-dark: #1B1B1B;
-    -fx-material-light: #424242;
-    -fx-content: #EEEEEE;
-    -fx-content-light: #FAFAFA;
-    -fx-content-dark: #C7C7C7;
-    -fx-background-color: -fx-material-dark;
-    -fx-unfocus: -fx-material-light;
-    -fx-subtle: -fx-material-light;
 }
 
 .nav-button {
@@ -174,10 +146,6 @@
     -fx-opacity: 1.0;
 }
 
-.tab {
-    -fx-pref-width: 96px;
-}
-
 .pane-background {
     -fx-padding: 24px;
     -fx-background-color: -fx-material;
@@ -204,7 +172,6 @@
     -fx-hgap: 12px;
     -fx-vgap: 12px;
     -fx-padding: 24px;
-    /*-fx-alignment: center;*/
 }
 
 .grid-sidebar {
@@ -212,7 +179,6 @@
     -fx-vgap: 20px;
     -fx-padding: 24px;
 }
-
 
 .text-field-dir {
     -fx-pref-width: 520px;

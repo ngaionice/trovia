@@ -4,7 +4,6 @@ import datamodel.objects.Article;
 import datamodel.objects.Placeable;
 import datamodel.parser.Parser;
 import datamodel.parser.Regexes;
-import local.Markers;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

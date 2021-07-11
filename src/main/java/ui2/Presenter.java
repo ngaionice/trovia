@@ -46,17 +46,15 @@ public class Presenter {
         VBox navBox = new VBox();
         Region spacer = new Region();
         JFXButton parseButton = new JFXButton("Parse");
-        JFXButton editButton = new JFXButton("Edit");
         JFXButton reviewButton = new JFXButton("Review");
         Separator separator = new Separator();
         JFXButton exportButton = new JFXButton("Export");
-        Separator separator2 = new Separator();
         JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
 
-        List<Button> actionButtons = Arrays.asList(parseButton, editButton, reviewButton, exportButton, logsButton);
-        List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, reviewButton, exportButton, logsButton, quitButton);
-        String[] buttonIds = new String[]{"button-parse", "button-edit", "button-review", "button-export", "button-logs", "button-quit"};
+        List<Button> actionButtons = Arrays.asList(parseButton, exportButton, logsButton);
+        List<JFXButton> buttonList = Arrays.asList(parseButton, reviewButton, exportButton, logsButton, quitButton);
+        String[] buttonIds = new String[]{"button-parse", "button-review", "button-export", "button-logs", "button-quit"};
 
         spacer.prefHeightProperty().bind(scene.heightProperty().multiply(0.125));
         for (int i = 0; i < buttonIds.length; i++) {
@@ -66,15 +64,12 @@ public class Presenter {
         }
         navBox.getChildren().addAll(buttonList);
         navBox.getChildren().add(3, separator);
-        navBox.getChildren().add(5, separator2);
         navBox.getChildren().add(0, spacer);
         navBox.setId("nav-box");
         separator.getStyleClass().add("nav-separator");
-        separator2.getStyleClass().add("nav-separator");
 
         // set button actions
         parseButton.setOnAction(e -> setParseScreen());
-        editButton.setOnAction(e -> setEditScreen());
         reviewButton.setOnAction(e -> setReviewScreen());
 
         exportButton.setOnAction(e -> setExportScreen());
@@ -82,6 +77,7 @@ public class Presenter {
         logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
 
+        reviewButton.setDisable(true);
         controller.disableActionButtons(actionButtons);
         root.setCenter(getScreenBorderPane("Load", getLoadScreenContent(actionButtons), true));
         return navBox;
@@ -233,93 +229,6 @@ public class Presenter {
         return center;
     }
 
-    private void setEditScreen() {
-        BorderPane screenRoot = new BorderPane();
-        HBox header = new HBox();
-        Text headerText = new Text("Edit");
-
-        header.getChildren().add(headerText);
-
-        JFXTabPane tabs = new JFXTabPane();
-        Tab benches = new Tab("Benches");
-        Tab collections = new Tab("Collections");
-        Tab items = new Tab("Items");
-        Tab placeables = new Tab("Placeables");
-        Tab recipes = new Tab("Recipes");
-        Tab strings = new Tab("Strings");
-        tabs.getTabs().addAll(benches, collections, items, placeables, recipes, strings);
-
-        tabs.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            // load tab on switch, don't pre-load
-            // index mapping
-            setEditTabContent(newValue);
-        }));
-
-        tabs.getSelectionModel().selectFirst();
-
-        header.getStyleClass().add("header");
-        headerText.getStyleClass().add("header-text");
-
-        screenRoot.setTop(header);
-        screenRoot.setCenter(tabs);
-        root.setCenter(screenRoot);
-    }
-
-    private void setEditTabContent(Tab tab) {
-        BorderPane root = new BorderPane();
-        StackPane tablePane = new StackPane();
-        StackPane backingTablePane = new StackPane();
-        StackPane backingGridPane = new StackPane();
-        GridPane sidebar = new GridPane();
-
-        backingGridPane.getChildren().add(sidebar);
-        backingTablePane.getChildren().add(tablePane);
-
-        root.setCenter(backingTablePane);
-        root.setRight(backingGridPane);
-
-        backingTablePane.getStyleClass().add("pane-background");
-        backingGridPane.getStyleClass().add("pane-background-no-left");
-        tablePane.getStyleClass().add("card-backing");
-        sidebar.getStyleClass().addAll("card-backing", "grid-sidebar");
-
-        JFXDepthManager.setDepth(tablePane, 1);
-        JFXDepthManager.setDepth(sidebar, 1);
-
-        sidebar.prefWidthProperty().bind(root.widthProperty().multiply(0.2));
-
-        String name = tab.getText();
-        switch (name) {
-            case "Benches":
-                setEditTabTable(tablePane, UIController.TabType.BENCH);
-                setEditTabBenchSidebar(sidebar);
-                break;
-            case "Collections":
-                setEditTabTable(tablePane, UIController.TabType.COLLECTION);
-                setEditTabCollectionSidebar(sidebar);
-                break;
-            case "Items":
-                setEditTabTable(tablePane, UIController.TabType.ITEM);
-                setEditTabItemSidebar(sidebar);
-                break;
-            case "Placeables":
-                setEditTabTable(tablePane, UIController.TabType.PLACEABLE);
-                setEditTabPlaceableSidebar(sidebar);
-                break;
-            case "Recipes":
-                setEditTabTable(tablePane, UIController.TabType.RECIPE);
-                setEditTabRecipeSidebar(sidebar);
-                break;
-            case "Strings":
-                TableView<UIController.KVPair> table = new TableView<>();
-                setEditTabStringsTable(tablePane, table);
-                setEditTabStringsSidebar(sidebar, table);
-                break;
-        }
-
-        tab.setContent(root);
-    }
-
     private void setReviewScreen() {
 
     }
@@ -351,6 +260,7 @@ public class Presenter {
             checkboxes.add(cb);
         }
         prettyPrintButton.setSelected(true);
+        changedButton.setDisable(true);
 
         directory.setPromptText("Directory");
         directory.setDisable(true);
@@ -497,219 +407,5 @@ public class Presenter {
     private void setFabAnchor(Node node) {
         AnchorPane.setRightAnchor(node, 36.0);
         AnchorPane.setBottomAnchor(node, 36.0);
-    }
-
-    private void setEditTabTable(StackPane tablePane, UIController.TabType type) {
-        TableView<ArticleTable> table = new TableView<>();
-        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
-        TableColumn<ArticleTable, String> rPathColumn = new TableColumn<>("Relative Path");
-        TableColumn<ArticleTable, String> nameColumn = new TableColumn<>("Name");
-
-        table.getColumns().setAll(!type.equals(UIController.TabType.RECIPE) ? Arrays.asList(nameColumn, rPathColumn) : Collections.singletonList(rPathColumn));
-        tablePane.getChildren().add(table);
-        controller.setEditTabTable(table, rPathColumn, nameColumn, type);
-        String plural = type.toString().equals("bench") ? "es" : "s";
-        table.setPlaceholder(new Label("No " + type + plural + " imported"));
-    }
-
-    private void setEditTabStringsTable(StackPane tablePane, TableView<UIController.KVPair> table) {
-        BorderPane border = new BorderPane();
-        table.prefWidthProperty().bind(stage.widthProperty().multiply(0.6));
-        TableColumn<UIController.KVPair, String> idCol = new TableColumn<>("Identifier");
-        TableColumn<UIController.KVPair, String> contentCol = new TableColumn<>("Content");
-
-        table.getColumns().setAll(Arrays.asList(idCol, contentCol));
-        table.setPlaceholder(new Label("No strings imported."));
-
-        controller.setEditTabStringsTable(table, idCol, contentCol);
-
-        idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.32));
-        contentCol.prefWidthProperty().bind(table.widthProperty().multiply(0.64));
-        border.prefHeightProperty().bind(tablePane.heightProperty());
-
-        border.setCenter(table);
-        tablePane.getChildren().add(border);
-    }
-
-    private void setEditTabBenchSidebar(GridPane sidebar) {
-        JFXTextField rPathField = new JFXTextField();
-        JFXTextField nameField = new JFXTextField();
-        JFXTextField professionNameField = new JFXTextField();
-        JFXComboBox<String> categoryDropdown = new JFXComboBox<>();
-        JFXListView<String> categories = new JFXListView<>();
-
-        rPathField.setPromptText("Relative Path");
-        nameField.setPromptText("Name");
-        professionNameField.setPromptText("Profession Name (if applicable)");
-        categoryDropdown.setPromptText("Category");
-
-        Arrays.asList(rPathField, nameField, professionNameField, categoryDropdown).forEach(item -> item.getStyleClass().add("sidebar-text"));
-        categories.getStyleClass().add("sidebar-list");
-
-        sidebar.add(rPathField, 0, 0);
-        sidebar.add(nameField, 0, 1);
-        sidebar.add(professionNameField, 0, 2);
-        sidebar.add(categoryDropdown, 0, 3);
-        sidebar.add(categories, 0, 4);
-
-        controller.setEditTabBenchSidebar(rPathField, nameField, professionNameField, categoryDropdown, categories);
-    }
-
-    private void setEditTabCollectionSidebar(GridPane sidebar) {
-        JFXTextField rPathField = new JFXTextField();
-        JFXTextField nameField = new JFXTextField();
-        JFXTextField descField = new JFXTextField();
-        JFXTextField troveMRField = new JFXTextField();
-        JFXTextField geodeMRField = new JFXTextField();
-        VBox typesBox = new VBox();
-        Text typesLabel = new Text("Collection types");
-        ListView<String> types = new ListView<>();
-        VBox propertiesBox = new VBox();
-        Text propertiesLabel = new Text("Type properties");
-        TableView<UIController.KVPair> properties = new TableView<>();
-        VBox buffsBox = new VBox();
-        Text buffsLabel = new Text("Buffs granted");
-        TableView<UIController.KVPair> buffs = new TableView<>();
-
-        TableColumn<UIController.KVPair, String> propCol = new TableColumn<>("Property");
-        TableColumn<UIController.KVPair, Double> propValCol = new TableColumn<>("Value");
-        TableColumn<UIController.KVPair, String> buffCol = new TableColumn<>("Buff");
-        TableColumn<UIController.KVPair, Double> buffValCol = new TableColumn<>("Value");
-
-        typesBox.getChildren().addAll(typesLabel, types);
-        propertiesBox.getChildren().addAll(propertiesLabel, properties);
-        buffsBox.getChildren().addAll(buffsLabel, buffs);
-        properties.getColumns().setAll(Arrays.asList(propCol, propValCol));
-        buffs.getColumns().setAll(Arrays.asList(buffCol, buffValCol));
-
-        rPathField.setPromptText("Relative Path");
-        nameField.setPromptText("Name");
-        descField.setPromptText("Description");
-        troveMRField.setPromptText("Trove Mastery");
-        geodeMRField.setPromptText("Geode Mastery");
-        properties.setEditable(true);
-        buffs.setEditable(true);
-        propValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-        buffValCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-
-        Arrays.asList(rPathField, nameField, descField, troveMRField, geodeMRField).forEach(item -> item.getStyleClass().add("sidebar-text"));
-        Arrays.asList(typesLabel, propertiesLabel, buffsLabel).forEach(item -> item.getStyleClass().add("text-normal"));
-        types.getStyleClass().add("sidebar-list-short");
-        Arrays.asList(properties, buffs).forEach(item -> item.getStyleClass().add("sidebar-list-medium"));
-        types.prefWidthProperty().bind(sidebar.widthProperty().multiply(0.5));
-        propCol.prefWidthProperty().bind(properties.widthProperty().multiply(0.8));
-        propValCol.prefWidthProperty().bind(properties.widthProperty().multiply(0.16));
-        buffCol.prefWidthProperty().bind(buffs.widthProperty().multiply(0.8));
-        buffValCol.prefWidthProperty().bind(buffs.widthProperty().multiply(0.16));
-
-
-        sidebar.add(rPathField, 0, 0, 2, 1);
-        sidebar.add(nameField, 0, 1, 2, 1);
-        sidebar.add(descField, 0, 2, 2, 1);
-        sidebar.add(troveMRField, 0, 3);
-        sidebar.add(geodeMRField, 1, 3);
-        sidebar.add(typesBox, 0, 4, 2, 1);
-        sidebar.add(propertiesBox, 0, 5, 2, 1);
-        sidebar.add(buffsBox, 0, 6, 2, 1);
-
-        controller.setEditTabCollectionSidebar(rPathField, nameField, descField, troveMRField, geodeMRField,
-                types, properties, propCol, propValCol, buffs, buffCol, buffValCol);
-    }
-
-    private void setEditTabItemSidebar(GridPane sidebar) {
-        JFXTextField rPathField = new JFXTextField();
-        JFXTextField nameField = new JFXTextField();
-        JFXTextField descField = new JFXTextField();
-        JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
-
-        rPathField.setPromptText("Relative Path");
-        nameField.setPromptText("Name");
-        descField.setPromptText("Description");
-
-        Arrays.asList(rPathField, nameField, descField).forEach(item -> item.getStyleClass().add("sidebar-text"));
-
-        sidebar.add(rPathField, 0, 0);
-        sidebar.add(nameField, 0, 1);
-        sidebar.add(descField, 0, 2);
-        sidebar.add(tradableBox, 0, 3);
-
-        controller.setEditTabItemSidebar(rPathField, nameField, descField, tradableBox);
-    }
-
-    private void setEditTabPlaceableSidebar(GridPane sidebar) {
-        JFXTextField rPathField = new JFXTextField();
-        JFXTextField nameField = new JFXTextField();
-        JFXTextField descField = new JFXTextField();
-        JFXCheckBox tradableBox = new JFXCheckBox("Tradable");
-
-        rPathField.setPromptText("Relative Path");
-        nameField.setPromptText("Name");
-        descField.setPromptText("Description");
-
-        Arrays.asList(rPathField, nameField, descField).forEach(item -> item.getStyleClass().add("sidebar-text"));
-
-        sidebar.add(rPathField, 0, 0);
-        sidebar.add(nameField, 0, 1);
-        sidebar.add(descField, 0, 2);
-        sidebar.add(tradableBox, 0, 3);
-
-        controller.setEditTabPlaceableSidebar(rPathField, nameField, descField, tradableBox);
-    }
-
-    private void setEditTabRecipeSidebar(GridPane sidebar) {
-        JFXTextField rPathField = new JFXTextField();
-        JFXTextField nameField = new JFXTextField();
-        VBox costBox = new VBox();
-        Text costLabel = new Text("Costs");
-        TableView<UIController.KVPair> costs = new TableView<>();
-        VBox outputBox = new VBox();
-        Text outputLabel = new Text("Output");
-        TableView<UIController.KVPair> output = new TableView<>();
-        TableColumn<UIController.KVPair, String> costNameCol = new TableColumn<>("Item");
-        TableColumn<UIController.KVPair, Integer> costValCol = new TableColumn<>("Qty");
-        TableColumn<UIController.KVPair, String> outputNameCol = new TableColumn<>("Output");
-        TableColumn<UIController.KVPair, Integer> outputValCol = new TableColumn<>("Qty");
-
-        costBox.getChildren().addAll(costLabel, costs);
-        outputBox.getChildren().addAll(outputLabel, output);
-        costs.getColumns().addAll(Arrays.asList(costNameCol, costValCol));
-        output.getColumns().addAll(Arrays.asList(outputNameCol, outputValCol));
-
-        rPathField.setPromptText("Relative Path");
-        nameField.setPromptText("Name");
-        costs.setEditable(true);
-        costValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-        outputValCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-
-        Arrays.asList(rPathField, nameField).forEach(item -> item.getStyleClass().add("sidebar-text"));
-        Arrays.asList(costLabel, outputLabel).forEach(item -> item.getStyleClass().add("text-normal"));
-        costs.getStyleClass().add("sidebar-list-medium");
-        output.getStyleClass().add("sidebar-list-short");
-        costNameCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.8));
-        costValCol.prefWidthProperty().bind(costs.widthProperty().multiply(0.16));
-        outputNameCol.prefWidthProperty().bind(output.widthProperty().multiply(0.8));
-        outputValCol.prefWidthProperty().bind(output.widthProperty().multiply(0.16));
-
-        sidebar.add(rPathField, 0, 0);
-        sidebar.add(nameField, 0, 1);
-        sidebar.add(costBox, 0, 2);
-        sidebar.add(outputBox, 0, 3);
-
-        controller.setEditTabRecipeSidebar(rPathField, nameField, costs, costNameCol, costValCol, output, outputNameCol, outputValCol);
-    }
-
-    private void setEditTabStringsSidebar(GridPane sidebar, TableView<UIController.KVPair> table) {
-        JFXTextField idField = new JFXTextField();
-        JFXTextArea contentArea = new JFXTextArea();
-
-        idField.setPromptText("Identifier");
-        contentArea.setPromptText("Content");
-
-        idField.getStyleClass().add("sidebar-text");
-
-        sidebar.add(idField, 0, 0);
-        sidebar.add(contentArea, 0, 1);
-
-        controller.setEditTabStringsSidebar(table, idField, contentArea);
     }
 }

@@ -73,25 +73,6 @@ public class Parser {
         }
     }
 
-    /**
-     * Logs the supplied strings to the text file at the path specified. Requires the text file to exist in order to log.
-     *
-     * @param itemToLog list of strings to be logged
-     * @param path      path of the text file to be logged to
-     */
-    public static void logToFile(List<String> itemToLog, String path) {
-        try (FileWriter fw = new FileWriter(path, true);
-             BufferedWriter bw = new BufferedWriter(fw);
-             PrintWriter out = new PrintWriter(bw)) {
-            for (String item : itemToLog) {
-                out.println(item);
-//                System.out.println(item);
-            }
-        } catch (IOException e) {
-            System.out.println("Logging to" + path + "failed.");
-        }
-    }
-
     public String byteToString(String path) throws IOException {
         byte[] array = Files.readAllBytes(Paths.get(path));
         return javax.xml.bind.DatatypeConverter.printHexBinary(array);
@@ -194,7 +175,7 @@ public class Parser {
             if (m.reset(str).find()) {
                 String bp = useAltPosition ? Parser.hexToAscii(m.group(4)) : m.group(5).equals("00 ") ? null : Parser.hexToAscii(m.group(7));
                 // basic filter to filter out unwanted junk from gardening.binfab
-                if (bp != null && Character.isLetter(bp.charAt(0))) map.put(Parser.hexToAscii(m.group(2)), bp);
+                if (bp != null && (Character.isLetter(bp.charAt(0)) || Character.isDigit(bp.charAt(0)))) map.put(Parser.hexToAscii(m.group(2)), bp);
             }
         }
         return map;

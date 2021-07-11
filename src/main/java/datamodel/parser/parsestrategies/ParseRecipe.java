@@ -3,7 +3,7 @@ package datamodel.parser.parsestrategies;
 import datamodel.objects.Article;
 import datamodel.objects.Recipe;
 import datamodel.parser.Parser;
-import local.Markers;
+import datamodel.parser.Markers;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -3,7 +3,7 @@ package datamodel.parser.parsestrategies;
 import datamodel.objects.Bench;
 import datamodel.parser.Parser;
 import datamodel.objects.Article;
-import local.Markers;
+import datamodel.parser.Markers;
 
 import java.util.*;
 

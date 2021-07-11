@@ -5,7 +5,7 @@ import datamodel.parser.Parser;
 import datamodel.objects.Article;
 import datamodel.Enums;
 import datamodel.parser.Regexes;
-import local.Markers;
+import datamodel.parser.Markers;
 
 import java.util.ArrayList;
 import java.util.HashMap;

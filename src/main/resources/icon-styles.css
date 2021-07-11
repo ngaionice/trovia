@@ -2,16 +2,8 @@
     -fx-icon-code: "mdi-plus-circle";
 }
 
-#button-edit .ikonli-font-icon {
-    -fx-icon-code: "mdi-pencil";
-}
-
 #button-review .ikonli-font-icon {
     -fx-icon-code: "mdi-checkbox-marked-outline";
-}
-
-#button-load .ikonli-font-icon {
-    -fx-icon-code: "mdi-file-import";
 }
 
 #button-export .ikonli-font-icon {

@@ -5,7 +5,7 @@ import datamodel.objects.LangFile;
 import datamodel.parser.Outliers;
 import datamodel.parser.Parser;
 import datamodel.parser.Regexes;
-import local.Markers;
+import datamodel.parser.Markers;
 
 import java.util.HashMap;
 import java.util.Map;

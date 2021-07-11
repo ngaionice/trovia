@@ -1,6 +1,6 @@
 package datamodel.parser.parsestrategies;
 
-import local.Markers;
+import datamodel.parser.Markers;
 
 import java.util.ArrayList;
 import java.util.List;
