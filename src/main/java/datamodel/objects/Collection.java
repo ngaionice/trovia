@@ -20,10 +20,9 @@ public class Collection extends Observable implements Article, ArticleTable {
     ListProperty<Enums.Type> types;
     MapProperty<Enums.Property, Double> properties;
     MapProperty<Enums.Buff, Double> buffs;
-    IntegerProperty blueprintIndex = null;
-    ListProperty<String> possibleBlueprints;
+    StringProperty blueprint;
 
-    public Collection(String name, String desc, String rPath, int troveMR, int geodeMR,
+    public Collection(String name, String desc, String rPath, int troveMR, int geodeMR, String blueprint,
                       List<Enums.Type> types,
                       Map<Enums.Property, Double> properties,
                       Map<Enums.Buff, Double> buffs) {
@@ -32,6 +31,7 @@ public class Collection extends Observable implements Article, ArticleTable {
         this.rPath = new SimpleStringProperty(rPath);
         this.troveMR = new SimpleIntegerProperty(troveMR);
         this.geodeMR = new SimpleIntegerProperty(geodeMR);
+        this.blueprint = new SimpleStringProperty(blueprint);
         this.types = new SimpleListProperty<>(FXCollections.observableArrayList(types));
 
         ObservableMap<Enums.Property, Double> tempProps = FXCollections.observableHashMap();
@@ -90,15 +90,6 @@ public class Collection extends Observable implements Article, ArticleTable {
 
     public MapProperty<Enums.Buff, Double> buffsProperty() {
         return buffs;
-    }
-
-
-    public IntegerProperty blueprintIndexProperty() {
-        return blueprintIndex;
-    }
-
-    public ListProperty<String> possibleBlueprintsProperty() {
-        return possibleBlueprints;
     }
 
     public String getName() {
@@ -170,20 +161,15 @@ public class Collection extends Observable implements Article, ArticleTable {
         this.buffs.set(buffs);
     }
 
-
-    public int getBlueprintIndex() {
-        return blueprintIndex.get();
+    public String getBlueprint() {
+        return blueprint.get();
     }
 
-    public void setBlueprintIndex(int blueprintIndex) {
-        this.blueprintIndex.set(blueprintIndex);
+    public StringProperty blueprintProperty() {
+        return blueprint;
     }
 
-    public ObservableList<String> getPossibleBlueprints() {
-        return possibleBlueprints.get();
-    }
-
-    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
-        this.possibleBlueprints.set(possibleBlueprints);
+    public void setBlueprint(String blueprint) {
+        this.blueprint.set(blueprint);
     }
 }

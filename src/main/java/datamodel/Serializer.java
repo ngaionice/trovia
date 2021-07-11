@@ -147,10 +147,7 @@ public class Serializer {
             obj.add("desc", collection.getDesc() != null ? new JsonPrimitive(collection.getDesc()) : null);
             obj.add("trove_mr", new JsonPrimitive(collection.getTroveMR()));
             obj.add("geode_mr", new JsonPrimitive(collection.getGeodeMR()));
-//            obj.add("bp_index", new JsonPrimitive(collection.getBlueprintIndex()));
-
-//            JsonArray blueprints = new JsonArray();
-//            collection.getPossibleBlueprints().forEach(blueprints::add);
+            obj.add("blueprint", new JsonPrimitive(collection.getBlueprint()));
 
             JsonArray types = new JsonArray();
             collection.getTypes().forEach(i -> types.add(i.toString()));
@@ -161,7 +158,6 @@ public class Serializer {
             JsonObject buffs = new JsonObject();
             collection.getBuffs().forEach((k, v) -> buffs.add(k.toString(), new JsonPrimitive(v)));
 
-//            obj.add("blueprints", blueprints);
             obj.add("types", types);
             obj.add("properties", properties);
             obj.add("buffs", buffs);
@@ -243,20 +239,13 @@ public class Serializer {
             obj.add("name", new JsonPrimitive(item.getName()));
             obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
             obj.add("tradable", new JsonPrimitive(item.isTradable() ? 1 : 0));
-            obj.add("bp_index", new JsonPrimitive(item.getBlueprintIndex()));
+            obj.add("blueprint", new JsonPrimitive(item.getBlueprint()));
             obj.add("lootbox", new JsonPrimitive(item.isLootbox()));
             obj.add("decay", new JsonPrimitive(item.willDecay()));
-            if (item.hasBadBlueprint()) {
-                obj.add("bad_blueprint", new JsonPrimitive(true));
-            }
-
-            JsonArray blueprints = new JsonArray();
-            item.getPossibleBlueprints().forEach(blueprints::add);
 
             JsonArray unlocks = new JsonArray();
             item.getUnlocks().forEach(unlocks::add);
 
-            obj.add("blueprints", blueprints);
             obj.add("unlocks", unlocks);
 
             return obj;

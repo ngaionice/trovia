@@ -13,26 +13,21 @@ public class Item extends Observable implements Article, ArticleTable {
     StringProperty desc; // nullable
     StringProperty rPath;
     ListProperty<String> unlocks;
-    IntegerProperty blueprintIndex;
-    ListProperty<String> possibleBlueprints;
+    StringProperty blueprint;
     BooleanProperty tradable;
     BooleanProperty isLootbox;
     BooleanProperty willDecay;
-    BooleanProperty badBlueprint;
 
-    public Item(String name, String desc, String rPath, String[] unlocks, String[] possibleBlueprints, boolean isLootbox, boolean willDecay) {
+    public Item(String name, String desc, String rPath, String[] unlocks, String blueprint, boolean isLootbox, boolean willDecay) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
-
-        this.blueprintIndex = new SimpleIntegerProperty(possibleBlueprints.length >= 1 ? 0 : -1);
-        this.possibleBlueprints = new SimpleListProperty<>(FXCollections.observableArrayList(possibleBlueprints));
+        this.blueprint = new SimpleStringProperty(blueprint);
 
         this.tradable = new SimpleBooleanProperty(true);
         this.isLootbox = new SimpleBooleanProperty(isLootbox);
         this.willDecay = new SimpleBooleanProperty(willDecay);
-        this.badBlueprint = new SimpleBooleanProperty(false);
     }
 
     public String getName() {
@@ -105,30 +100,16 @@ public class Item extends Observable implements Article, ArticleTable {
         return tradable;
     }
 
-    public int getBlueprintIndex() {
-        return blueprintIndex.get();
+    public String getBlueprint() {
+        return blueprint.get();
     }
 
-    public void setBlueprintIndex(int blueprintIndex) {
-        this.blueprintIndex.set(blueprintIndex);
-        notifyObservers();
+    public StringProperty blueprintProperty() {
+        return blueprint;
     }
 
-    public IntegerProperty blueprintIndexProperty() {
-        return blueprintIndex;
-    }
-
-    public ObservableList<String> getPossibleBlueprints() {
-        return possibleBlueprints.get();
-    }
-
-    public void setPossibleBlueprints(ObservableList<String> possibleBlueprints) {
-        this.possibleBlueprints.set(possibleBlueprints);
-        notifyObservers();
-    }
-
-    public ListProperty<String> possibleBlueprintsProperty() {
-        return possibleBlueprints;
+    public void setBlueprint(String blueprint) {
+        this.blueprint.set(blueprint);
     }
 
     public boolean isLootbox() {
@@ -154,19 +135,6 @@ public class Item extends Observable implements Article, ArticleTable {
 
     public void setWillDecay(boolean willDecay) {
         this.willDecay.set(willDecay);
-        notifyObservers();
-    }
-
-    public boolean hasBadBlueprint() {
-        return badBlueprint.get();
-    }
-
-    public BooleanProperty badBlueprintProperty() {
-        return badBlueprint;
-    }
-
-    public void setBadBlueprint(boolean badBlueprint) {
-        this.badBlueprint.set(badBlueprint);
         notifyObservers();
     }
 }

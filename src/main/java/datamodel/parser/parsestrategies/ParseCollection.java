@@ -4,71 +4,76 @@ import datamodel.objects.Collection;
 import datamodel.parser.Parser;
 import datamodel.objects.Article;
 import datamodel.Enums;
+import datamodel.parser.Regexes;
 import local.Markers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParseCollection implements ParseStrategy{
 
     @Override
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
-        // debugging
-//        System.out.println("Parsing file " + absPath);
-        if (absPath.contains("dev_")) {
-            throw new ParseException(absPath + " is a dev mount and is likely to be buggy, skipping it.");
-        }
-
-        // instantiate markers and variables
-        Markers m = new Markers();
-        String name = null, desc = null;
-        List<Enums.Type> types = new ArrayList<>();
-        Map<Enums.Property, Double> properties = new HashMap<>(10);
-
         // obtain relative path
         String rPath = Parser.extractRPath(absPath);
 
-//        System.out.println("Identified relative path.");
-
-        // identify name and desc
-        int nameDescEnd = splitString.indexOf(m.endNameDesc);
-        int nameDescStart = splitString.indexOf(m.prefab);
-
-//        System.out.println("Identified name and desc.");
-
-        // if either don't exist, then we don't know how to parse yet
-        if (nameDescStart == -1 || nameDescEnd == -1) {
-            throw new ParseException("Collection creation at " + absPath + " failed as no name nor desc were identified.");
+        // filter out things we don't want to read
+        if (absPath.contains("\\dev_")) {
+            throw new ParseException(rPath + " is a dev mount and is likely to be buggy.");
+        } else if (absPath.contains("\\cannon_")) {
+            throw new ParseException(rPath + " is a cannon and thus not a collection.");
+        } else if (absPath.contains("_bobber.binfab") || absPath.contains("_cannon.binfab")) {
+            throw new ParseException(rPath + " is part of a fishing rod or a cannon, and thus not a collection.");
+        } else if (absPath.contains("_explosion.binfab") || absPath.contains("_projectile.binfab")) {
+            throw new ParseException(rPath + " is an explosion or a projectile, and thus not a collection.");
         }
 
-        String dirty = splitString.substring(nameDescStart, nameDescEnd);
+        // instantiate markers
+        Markers m = new Markers();
+        Regexes r = new Regexes();
 
-        // parse the name
-        for (int i = 0; i < dirty.length(); i += 3) {
-            if (!dirty.substring(i, i+2).matches(m.alphabetPrefab)) {
-                String nameHex = dirty.substring(0, i);
-                name = Parser.hexToAscii(nameHex);
-                break;
-            }
+        // instantiate variables
+        String name, desc;
+        List<Enums.Type> types = new ArrayList<>();
+        Map<Enums.Property, Double> properties = new HashMap<>(10);
+
+        // identify name and desc paths
+        Pattern ndp = Pattern.compile(r.itemNDExtractor);
+        Pattern bp = Pattern.compile(r.blueprintExtractor);
+
+        int ndEnd = splitString.indexOf("68 00 80");
+        if (ndEnd == -1) {
+            throw new ParseException(rPath + " did not have an end marker.");
         }
 
-//        System.out.println("Name parsed.");
+        Matcher ndm = ndp.matcher(splitString.substring(0, ndEnd + 8));
+        if (!ndm.find()) {
+            throw new ParseException(rPath + " did not match the pattern for name and description; does it satisfy the assumptions?");
+        }
+        int nLen = Integer.parseInt(ndm.group(1), 16);
+        name = Parser.hexToAscii(ndm.group(2).length() <= 3 * nLen ? ndm.group(2) : ndm.group(2).substring(0, 3 * nLen));
 
-        // parse the description
-        int descStart = dirty.substring(1).indexOf(m.prefab); // shift by 1 to avoid finding the same marker
-        if (descStart != -1) {
-            String descHex = dirty.substring(1).substring(descStart);
-            desc = Parser.hexToAscii(descHex);
+        if (ndm.group(5).equals("00 ")) {
+            desc = null;
+        } else {
+            int dLen = Integer.parseInt(ndm.group(6), 16);
+            desc = Parser.hexToAscii(ndm.group(7).length() <= 3 * dLen ? ndm.group(7) : ndm.group(7).substring(0, 3 * dLen));
         }
 
-//        System.out.println("Desc parsed.");
+        // blueprint extraction
+        String blueprint = null;
+
+        Matcher bm = bp.matcher(splitString);
+        if (bm.find()) {
+            blueprint = Parser.hexToAscii(bm.group(2)).replace(".blueprint", "");
+        }
 
         // identify abilities/properties
-
-        // - identify boat/mount/wings/mag rider properties
 
         // mount
         if (splitString.contains(m.groundSpeed)) {
@@ -76,8 +81,6 @@ public class ParseCollection implements ParseStrategy{
             properties.put(Enums.Property.GROUND_MS, Parser.collectionH2D(splitString.substring(indexG-6, indexG-1)));
             types.add(Enums.Type.MOUNT);
         }
-
-//        System.out.println("Identified mount property.");
 
         // wings
         if (splitString.contains(m.airSpeed) || splitString.contains(m.airSpeedA)) {
@@ -90,11 +93,9 @@ public class ParseCollection implements ParseStrategy{
 
                 properties.put(Enums.Property.GLIDE, Parser.collectionH2D(splitString.substring(indexGlide-6, indexGlide-1)));
             } else {
-                throw new ParseException("Incomplete wings property at this object.");
+                throw new ParseException(rPath + ": incomplete wings property identified.");
             }
         }
-
-//        System.out.println("Identified wings property.");
 
         // mag rider
         if (splitString.contains(m.mag)) {
@@ -102,8 +103,6 @@ public class ParseCollection implements ParseStrategy{
             properties.put(Enums.Property.MAG_MS, Parser.collectionH2D(splitString.substring(indexM+3, indexM+9)));
             types.add(Enums.Type.MAG);
         }
-
-//        System.out.println("Identified mag property.");
 
         // boat
         if (splitString.contains(m.waterSpeed)) {
@@ -119,32 +118,18 @@ public class ParseCollection implements ParseStrategy{
             properties.put(Enums.Property.ACCEL, Parser.collectionH2D(splitString.substring(indexAc + 9, indexAc + 15)));
         }
 
-//        System.out.println("Identified boat property.");
-
         // dragon
         Map<Enums.Buff, Double> dragonBuffs = parseBuffs(splitString, m);
         if (!dragonBuffs.isEmpty() && types.contains(Enums.Type.MOUNT)) {
             types.add(Enums.Type.DRAGON);
         }
 
-//        System.out.println("Identified dragon property.");
-
         // power rank
         if (splitString.contains(m.powerRank)) {
             dragonBuffs.put(Enums.Buff.PR, 30.0);
         }
 
-//        System.out.println("Identified PR property.");
-
-        // old stuff below
-//        if (types.contains(CollectionEnums.Type.DRAGON)) {
-//            boolean isMagRider = properties.containsKey(CollectionEnums.Property.MAG_MS);
-//            return new Collection(name, desc, rPath, properties, dragonBuffs, isMagRider);
-//        } else if (!dragonBuffs.isEmpty()) {
-//            return new Collection(name, desc, rPath, types, properties, dragonBuffs);
-//        }
-//        return new Collection(name, desc, rPath, types, properties);
-        return new Collection(name, desc, rPath, 0, 0, types, properties, dragonBuffs);
+        return new Collection(name, desc, rPath, 0, 0, blueprint, types, properties, dragonBuffs);
     }
 
 

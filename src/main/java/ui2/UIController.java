@@ -121,14 +121,13 @@ public class UIController {
      *                  6: recipes
      *                  7: skins
      *                  8: strings
-     *                  9: blueprints
      * @param logger the TextArea used for logging
      */
     void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(usePrettyPrint);
         if (selected != null) {
-            if (selection.length != 10) {
+            if (selection.length != 9) {
                 print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
                 return;
             }
@@ -155,21 +154,6 @@ public class UIController {
                 print(logger, "Export failed due to an IOException; stack trace below:");
                 List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
                 printList(logger, errorList);
-            }
-            if (selection[9] != 0) {
-                try {
-                    String path = dirPath + "\\" + "trove-blueprint-paths-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
-                    JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
-                    writer.beginArray();
-                    for (String bp : model.getBlueprintPaths()) writer.value(bp);
-                    writer.endArray();
-                    writer.close();
-                    print(logger, "Data exported to " + path);
-                } catch (IOException e) {
-                    print(logger, "Export failed due to an IOException; stack trace below:");
-                    List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
-                    printList(logger, errorList);
-                }
             }
         }
     }

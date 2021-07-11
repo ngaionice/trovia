@@ -159,10 +159,7 @@ public class Parser {
                 Set<String> subDirSet = getAllBlueprintPathsFromDir(baseDirPath, file.getAbsolutePath());
                 set.addAll(subDirSet);
             } else {
-                set.add(file.getAbsolutePath()
-                        .replace(baseDirPath + "\\", "")
-                        .replace(".blueprint", "")
-                        .replace("\\", "/"));
+                set.add(file.getAbsolutePath());
             }
         }
         return set;

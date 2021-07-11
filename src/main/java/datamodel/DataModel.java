@@ -104,17 +104,7 @@ public class DataModel implements Observer {
                 upsertGearStyleType((GearStyleType) parser.createObject(absPath, type));
                 break;
             case ITEM:
-                Item item = (Item) parser.createObject(absPath, type);
-                if (item.getPossibleBlueprints().size() != 1 || !blueprintPaths.contains(item.getPossibleBlueprints().get(0).toLowerCase())) {
-                    if (item.getRPath().contains("/skin/") && item.getPossibleBlueprints().size() == 2 && item.getPossibleBlueprints().contains("item_costume_box")) {
-                        String skinUnlock = item.getPossibleBlueprints().get(0).equals("item_costume_box") ? item.getPossibleBlueprints().get(1) : item.getPossibleBlueprints().get(0);
-                        item.addUnlock(skinUnlock);
-                        item.getPossibleBlueprints().remove("item_costume_box");
-                    } else {
-                        item.setBadBlueprint(true);
-                    }
-                }
-                upsertItem(item);
+                upsertItem((Item) parser.createObject(absPath, type));
                 break;
             case PLACEABLE:
                 upsertPlaceable((Placeable) parser.createObject(absPath, type));

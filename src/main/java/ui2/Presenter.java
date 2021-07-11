@@ -54,7 +54,7 @@ public class Presenter {
         JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
 
-        List<Button> actionButtons = Arrays.asList(parseButton, editButton, reviewButton, exportButton);
+        List<Button> actionButtons = Arrays.asList(parseButton, editButton, reviewButton, exportButton, logsButton);
         List<JFXButton> buttonList = Arrays.asList(parseButton, editButton, reviewButton, exportButton, logsButton, quitButton);
         String[] buttonIds = new String[]{"button-parse", "button-edit", "button-review", "button-export", "button-logs", "button-quit"};
 
@@ -93,61 +93,33 @@ public class Presenter {
         GridPane grid = new GridPane();
 
         Text externalText = new Text("Load external data (coming soon)");
-        JFXTextField blueprintLoc = new JFXTextField();
         JFXTextField dataLoc = new JFXTextField();
-
-        JFXButton bpLocButton = new JFXButton();
         JFXButton dataLocButton = new JFXButton();
 
         Separator sep = new Separator();
-
-        Text buildText = new Text("Build blueprint repository");
-        JFXTextField blueprintDir = new JFXTextField();
-        JFXButton bpDirButton = new JFXButton();
-
-        Separator sep2 = new Separator();
         Text ignoreText = new Text("Press the start button to load in the data, or to skip data loading and start parsing data.\nIf you do not load data now, you will not be able to do so later.");
 
         JFXButton startButton = new JFXButton();
 
-        bpDirButton.setOnAction(e -> {
-            String bpDirPath = controller.loadDirectory(stage, "Select the directory with the .blueprint files.");
-            if (bpDirPath != null) {
-                blueprintDir.setText(bpDirPath);
-            }
-        });
         startButton.setOnAction(e -> {
-            String bpDirPath = blueprintDir.getText();
-            if (bpDirPath != null && !bpDirPath.equals("")) {
-                controller.loadBlueprints(bpDirPath);
-                controller.print(logger, "Blueprint database constructed from " + bpDirPath);
-            }
-            controller.disableActionButtons(Arrays.asList(bpLocButton, dataLocButton, bpDirButton, startButton));
+            controller.disableActionButtons(Arrays.asList(dataLocButton, startButton));
             controller.enableActionButtons(actionButtons);
         });
 
         // element styling
         {
-            blueprintLoc.setPromptText("Blueprint JSON file location");
             dataLoc.setPromptText("Entity JSON file location");
-            blueprintDir.setPromptText("Blueprint folder location");
-            Arrays.asList(blueprintLoc, dataLoc, blueprintDir).forEach(field -> {
-                field.getStyleClass().add("text-field-dir");
-                field.setDisable(true);
-            });
+            dataLoc.getStyleClass().add("text-field-dir");
+            dataLoc.setDisable(true);
             startButton.getStyleClass().addAll("floating-button", "button-start");
-            Arrays.asList(bpLocButton, dataLocButton, bpDirButton).forEach(button -> {
-                button.getStyleClass().addAll("button-inline", "color-subtle");
-                button.setId("button-set-dir");
-            });
-            Arrays.asList(externalText, buildText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
+            dataLocButton.getStyleClass().addAll("button-inline", "color-subtle");
+            dataLocButton.setId("button-set-dir");
+            Arrays.asList(externalText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
             center.getStyleClass().add("pane-background");
             anchor.getStyleClass().add("card-backing");
             grid.getStyleClass().add("grid-content");
 
             dataLocButton.setGraphic(new FontIcon());
-            bpLocButton.setGraphic(new FontIcon());
-            bpDirButton.setGraphic(new FontIcon());
             startButton.setGraphic(new FontIcon());
         }
 
@@ -157,16 +129,10 @@ public class Presenter {
             anchor.getChildren().add(grid);
             anchor.getChildren().add(startButton);
             grid.add(externalText, 0, 0);
-            grid.add(blueprintLoc, 0, 1);
-            grid.add(bpLocButton, 1,1);
-            grid.add(dataLoc, 0, 2);
-            grid.add(dataLocButton, 1, 2);
-            grid.add(sep, 0, 3, 2, 1);
-            grid.add(buildText, 0, 4);
-            grid.add(blueprintDir, 0, 5);
-            grid.add(bpDirButton, 1, 5);
-            grid.add(sep2, 0, 6, 2, 1);
-            grid.add(ignoreText, 0, 7, 2, 1);
+            grid.add(dataLoc, 0, 1);
+            grid.add(dataLocButton, 1, 1);
+            grid.add(sep, 0, 2, 2, 1);
+            grid.add(ignoreText, 0, 3, 2, 1);
         }
 
         setMaxAnchor(grid);
@@ -360,8 +326,8 @@ public class Presenter {
         JFXCheckBox prettyPrintButton = new JFXCheckBox();
         Separator separator = new Separator();
 
-        BooleanProperty[] selected = new BooleanProperty[10];
-        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings", "Blueprints"};
+        BooleanProperty[] selected = new BooleanProperty[9];
+        String[] texts = new String[] {"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
 
         List<JFXCheckBox> checkboxes = new ArrayList<>();
         for (int i = 0; i < selected.length; i++) {
