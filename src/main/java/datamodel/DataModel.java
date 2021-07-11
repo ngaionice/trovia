@@ -19,6 +19,7 @@ public class DataModel implements Observer {
     Parser parser = new Parser();
 
     Set<String> blueprintPaths = null;
+    Map<String, String> blueprintMap = null;
 
     ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
     ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
@@ -86,6 +87,10 @@ public class DataModel implements Observer {
         return blueprintPaths;
     }
 
+    public void createBlueprintMapping(String dirPath) throws IOException {
+        blueprintMap = parser.getObjectBlueprintMappingFromDir(dirPath);
+    }
+
     // CREATING OBJECTS
 
     public void createObject(String absPath, Enums.ObjectType type) throws IOException, ParseException {
@@ -107,7 +112,11 @@ public class DataModel implements Observer {
                 upsertItem((Item) parser.createObject(absPath, type));
                 break;
             case PLACEABLE:
-                upsertPlaceable((Placeable) parser.createObject(absPath, type));
+                Placeable p = (Placeable) parser.createObject(absPath, type);
+                if (p.getBlueprint() == null && blueprintMap != null && blueprintMap.containsKey(p.getRPath())) {
+                    p.setBlueprint(blueprintMap.get(p.getRPath()));
+                }
+                upsertPlaceable(p);
                 break;
             case RECIPE:
                 upsertRecipe((Recipe) parser.createObject(absPath, type));

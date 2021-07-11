@@ -1,5 +1,7 @@
 package datamodel.parser;
 
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
 import datamodel.Enums;
 import datamodel.objects.Article;
 import datamodel.parser.parsestrategies.*;
@@ -163,5 +165,38 @@ public class Parser {
             }
         }
         return set;
+    }
+
+    public Map<String, String> getObjectBlueprintMappingFromDir(String dirPath) throws IOException {
+        Map<String, String> map = new HashMap<>();
+
+        String[] fileNames = new String[]{"blocks", "plants", "gardening", "signs", "torches", "trophies"};
+        for (String name: fileNames) {
+            Map<String, String> result = getOBMappingFromFile(dirPath + "\\" + name + ".binfab", name.equals("plants") || name.equals("gardening"));
+            if (result != null) result.forEach(map::put);
+        }
+        return map;
+    }
+
+    public Map<String, String> getOBMappingFromFile(String filePath, boolean useAltPosition) throws IOException {
+        Regexes r = new Regexes();
+        Matcher m = Pattern.compile(r.bpMappingExtractor).matcher("");
+
+        if (!new File(filePath).exists()) return null;
+        Map<String, String> map = new HashMap<>();
+
+        String splitString = insertSpaces(byteToString(filePath));
+
+        String splitter = "80 3F 1E ";
+        String[] segments = splitString.split(splitter);
+
+        for (String str:segments) {
+            if (m.reset(str).find()) {
+                String bp = useAltPosition ? Parser.hexToAscii(m.group(4)) : m.group(5).equals("00 ") ? null : Parser.hexToAscii(m.group(7));
+                // basic filter to filter out unwanted junk from gardening.binfab
+                if (bp != null && Character.isLetter(bp.charAt(0))) map.put(Parser.hexToAscii(m.group(2)), bp);
+            }
+        }
+        return map;
     }
 }

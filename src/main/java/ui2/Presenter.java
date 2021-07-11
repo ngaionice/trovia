@@ -97,26 +97,38 @@ public class Presenter {
         JFXButton dataLocButton = new JFXButton();
 
         Separator sep = new Separator();
+        Text mapText = new Text("Parsing aids");
+        JFXTextField bppLoc = new JFXTextField();
+        JFXButton bppLocButton = new JFXButton();
+
+        Separator sep2 = new Separator();
         Text ignoreText = new Text("Press the start button to load in the data, or to skip data loading and start parsing data.\nIf you do not load data now, you will not be able to do so later.");
 
         JFXButton startButton = new JFXButton();
 
-        startButton.setOnAction(e -> controller.loadData(Arrays.asList(dataLocButton, startButton), actionButtons));
+        bppLocButton.setOnAction(e -> bppLoc.setText(controller.loadDirectory(stage, "Select the directory containing the mapping files. This directory normally has a relative path of /prefabs/blocks.")));
+        startButton.setOnAction(e -> controller.loadData(logger, Arrays.asList(dataLocButton, startButton), actionButtons, bppLoc.getText()));
 
         // element styling
         {
             dataLoc.setPromptText("Entity JSON file location");
+            bppLoc.setPromptText("Blueprint-placeable mapping files directory (skip if not parsing blueprints)");
             dataLoc.getStyleClass().add("text-field-dir");
             dataLoc.setDisable(true);
+            bppLoc.setDisable(true);
+            dataLocButton.setDisable(true);
             startButton.getStyleClass().addAll("floating-button", "button-start");
-            dataLocButton.getStyleClass().addAll("button-inline", "color-subtle");
-            dataLocButton.setId("button-set-dir");
-            Arrays.asList(externalText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
+            Arrays.asList(dataLocButton, bppLocButton).forEach(b -> {
+                b.setId("button-set-dir");
+                b.getStyleClass().addAll("button-inline", "color-subtle");
+            });
+            Arrays.asList(externalText, mapText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
             center.getStyleClass().add("pane-background");
             anchor.getStyleClass().add("card-backing");
             grid.getStyleClass().add("grid-content");
 
             dataLocButton.setGraphic(new FontIcon());
+            bppLocButton.setGraphic(new FontIcon());
             startButton.setGraphic(new FontIcon());
         }
 
@@ -129,7 +141,11 @@ public class Presenter {
             grid.add(dataLoc, 0, 1);
             grid.add(dataLocButton, 1, 1);
             grid.add(sep, 0, 2, 2, 1);
-            grid.add(ignoreText, 0, 3, 2, 1);
+            grid.add(mapText, 0, 3);
+            grid.add(bppLoc, 0, 4);
+            grid.add(bppLocButton, 1, 4);
+            grid.add(sep2, 0, 5, 2, 1);
+            grid.add(ignoreText, 0, 6, 2, 1);
         }
 
         setMaxAnchor(grid);

@@ -107,21 +107,27 @@ public class UIController {
         model.createBlueprintPaths(dirPath);
     }
 
-    void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable) {
-        Task<Void> task = getLoadTask();
+    void loadData(TextArea logger, List<Button> buttonsToDisable, List<Button> buttonsToEnable, String mapDirPath) {
+        Task<Void> task = getLoadTask(logger, mapDirPath);
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
                 disableActionButtons(buttonsToDisable);
                 enableActionButtons(buttonsToEnable);
             });
+            print(logger, "Data loading complete.");
         }).start();
     }
 
-    Task<Void> getLoadTask() {
+    Task<Void> getLoadTask(TextArea logger, String mapDirPath) {
         return new Task<Void>() {
             @Override
             protected Void call() {
+                try {
+                    model.createBlueprintMapping(mapDirPath);
+                } catch (IOException e) {
+                    print(logger, "Error occurred while loading in blueprint map.");
+                }
                 return null;
             }
         };

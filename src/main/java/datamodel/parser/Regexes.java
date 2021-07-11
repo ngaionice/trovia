@@ -18,6 +18,7 @@ public class Regexes {
     public String blueprintExtractor = "1E 4A [0-9A-F][0-9A-F] (?:0[0-9] )?08 ([0-9A-F][0-9A-F]) ((?:[0-9A-F][0-9A-F] )+?)14 [0-9A-F][0-9A-F] [0-9A-F][0-9A-F] [0-9A-F][0-9A-F] [0-9A-F][0-9A-F] 20 0[0-9]";
 
     public String tradableExtractor = "01 0[0-9] 90 01 [0-9A-F][0-9A-F] A0 01 [0-9A-F][0-9A-F] C0 01 0[0-9] D0 01 00 E0 01 (0[02]) F0 01 0[02] 80";
+    public String bpMappingExtractor = "[0-9A-F]4 (?:[0-9A-F][0-9A-F] ){0,2}08 ([0-9A-F][0-9A-F] )((?:[0-9A-F][0-9A-F] )+?)1E 08 ([0-9A-F][0-9A-F] )((?:[0-9A-F][0-9A-F] )+?)18 (00 |([0-9A-F][0-9A-F] )((?:[0-9A-F][0-9A-F] )+?))2[1-9A-E] ((?:[0-9A-F][0-9A-F] )+?)";
 
     // old, superseded by blueprintExtractor
     public String bpExtractorOld = "[0-9]8 ([0-9A-F][0-9A-F]) ((?:(?:2[06CF]|3[0-9]|4[0-9A-F]|5[0-9ABDF]|6[1-9A-F]|7[0-9A]) )+?)2E 62 6C 75 65 70 72 69 6E 74";
