@@ -15,7 +15,6 @@ public class ParsePlaceable implements ParseStrategy {
     public Article parseObject(String splitString, String absPath) throws ParseException {
 
         Regexes r = new Regexes();
-        Markers m = new Markers();
 
         String rPath = Parser.extractRPath(absPath);
 
@@ -50,6 +49,17 @@ public class ParsePlaceable implements ParseStrategy {
             blueprint = Parser.hexToAscii(bm.group(2)).replace(".blueprint", "");
         }
 
-        return new Placeable(name, desc, rPath, blueprint);
+        String remaining = splitString.substring(ndm.end());
+
+        // check for tradability
+        Matcher tm = Pattern.compile(r.tradableExtractor).matcher(remaining);
+
+        boolean tradable;
+        if (!tm.find()) {
+            throw new ParseException(rPath + ": failed to determine tradability.");
+        }
+        tradable = tm.group(1).equals("02");
+
+        return new Placeable(name, desc, rPath, blueprint, tradable);
     }
 }

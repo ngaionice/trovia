@@ -52,6 +52,15 @@ public class ParseItem implements ParseStrategy {
 
         String remaining = splitString.substring(ndm.end());
 
+        // check for tradability
+        Matcher tm = Pattern.compile(r.tradableExtractor).matcher(remaining);
+
+        boolean tradable;
+        if (!tm.find()) {
+            throw new ParseException(rPath + ": failed to determine tradability.");
+        }
+        tradable = tm.group(1).equals("02");
+
         // identify collections unlocked by this item
         if (remaining.contains(m.collection)) {
             List<String> collection = new ArrayList<>();
@@ -88,22 +97,6 @@ public class ParseItem implements ParseStrategy {
         // identify if this item has decay
         boolean decay = splitString.contains(m.decay);
 
-        return new Item(name, desc, rPath, unlocks, blueprint, lootbox, decay);
+        return new Item(name, desc, rPath, unlocks, blueprint, tradable, lootbox, decay);
     }
-
-    // creating a new item:
-    // read binary file, insert spaces
-    // identify name and description paths, if they exist -> just stop here if does not exist
-    // description breaker: 68 00 80
-
-    // identify if they unlock things - optional, note that they can unlock more than 1
-    // string to identify: 63 6F 6C 6C 65 63 74 69 6F 6E 73 2F - collections/
-
-    // identify if they are lootboxes
-    // string to identify: 4C 6F 6F 74 54 61 62 6C 65 - LootTable
-
-    // identify blueprint, may be useful?
-    // string to identify: 1E 4A - need to add offset (+15 is the start of the blueprint)
-    // string blueprint ends in: 2E 62 6C 75 65 70 72 69 6E 74 - .blueprint
-    // not all files contain blueprints, strangely enough
 }

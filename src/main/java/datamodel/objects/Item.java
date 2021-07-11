@@ -18,7 +18,7 @@ public class Item extends Observable implements Article, ArticleTable {
     BooleanProperty isLootbox;
     BooleanProperty willDecay;
 
-    public Item(String name, String desc, String rPath, String[] unlocks, String blueprint, boolean isLootbox, boolean willDecay) {
+    public Item(String name, String desc, String rPath, String[] unlocks, String blueprint, boolean isTradable, boolean isLootbox, boolean willDecay) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);

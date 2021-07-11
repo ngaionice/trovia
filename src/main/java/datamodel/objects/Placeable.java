@@ -15,12 +15,12 @@ public class Placeable extends Observable implements Article, ArticleTable {
     StringProperty blueprint;
     BooleanProperty tradable;
 
-    public Placeable(String name, String desc, String rPath, String blueprint) {
+    public Placeable(String name, String desc, String rPath, String blueprint, boolean tradable) {
         this.name = new SimpleStringProperty(name);
         this.desc = new SimpleStringProperty(desc);
         this.rPath = new SimpleStringProperty(rPath);
         this.blueprint = new SimpleStringProperty(blueprint);
-        this.tradable = new SimpleBooleanProperty(true);
+        this.tradable = new SimpleBooleanProperty(tradable);
     }
 
     public void setName(String name) {
