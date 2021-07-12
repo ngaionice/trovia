@@ -1,88 +1,64 @@
 package datamodel.objects;
 
-import javafx.beans.property.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+public class Placeable implements Article {
 
-import java.util.List;
-import java.util.Observable;
+    String name;
+    String desc;
+    String rPath;
+    String blueprint;
+    boolean tradable;
 
-public class Placeable extends Observable implements Article, ArticleTable {
-
-    StringProperty name;
-    StringProperty desc;
-    StringProperty rPath;
-    StringProperty blueprint;
-    BooleanProperty tradable;
-
-    public Placeable(String name, String desc, String rPath, String blueprint, boolean tradable) {
-        this.name = new SimpleStringProperty(name);
-        this.desc = new SimpleStringProperty(desc);
-        this.rPath = new SimpleStringProperty(rPath);
-        this.blueprint = new SimpleStringProperty(blueprint);
-        this.tradable = new SimpleBooleanProperty(tradable);
-    }
-
-    public void setName(String name) {
-        this.name.set(name);
-        notifyObservers();
-    }
-
-    public void setDesc(String desc) {
-        this.desc.set(desc);
-        notifyObservers();
-    }
-
-    public void setRPath(String rPath) {
-        this.rPath.set(rPath);
-        notifyObservers();
-    }
-
-    public void setTradable(boolean tradable) {
-        this.tradable.set(tradable);
+    public Placeable(String name, String desc, String rPath, String blueprint, boolean isTradable) {
+        this.name = name;
+        this.desc = desc;
+        this.rPath = rPath;
+        this.blueprint = blueprint;
+        this.tradable = isTradable;
     }
 
     public String getName() {
-        return name.get();
-    }
-
-    public StringProperty nameProperty() {
         return name;
     }
 
-    public String getDesc() {
-        return desc.get();
+    public void setName(String name) {
+        this.name = name;
+
     }
 
-    public StringProperty descProperty() {
+    public String getDesc() {
         return desc;
     }
 
-    public String getRPath() {
-        return rPath.get();
+    public void setDesc(String desc) {
+        this.desc = desc;
+
     }
 
-    public StringProperty rPathProperty() {
+    public String getRPath() {
         return rPath;
     }
 
-    public boolean isTradable() {
-        return tradable.get();
-    }
-
-    public BooleanProperty tradableProperty() {
+    public boolean getTradable() {
         return tradable;
     }
 
-    public String getBlueprint() {
-        return blueprint.get();
+    public void setTradable(boolean tradable) {
+        this.tradable = tradable;
     }
 
-    public StringProperty blueprintProperty() {
+    public String getBlueprint() {
         return blueprint;
     }
 
     public void setBlueprint(String blueprint) {
-        this.blueprint.set(blueprint);
+        this.blueprint = blueprint;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Placeable)) return false;
+        Placeable p = (Placeable) o;
+        return name.equals(p.getName()) && desc.equals(p.getDesc()) && rPath.equals(p.getRPath())
+                && blueprint.equals(p.getBlueprint()) && tradable == p.getTradable();
     }
 }

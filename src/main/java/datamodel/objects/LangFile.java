@@ -1,9 +1,8 @@
 package datamodel.objects;
 
-import java.io.Serializable;
 import java.util.Map;
 
-public class LangFile implements Article, Serializable {
+public class LangFile implements Article {
 
     // language file, can contain multiple
 
@@ -22,7 +21,6 @@ public class LangFile implements Article, Serializable {
         return name;
     }
 
-    @Override
     public String getRPath() {
         return rPath;
     }

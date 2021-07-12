@@ -41,7 +41,7 @@ public class ParseProfession implements ParseStrategy {
         String path = absPath.substring(absPath.lastIndexOf("\\")+1, absPath.indexOf(m.endFile));
         String rPath = Parser.extractRPath(absPath);
 
-        return new Bench(path, rPath, categories, null);
+        return new Bench(path, rPath, categories);
     }
 
 }

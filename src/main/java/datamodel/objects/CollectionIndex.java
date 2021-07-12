@@ -1,61 +1,53 @@
 package datamodel.objects;
 
-import javafx.beans.property.MapProperty;
-import javafx.beans.property.SimpleMapProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableMap;
-
 import java.util.Map;
 
-public class CollectionIndex implements Article{
+public class CollectionIndex implements Article {
 
-    StringProperty rPath;
-    StringProperty type;
-    MapProperty<String, String> names;
-    MapProperty<String, Map<String, String>> categories;
+    String rPath;
+    String type;
+    Map<String, String> names;
+    Map<String, Map<String, String>> categories;
 
     public CollectionIndex(String rPath, String type, Map<String, String> nameMap, Map<String, Map<String, String>> categories) {
-        this.rPath = new SimpleStringProperty(rPath);
-        this.type = new SimpleStringProperty(type);
-        ObservableMap<String, String> tempNames = FXCollections.observableHashMap();
-        nameMap.forEach(tempNames::put);
-        this.names = new SimpleMapProperty<>(tempNames);
-        ObservableMap<String, Map<String, String>> tempCats = FXCollections.observableHashMap();
-        categories.forEach(tempCats::put);
-        this.categories = new SimpleMapProperty<>(tempCats);
+        this.rPath = rPath;
+        this.type = type;
+        this.names = nameMap;
+        this.categories = categories;
     }
 
     public String getRPath() {
-        return rPath.get();
-    }
-
-    public StringProperty rPathProperty() {
         return rPath;
     }
 
     public String getType() {
-        return type.get();
-    }
-
-    public StringProperty typeProperty() {
         return type;
     }
 
-    public ObservableMap<String, String> getNames() {
-        return names.get();
-    }
-
-    public MapProperty<String, String> namesProperty() {
+    public Map<String, String> getNames() {
         return names;
     }
 
-    public ObservableMap<String, Map<String, String>> getCategories() {
-        return categories.get();
+    public Map<String, Map<String, String>> getCategories() {
+        return categories;
     }
 
-    public MapProperty<String, Map<String, String>> categoriesProperty() {
-        return categories;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setNames(Map<String, String> names) {
+        this.names = names;
+    }
+
+    public void setCategories(Map<String, Map<String, String>> categories) {
+        this.categories = categories;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof CollectionIndex)) return false;
+        CollectionIndex ci = (CollectionIndex) o;
+        return rPath.equals(ci.getRPath()) && type.equals(ci.getType()) && names.equals(ci.getNames()) && categories.equals(ci.getCategories());
     }
 }

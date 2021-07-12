@@ -258,7 +258,6 @@ public class Presenter {
             checkboxes.add(cb);
         }
         prettyPrintButton.setSelected(true);
-        changedButton.setDisable(true);
 
         directory.setPromptText("Directory");
         directory.setDisable(true);

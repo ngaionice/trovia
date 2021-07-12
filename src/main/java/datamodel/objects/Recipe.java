@@ -1,22 +1,21 @@
 package datamodel.objects;
 
-import javafx.beans.property.*;
+import javafx.beans.property.SimpleMapProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
 import java.util.Map;
-import java.util.Observable;
 
-public class Recipe extends Observable implements Article, ArticleTable {
+public class Recipe implements Article {
 
-    StringProperty name;
-    StringProperty rPath;
-    MapProperty<String, Integer> costs;
-    MapProperty<String, Integer> output;
+    String name;
+    String rPath;
+    Map<String, Integer> costs;
+    Map<String, Integer> output;
 
     public Recipe(String name, String rPath, Map<String, Integer> costs, Map<String, Integer> output) {
-        this.name = new SimpleStringProperty(name);
-        this.rPath = new SimpleStringProperty(rPath);
+        this.name = name;
+        this.rPath = rPath;
 
         ObservableMap<String, Integer> tempCosts = FXCollections.observableHashMap();
         ObservableMap<String, Integer> tempOutput = FXCollections.observableHashMap();
@@ -28,65 +27,46 @@ public class Recipe extends Observable implements Article, ArticleTable {
         this.output = new SimpleMapProperty<>(tempOutput);
     }
 
-    public void setName(String name) {
-        this.name.set(name);
-        notifyObservers();
-    }
-
-    public void setRPath(String rPath) {
-        this.rPath.set(rPath);
-        notifyObservers();
-    }
-
     public void updateCost(String itemRPath, int quantity) {
-        this.costs.getValue().put(itemRPath, quantity);
-        notifyObservers();
-    }
-
-    public void setCosts(ObservableMap<String, Integer> costs) {
-        this.costs.set(costs);
-        notifyObservers();
+        this.costs.put(itemRPath, quantity);
     }
 
     public void updateOutput(String articleRPath, int quantity) {
-        this.output.getValue().put(articleRPath, quantity);
-        notifyObservers();
-    }
-
-    public void setOutput(ObservableMap<String, Integer> output) {
-        this.output.set(output);
-        notifyObservers();
+        this.output.put(articleRPath, quantity);
     }
 
     public String getName() {
-        return name.get();
-    }
-
-    public StringProperty nameProperty() {
         return name;
     }
 
-    public String getRPath() {
-        return rPath.get();
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public StringProperty rPathProperty() {
+    public String getRPath() {
         return rPath;
     }
 
-    public ObservableMap<String, Integer> getCosts() {
-        return costs.get();
-    }
-
-    public MapProperty<String, Integer> costsProperty() {
+    public Map<String, Integer> getCosts() {
         return costs;
     }
 
-    public ObservableMap<String, Integer> getOutput() {
-        return output.get();
+    public void setCosts(Map<String, Integer> costs) {
+        this.costs = costs;
     }
 
-    public MapProperty<String, Integer> outputProperty() {
+    public Map<String, Integer> getOutput() {
         return output;
+    }
+
+    public void setOutput(Map<String, Integer> output) {
+        this.output = output;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Recipe)) return false;
+        Recipe r = (Recipe) o;
+        return name.equals(r.getName()) && rPath.equals(r.getRPath()) && costs.equals(r.getCosts()) && output.equals(r.getOutput());
     }
 }

@@ -1,140 +1,101 @@
 package datamodel.objects;
 
-import javafx.beans.property.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Observable;
 
-public class Item extends Observable implements Article, ArticleTable {
+public class Item implements Article {
 
-    StringProperty name;
-    StringProperty desc; // nullable
-    StringProperty rPath;
-    ListProperty<String> unlocks;
-    StringProperty blueprint;
-    BooleanProperty tradable;
-    BooleanProperty isLootbox;
-    BooleanProperty willDecay;
+    String name;
+    String desc; // nullable
+    String rPath;
+    List<String> unlocks;
+    String blueprint;
+    boolean tradable;
+    boolean lootbox;
+    boolean decay;
 
-    public Item(String name, String desc, String rPath, String[] unlocks, String blueprint, boolean isTradable, boolean isLootbox, boolean willDecay) {
-        this.name = new SimpleStringProperty(name);
-        this.desc = new SimpleStringProperty(desc);
-        this.rPath = new SimpleStringProperty(rPath);
-        this.unlocks = new SimpleListProperty<>(FXCollections.observableArrayList(unlocks));
-        this.blueprint = new SimpleStringProperty(blueprint);
-
-        this.tradable = new SimpleBooleanProperty(true);
-        this.isLootbox = new SimpleBooleanProperty(isLootbox);
-        this.willDecay = new SimpleBooleanProperty(willDecay);
+    public Item(String name, String desc, String rPath, String[] unlocks, String blueprint, boolean isTradable, boolean lootbox, boolean decay) {
+        this.name = name;
+        this.desc = desc;
+        this.rPath = rPath;
+        this.unlocks = new ArrayList<>(Arrays.asList(unlocks));
+        this.blueprint = blueprint;
+        this.tradable = isTradable;
+        this.lootbox = lootbox;
+        this.decay = decay;
     }
 
     public String getName() {
-        return name.get();
-    }
-
-    public void setName(String name) {
-        this.name.set(name);
-        notifyObservers();
-    }
-
-    public StringProperty nameProperty() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDesc() {
-        return desc.get();
-    }
-
-    public void setDesc(String desc) {
-        this.desc.set(desc);
-        notifyObservers();
-    }
-
-    public StringProperty descProperty() {
         return desc;
     }
 
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
     public String getRPath() {
-        return rPath.get();
-    }
-
-    public void setRPath(String rPath) {
-        this.rPath.set(rPath);
-        notifyObservers();
-    }
-
-    public StringProperty rPathProperty() {
         return rPath;
     }
 
-    public ObservableList<String> getUnlocks() {
-        return unlocks.get();
+    public List<String> getUnlocks() {
+        return unlocks;
+    }
+
+    public void setUnlocks(List<String> unlocks) {
+        this.unlocks = unlocks;
     }
 
     public void addUnlock(String unlock) {
         this.unlocks.add(unlock);
-        notifyObservers();
     }
 
-    public void setUnlocks(List<String> unlocks) {
-        this.unlocks.setValue(FXCollections.observableArrayList(unlocks));
-        notifyObservers();
-    }
-
-    public ListProperty<String> unlocksProperty() {
-        return unlocks;
-    }
-
-    public boolean isTradable() {
-        return tradable.get();
-    }
-
-    public void setTradable(boolean tradable) {
-        this.tradable.set(tradable);
-        notifyObservers();
-    }
-
-    public BooleanProperty tradableProperty() {
+    public boolean getTradable() {
         return tradable;
     }
 
-    public String getBlueprint() {
-        return blueprint.get();
+    public void setTradable(boolean tradable) {
+        this.tradable = tradable;
     }
 
-    public StringProperty blueprintProperty() {
+    public String getBlueprint() {
         return blueprint;
     }
 
     public void setBlueprint(String blueprint) {
-        this.blueprint.set(blueprint);
+        this.blueprint = blueprint;
     }
 
-    public boolean isLootbox() {
-        return isLootbox.get();
+    public boolean getLootbox() {
+        return lootbox;
     }
 
-    public BooleanProperty isLootboxProperty() {
-        return isLootbox;
+    public void setLootbox(boolean isLootbox) {
+        this.lootbox = isLootbox;
     }
 
-    public void setIsLootbox(boolean isLootbox) {
-        this.isLootbox.set(isLootbox);
-        notifyObservers();
+    public boolean getDecay() {
+        return decay;
     }
 
-    public boolean willDecay() {
-        return willDecay.get();
+    public void setDecay(boolean decay) {
+        this.decay = decay;
     }
 
-    public BooleanProperty willDecayProperty() {
-        return willDecay;
-    }
-
-    public void setWillDecay(boolean willDecay) {
-        this.willDecay.set(willDecay);
-        notifyObservers();
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Item)) return false;
+        Item i = (Item) o;
+        return name.equals(i.getName()) && desc.equals(i.getDesc()) && rPath.equals(i.getRPath())
+                && blueprint.equals(i.getBlueprint()) && tradable == i.getTradable() && lootbox == i.getLootbox()
+                && decay == i.getDecay() && unlocks.equals(i.getUnlocks());
     }
 }

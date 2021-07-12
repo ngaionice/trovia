@@ -1,90 +1,44 @@
 package datamodel.objects;
 
-import javafx.beans.property.MapProperty;
-import javafx.beans.property.SimpleMapProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
+import java.util.List;
+import java.util.Map;
 
-import java.util.*;
+public class Bench implements Article {
 
-public class Bench extends Observable implements Article, ArticleTable {
+    String name; // the string identifier of the bench's name
+    String rPath;
+    Map<String[], List<String>> categories; // key: [category path, category #]; value: list of recipe file names
 
-    StringProperty name; // the string identifier of the bench's name
-    StringProperty rPath;
-    MapProperty<List<String>, ObservableList<String>> categories; // key: [category path, category #]; value: list of recipe file names
-
-    /**
-     * The name property of the profession. The value wrapped inside is nullable.
-     */
-    StringProperty professionName; // the value in the property can be null
-
-    public Bench(String name, String rPath, Map<String[], List<String>> categories, String professionName) {
-        this.name = new SimpleStringProperty(name);
-        this.rPath = new SimpleStringProperty(rPath);
-        this.professionName = new SimpleStringProperty(professionName);
-
-        ObservableMap<List<String>, ObservableList<String>> tempMap = FXCollections.observableHashMap();
-        categories.forEach((key, value) -> tempMap.put(Arrays.asList(key), FXCollections.observableArrayList(value)));
-        this.categories = new SimpleMapProperty<>(tempMap);
-    }
-
-    public final void setName(String name) {
-        this.name.set(name);
-        notifyObservers();
-    }
-
-    public final void setRPath(String rPath) {
-        this.rPath.set(rPath);
-        notifyObservers();
-    }
-
-    public final void setProfessionName(String professionName) {
-        this.professionName.set(professionName);
-        notifyObservers();
-    }
-
-    public final void setCategories(ObservableMap<List<String>, ObservableList<String>> categories) {
-        this.categories.set(categories);
-        notifyObservers();
-    }
-
-    public final void updateCategory(List<String> key, ObservableList<String> value) {
-        categories.getValue().put(key, value);
-        notifyObservers();
-    }
-
-    public StringProperty nameProperty() {
-        return name;
-    }
-
-    public StringProperty rPathProperty() {
-        return rPath;
-    }
-
-    public MapProperty<List<String>, ObservableList<String>> categoriesProperty() {
-        return categories;
-    }
-
-    public StringProperty professionNameProperty() {
-        return professionName;
+    public Bench(String name, String rPath, Map<String[], List<String>> categories) {
+        this.name = name;
+        this.rPath = rPath;
+        this.categories = categories;
     }
 
     public String getName() {
-        return name.get();
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getRPath() {
-        return rPath.get();
+        return rPath;
     }
 
-    public ObservableMap<List<String>, ObservableList<String>> getCategories() {
-        return categories.get();
+    public Map<String[], List<String>> getCategories() {
+        return categories;
     }
 
-    public String getProfessionName() {
-        return professionName.get();
+    public void setCategories(Map<String[], List<String>> categories) {
+        this.categories = categories;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Bench)) return false;
+        Bench b = (Bench) o;
+        return b.getName().equals(name) && b.getRPath().equals(rPath) && b.getCategories().equals(categories);
     }
 }

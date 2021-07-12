@@ -1,67 +1,51 @@
 package datamodel.objects;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+public class Skin implements Article {
 
-public class Skin implements Article, ArticleTable{
-
-    StringProperty rPath;
-    StringProperty name;
-    StringProperty desc;
-    StringProperty blueprint;
+    String rPath;
+    String name;
+    String desc;
+    String blueprint;
 
     public Skin(String rPath, String name, String desc, String blueprint) {
-        this.rPath = new SimpleStringProperty(rPath);
-        this.name = new SimpleStringProperty(name);
-        this.desc = new SimpleStringProperty(desc);
-        this.blueprint = new SimpleStringProperty(blueprint);
+        this.rPath = rPath;
+        this.name = name;
+        this.desc = desc;
+        this.blueprint = blueprint;
     }
 
     public String getRPath() {
-        return rPath.get();
-    }
-
-    public StringProperty rPathProperty() {
         return rPath;
     }
 
-    public void setRPath(String rPath) {
-        this.rPath.set(rPath);
-    }
-
     public String getName() {
-        return name.get();
-    }
-
-    public StringProperty nameProperty() {
         return name;
     }
 
     public void setName(String name) {
-        this.name.set(name);
+        this.name = name;
     }
 
     public String getDesc() {
-        return desc.get();
-    }
-
-    public StringProperty descProperty() {
         return desc;
     }
 
     public void setDesc(String desc) {
-        this.desc.set(desc);
+        this.desc = desc;
     }
 
     public String getBlueprint() {
-        return blueprint.get();
-    }
-
-    public StringProperty blueprintProperty() {
         return blueprint;
     }
 
     public void setBlueprint(String blueprint) {
-        this.blueprint.set(blueprint);
+        this.blueprint = blueprint;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Skin)) return false;
+        Skin s = (Skin) o;
+        return name.equals(s.getName()) && desc.equals(s.getDesc()) && rPath.equals(s.getRPath()) && blueprint.equals(s.getBlueprint());
     }
 }

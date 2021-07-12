@@ -81,7 +81,7 @@ public class ParseBench implements ParseStrategy {
 
         String rPath = Parser.extractRPath(absPath).replace("_interactive", "");
 
-        return new Bench(name, rPath, categories, null);
+        return new Bench(name, rPath, categories);
     }
 
 

@@ -3,8 +3,6 @@ package datamodel;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import datamodel.objects.*;
-import javafx.collections.ObservableList;
-import testtools.Tester;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -121,11 +119,11 @@ public class Serializer {
             obj.add("name", new JsonPrimitive(bench.getName()));
 
             JsonObject categories = new JsonObject();
-            for (Map.Entry<List<String>, ObservableList<String>> entry : bench.getCategories().entrySet()) {
-                String bench_index = entry.getKey().get(1);
+            for (Map.Entry<String[], List<String>> entry : bench.getCategories().entrySet()) {
+                String bench_index = entry.getKey()[1];
 
                 JsonObject value = new JsonObject();
-                value.add("name_id", new JsonPrimitive(entry.getKey().get(0)));
+                value.add("name_id", new JsonPrimitive(entry.getKey()[0]));
                 JsonArray recipes = new JsonArray();
                 entry.getValue().forEach(recipes::add);
                 value.add("recipes", recipes);
@@ -238,10 +236,10 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(item.getRPath()));
             obj.add("name", new JsonPrimitive(item.getName()));
             obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
-            obj.add("tradable", new JsonPrimitive(item.isTradable() ? 1 : 0));
+            obj.add("tradable", new JsonPrimitive(item.getTradable() ? 1 : 0));
             obj.add("blueprint", new JsonPrimitive(item.getBlueprint()));
-            obj.add("lootbox", new JsonPrimitive(item.isLootbox()));
-            obj.add("decay", new JsonPrimitive(item.willDecay()));
+            obj.add("lootbox", new JsonPrimitive(item.getLootbox()));
+            obj.add("decay", new JsonPrimitive(item.getDecay()));
 
             JsonArray unlocks = new JsonArray();
             item.getUnlocks().forEach(unlocks::add);
@@ -260,7 +258,7 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(placeable.getRPath()));
             obj.add("name", new JsonPrimitive(placeable.getName()));
             obj.add("desc", placeable.getDesc() != null ? new JsonPrimitive(placeable.getDesc()) : null);
-            obj.add("tradable", new JsonPrimitive(placeable.isTradable() ? 1 : 0));
+            obj.add("tradable", new JsonPrimitive(placeable.getTradable() ? 1 : 0));
             obj.add("blueprint", placeable.getBlueprint() != null ? new JsonPrimitive(placeable.getBlueprint()) : null);
 
             return obj;

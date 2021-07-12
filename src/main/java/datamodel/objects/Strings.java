@@ -8,17 +8,14 @@ import javafx.collections.ObservableMap;
 import java.util.Map;
 import java.util.Observable;
 
-public class Strings extends Observable {
+public class Strings {
 
-    // the key is the identifier, and the value is the content
     String lang;
-    MapProperty<String, String> strings;
+    Map<String, String> strings; // the key is the identifier, and the value is the content
 
     public Strings(String lang, Map<String, String> strings) {
         this.lang = lang;
-        ObservableMap<String, String> temp = FXCollections.observableHashMap();
-        strings.forEach(temp::put);
-        this.strings = new SimpleMapProperty<>(temp);
+        this.strings = strings;
     }
 
     public String getLang() {
@@ -29,11 +26,7 @@ public class Strings extends Observable {
         this.lang = lang;
     }
 
-    public ObservableMap<String, String> getStrings() {
-        return strings.get();
-    }
-
-    public MapProperty<String, String> stringsProperty() {
+    public Map<String, String> getStrings() {
         return strings;
     }
 
@@ -46,7 +39,13 @@ public class Strings extends Observable {
     }
 
     public void upsertString(String id, String content) {
-        this.strings.getValue().put(id, content);
-        notifyObservers(new String[]{id, content});
+        this.strings.put(id, content);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Strings)) return false;
+        Strings s = (Strings) o;
+        return lang.equals(s.getLang()) && strings.equals(s.getStrings());
     }
 }
