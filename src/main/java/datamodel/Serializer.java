@@ -3,11 +3,12 @@ package datamodel;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import datamodel.objects.*;
+import datamodel.objects.Collection;
+import jdk.nashorn.internal.scripts.JD;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Serializer {
 
@@ -110,7 +111,7 @@ public class Serializer {
         writer.endObject();
     }
 
-    public static class BenchSerializer implements JsonSerializer<Bench> {
+    public static class BenchSerializer implements JsonSerializer<Bench>, JsonDeserializer<Bench> {
 
         @Override
         public JsonElement serialize(Bench bench, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -133,9 +134,28 @@ public class Serializer {
             obj.add("categories", categories);
             return obj;
         }
+
+        @Override
+        public Bench deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            Map<String[], List<String>> categories = new HashMap<>();
+            JsonObject catsObj = obj.get("categories").getAsJsonObject();
+
+            catsObj.entrySet().forEach(e -> {
+                JsonObject val = e.getValue().getAsJsonObject();
+                String[] key = new String[]{val.get("name_id").getAsString(), e.getKey()};
+                List<String> recipes = new ArrayList<>();
+                val.get("recipes").getAsJsonArray().forEach(rec -> recipes.add(rec.getAsString()));
+                categories.put(key, recipes);
+            });
+
+            return new Bench(name, rPath, categories);
+        }
     }
 
-    public static class CollectionSerializer implements JsonSerializer<Collection> {
+    public static class CollectionSerializer implements JsonSerializer<Collection>, JsonDeserializer<Collection> {
 
         @Override
         public JsonElement serialize(Collection collection, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -143,9 +163,9 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(collection.getRPath()));
             obj.add("name", new JsonPrimitive(collection.getName()));
             obj.add("desc", collection.getDesc() != null ? new JsonPrimitive(collection.getDesc()) : null);
+            obj.add("blueprint", new JsonPrimitive(collection.getBlueprint()));
             obj.add("trove_mr", new JsonPrimitive(collection.getTroveMR()));
             obj.add("geode_mr", new JsonPrimitive(collection.getGeodeMR()));
-            obj.add("blueprint", new JsonPrimitive(collection.getBlueprint()));
 
             JsonArray types = new JsonArray();
             collection.getTypes().forEach(i -> types.add(i.toString()));
@@ -162,9 +182,34 @@ public class Serializer {
 
             return obj;
         }
+
+        @Override
+        public Collection deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            String desc = obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").getAsString();
+            int troveMR = obj.get("trove_mr").getAsInt();
+            int geodeMR = obj.get("geode_mr").getAsInt();
+            List<Enums.Type> types = new ArrayList<>();
+            Map<Enums.Property, Double> properties = new HashMap<>();
+            Map<Enums.Buff, Double> buffs = new HashMap<>();
+
+            JsonArray typesArr = obj.get("types").getAsJsonArray();
+            typesArr.forEach(t -> types.add(Enums.Type.valueOf(t.getAsString())));
+
+            JsonObject propsObj = obj.get("properties").getAsJsonObject();
+            propsObj.entrySet().forEach(e -> properties.put(Enums.Property.valueOf(e.getKey()), e.getValue().getAsDouble()));
+
+            JsonObject buffsObj = obj.get("buffs").getAsJsonObject();
+            buffsObj.entrySet().forEach(e -> buffs.put(Enums.Buff.valueOf(e.getKey()), e.getValue().getAsDouble()));
+
+            return new Collection(name, desc, rPath, troveMR, geodeMR, blueprint, types, properties, buffs);
+        }
     }
 
-    public static class CollectionIndexSerializer implements JsonSerializer<CollectionIndex> {
+    public static class CollectionIndexSerializer implements JsonSerializer<CollectionIndex>, JsonDeserializer<CollectionIndex> {
 
         @Override
         public JsonElement serialize(CollectionIndex index, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -194,9 +239,48 @@ public class Serializer {
             obj.add("categories", categories);
             return obj;
         }
+
+        @Override
+        public CollectionIndex deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String ciType = obj.get("type").getAsString();
+            JsonObject catObj = obj.get("categories").getAsJsonObject();
+            Map<String, String> names = new HashMap<>();
+            Map<String, Map<String, String>> categories = new HashMap<>();
+
+            catObj.entrySet().forEach(e -> {
+                String key = e.getKey();
+                JsonObject val = e.getValue().getAsJsonObject();
+                names.put(key, val.get("display_name").getAsString());
+                Map<String, String> additionalInfo = new HashMap<>();
+                List<String> entries = new ArrayList<>();
+
+                if (val.keySet().contains("entries")) {
+                    JsonArray entriesArr = val.get("entries").getAsJsonArray();
+                    if (val.keySet().contains("additional_info")) {
+                        JsonObject addInfoObj = val.get("additional_info").getAsJsonObject();
+                        Set<String> addInfoKeys = addInfoObj.keySet();
+                        entriesArr.forEach(i -> {
+                            String currKey = i.getAsString();
+                            if (!addInfoKeys.contains(currKey))
+                                entries.add(currKey);
+                            else
+                                additionalInfo.put(currKey, addInfoObj.get(currKey).getAsString());
+                        });
+                    } else {
+                        entriesArr.forEach(i -> entries.add(i.getAsString()));
+                    }
+                    entries.forEach(k -> additionalInfo.put(k, null));
+                }
+                categories.put(key, additionalInfo);
+            });
+
+            return new CollectionIndex(rPath, ciType, names, categories);
+        }
     }
 
-    public static class GearStyleTypeSerializer implements JsonSerializer<GearStyleType> {
+    public static class GearStyleTypeSerializer implements JsonSerializer<GearStyleType>, JsonDeserializer<GearStyleType> {
 
         @Override
         public JsonElement serialize(GearStyleType gearStyleType, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -226,9 +310,35 @@ public class Serializer {
             obj.add("styles", styles);
             return obj;
         }
+
+        @Override
+        public GearStyleType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String gsType = obj.get("type").getAsString();
+            Map<String, Map<String, String[]>> styles = new HashMap<>();
+
+            JsonObject categories = obj.get("styles").getAsJsonObject();
+            categories.entrySet().forEach(c -> {
+                String key = c.getKey();
+                JsonObject entriesObj = c.getValue().getAsJsonObject();
+                Map<String, String[]> entries = new HashMap<>();
+                entriesObj.entrySet().forEach(e -> {
+                    String blueprint = e.getKey();
+                    JsonObject val = e.getValue().getAsJsonObject();
+                    String name = val.get("name").getAsString();
+                    String desc = val.get("desc").getAsString();
+                    String additional = val.get("additional_info").getAsString();
+                    entries.put(blueprint, new String[]{name, desc, additional});
+                });
+                styles.put(key, entries);
+            });
+
+            return new GearStyleType(rPath, gsType, styles);
+        }
     }
 
-    public static class ItemSerializer implements JsonSerializer<Item> {
+    public static class ItemSerializer implements JsonSerializer<Item>, JsonDeserializer<Item> {
 
         @Override
         public JsonElement serialize(Item item, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -236,8 +346,8 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(item.getRPath()));
             obj.add("name", new JsonPrimitive(item.getName()));
             obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
-            obj.add("tradable", new JsonPrimitive(item.getTradable() ? 1 : 0));
             obj.add("blueprint", new JsonPrimitive(item.getBlueprint()));
+            obj.add("tradable", new JsonPrimitive(item.getTradable()));
             obj.add("lootbox", new JsonPrimitive(item.getLootbox()));
             obj.add("decay", new JsonPrimitive(item.getDecay()));
 
@@ -248,9 +358,27 @@ public class Serializer {
 
             return obj;
         }
+
+        @Override
+        public Item deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            String desc = obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").getAsString();
+            boolean tradable = obj.get("tradable").getAsBoolean();
+            boolean lootbox = obj.get("lootbox").getAsBoolean();
+            boolean decay = obj.get("decay").getAsBoolean();
+            JsonArray unlocksArray = obj.get("unlocks").getAsJsonArray();
+
+            List<String> unlocks = new ArrayList<>();
+            for (int i = 0; i < unlocksArray.size(); i++) unlocks.add(unlocksArray.get(i).getAsString());
+
+            return new Item(name, desc, rPath, unlocks.toArray(new String[0]), blueprint, tradable, lootbox, decay);
+        }
     }
 
-    public static class PlaceableSerializer implements JsonSerializer<Placeable> {
+    public static class PlaceableSerializer implements JsonSerializer<Placeable>, JsonDeserializer<Placeable> {
 
         @Override
         public JsonElement serialize(Placeable placeable, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -263,9 +391,21 @@ public class Serializer {
 
             return obj;
         }
+
+        @Override
+        public Placeable deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            String desc = obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").getAsString();
+            boolean tradable = obj.get("tradable").getAsBoolean();
+
+            return new Placeable(name, desc, rPath, blueprint, tradable);
+        }
     }
 
-    public static class RecipeSerializer implements JsonSerializer<Recipe> {
+    public static class RecipeSerializer implements JsonSerializer<Recipe>, JsonDeserializer<Recipe> {
 
         @Override
         public JsonElement serialize(Recipe recipe, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -284,9 +424,26 @@ public class Serializer {
 
             return obj;
         }
+
+        @Override
+        public Recipe deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            JsonObject costsObj = obj.get("costs").getAsJsonObject();
+            JsonObject outputObj = obj.get("output").getAsJsonObject();
+
+            Map<String, Integer> costs = new HashMap<>();
+            Map<String, Integer> output = new HashMap<>();
+
+            costsObj.entrySet().forEach(e -> costs.put(e.getKey(), e.getValue().getAsInt()));
+            outputObj.entrySet().forEach(e -> output.put(e.getKey(), e.getValue().getAsInt()));
+
+            return new Recipe(name, rPath, costs, output);
+        }
     }
 
-    public static class SkinSerializer implements JsonSerializer<Skin> {
+    public static class SkinSerializer implements JsonSerializer<Skin>, JsonDeserializer<Skin> {
 
         @Override
         public JsonElement serialize(Skin skin, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -298,9 +455,20 @@ public class Serializer {
 
             return obj;
         }
+
+        @Override
+        public Skin deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String rPath = obj.get("rel_path").getAsString();
+            String name = obj.get("name").getAsString();
+            String desc = obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").getAsString();
+
+            return new Skin(rPath, name, desc, blueprint);
+        }
     }
 
-    public static class StringsSerializer implements JsonSerializer<Strings> {
+    public static class StringsSerializer implements JsonSerializer<Strings>, JsonDeserializer<Strings> {
 
         @Override
         public JsonElement serialize(Strings s, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -313,6 +481,17 @@ public class Serializer {
             obj.add("strings", strings);
 
             return obj;
+        }
+
+        @Override
+        public Strings deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            String lang = obj.get("lang").getAsString();
+            JsonObject strObj = obj.get("strings").getAsJsonObject();
+            Map<String, String> strings = new HashMap<>();
+            strObj.entrySet().forEach(e -> strings.put(e.getKey(), e.getValue().getAsString()));
+
+            return new Strings(lang, strings);
         }
     }
 }
