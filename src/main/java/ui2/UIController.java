@@ -1,10 +1,15 @@
 package ui2;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import datamodel.DataModel;
 import datamodel.Enums;
 import datamodel.Serializer;
+import datamodel.objects.*;
+import datamodel.objects.Skin;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,10 +21,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,8 +99,8 @@ public class UIController {
         model.createBlueprintPaths(dirPath);
     }
 
-    void loadData(TextArea logger, List<Button> buttonsToDisable, List<Button> buttonsToEnable, String mapDirPath) {
-        Task<Void> task = getLoadTask(logger, mapDirPath);
+    void loadData(TextArea logger, List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath) {
+        Task<Void> task = getLoadTask(logger, entitiesPath, mapDirPath);
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
@@ -109,11 +111,12 @@ public class UIController {
         }).start();
     }
 
-    Task<Void> getLoadTask(TextArea logger, String mapDirPath) {
+    Task<Void> getLoadTask(TextArea logger, String entitiesPath, String mapDirPath) {
         return new Task<Void>() {
             @Override
             protected Void call() {
                 try {
+                    deserialize(entitiesPath, logger);
                     model.createBlueprintMapping(mapDirPath);
                 } catch (IOException e) {
                     print(logger, "Error occurred while loading in blueprint map.");
@@ -179,6 +182,56 @@ public class UIController {
                 List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
                 printList(logger, errorList);
             }
+        }
+    }
+
+    void deserialize(String path, TextArea logger) {
+        if (!new File(path).exists()) return;
+        Serializer s = new Serializer();
+        Gson serializer = s.getSerializer(false);
+        try {
+            JsonElement tree = new JsonParser().parse(new FileReader(path));
+            tree.getAsJsonObject().entrySet().forEach(e -> {
+                String type = e.getKey();
+                e.getValue().getAsJsonObject().entrySet().forEach(v -> {
+                    switch (type) {
+                        case "benches":
+                            model.addSessionBench(serializer.fromJson(v.getValue(), Bench.class));
+                            break;
+                        case "collections":
+                            model.addSessionCollection(serializer.fromJson(v.getValue(), Collection.class));
+                            break;
+                        case "collection_indices":
+                            model.addSessionCollectionIndex(serializer.fromJson(v.getValue(), CollectionIndex.class));
+                            break;
+                        case "gear_styles":
+                            model.addSessionGearStyleType(serializer.fromJson(v.getValue(), GearStyleType.class));
+                            break;
+                        case "items":
+                            model.addSessionItem(serializer.fromJson(v.getValue(), Item.class));
+                            break;
+                        case "placeables":
+                            model.addSessionPlaceable(serializer.fromJson(v.getValue(), Placeable.class));
+                            break;
+                        case "recipes":
+                            model.addSessionRecipe(serializer.fromJson(v.getValue(), Recipe.class));
+                            break;
+                        case "skins":
+                            model.addSessionSkin(serializer.fromJson(v.getValue(), Skin.class));
+                            break;
+                        case "strings":
+                            model.setSessionString(serializer.fromJson(v.getValue(), Strings.class));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("No such type: "  + type);
+                    }
+                });
+            });
+            print(logger, "Entities imported from JSON file.");
+        } catch (IOException | IllegalArgumentException e) {
+            print(logger, "Import failed due to an IOException; stack trace below:");
+            List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+            printList(logger, errorList);
         }
     }
 

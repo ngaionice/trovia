@@ -4,8 +4,6 @@ import datamodel.objects.Collection;
 import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableMap;
 
 import java.io.IOException;
 import java.util.*;
@@ -15,14 +13,14 @@ public class DataModel {
     Parser parser = new Parser();
     Set<String> blueprintPaths = null;
     Map<String, String> blueprintMap = null;
-    ObservableMap<String, Bench> sessionBenches = FXCollections.observableHashMap();
-    ObservableMap<String, Collection> sessionCollections = FXCollections.observableHashMap();
-    ObservableMap<String, CollectionIndex> sessionCollectionIndices = FXCollections.observableHashMap();
-    ObservableMap<String, GearStyleType> sessionGearStyles = FXCollections.observableHashMap();
-    ObservableMap<String, Item> sessionItems = FXCollections.observableHashMap();
-    ObservableMap<String, Placeable> sessionPlaceables = FXCollections.observableHashMap();
-    ObservableMap<String, Recipe> sessionRecipes = FXCollections.observableHashMap();
-    ObservableMap<String, Skin> sessionSkins = FXCollections.observableHashMap();
+    Map<String, Bench> sessionBenches = new HashMap<>();
+    Map<String, Collection> sessionCollections = new HashMap<>();
+    Map<String, CollectionIndex> sessionCollectionIndices = new HashMap<>();
+    Map<String, GearStyleType> sessionGearStyleTypes = new HashMap<>();
+    Map<String, Item> sessionItems = new HashMap<>();
+    Map<String, Placeable> sessionPlaceables = new HashMap<>();
+    Map<String, Recipe> sessionRecipes = new HashMap<>();
+    Map<String, Skin> sessionSkins = new HashMap<>();
     Strings sessionStrings = new Strings("en", new HashMap<>());
     Map<String, Bench> changedBenches = new HashMap<>();
     Map<String, Collection> changedCollections = new HashMap<>();
@@ -111,7 +109,7 @@ public class DataModel {
 
     private void upsertGearStyleType(GearStyleType gearStyleType) {
         String rPath = gearStyleType.getRPath();
-        if (!sessionGearStyles.containsKey(rPath) || !sessionGearStyles.get(rPath).equals(gearStyleType)) {
+        if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(gearStyleType)) {
             changedGearStyles.put(rPath, gearStyleType);
         }
     }
@@ -152,38 +150,25 @@ public class DataModel {
         });
     }
 
-    /**
-     * Compares 2 lists of strings and returns whether they contain the same strings (regardless of order).
-     */
-    private boolean isListEqual(List<String> list1, List<String> list2) {
-        if (list1.size() != list2.size()) {
-            return false;
-        } else {
-            Collections.sort(list1);
-            Collections.sort(list2);
-            return list1.equals(list2);
-        }
-    }
-
     // GETTERS - SESSION DATA
 
-    public ObservableMap<String, Bench> getSessionBenches() {
+    public Map<String, Bench> getSessionBenches() {
         return sessionBenches;
     }
 
-    public ObservableMap<String, Collection> getSessionCollections() {
+    public Map<String, Collection> getSessionCollections() {
         return sessionCollections;
     }
 
-    public ObservableMap<String, Item> getSessionItems() {
+    public Map<String, Item> getSessionItems() {
         return sessionItems;
     }
 
-    public ObservableMap<String, Placeable> getSessionPlaceables() {
+    public Map<String, Placeable> getSessionPlaceables() {
         return sessionPlaceables;
     }
 
-    public ObservableMap<String, Recipe> getSessionRecipes() {
+    public Map<String, Recipe> getSessionRecipes() {
         return sessionRecipes;
     }
 
@@ -191,18 +176,56 @@ public class DataModel {
         return sessionStrings;
     }
 
-    public ObservableMap<String, CollectionIndex> getSessionCollectionIndices() {
+    public Map<String, CollectionIndex> getSessionCollectionIndices() {
         return sessionCollectionIndices;
     }
 
-    public ObservableMap<String, GearStyleType> getSessionGearStyles() {
-        return sessionGearStyles;
+    public Map<String, GearStyleType> getSessionGearStyles() {
+        return sessionGearStyleTypes;
     }
 
-    public ObservableMap<String, Skin> getSessionSkins() {
+    public Map<String, Skin> getSessionSkins() {
         return sessionSkins;
     }
+    
+    // SETTERS - SESSION DATA
+    
+    public void addSessionBench(Bench b) {
+        sessionBenches.put(b.getRPath(), b);
+    }
 
+    public void addSessionCollection(Collection c) {
+        sessionCollections.put(c.getRPath(), c);
+    }
+
+    public void addSessionItem(Item i) {
+        sessionItems.put(i.getRPath(), i);
+    }
+
+    public void addSessionPlaceable(Placeable p) {
+        sessionPlaceables.put(p.getRPath(), p);
+    }
+
+    public void addSessionSkin(Skin s) {
+        sessionSkins.put(s.getRPath(), s);
+    }
+
+    public void addSessionRecipe(Recipe r) {
+        sessionRecipes.put(r.getRPath(), r);
+    }
+
+    public void addSessionCollectionIndex(CollectionIndex c) {
+        sessionCollectionIndices.put(c.getRPath(), c);
+    }
+
+    public void addSessionGearStyleType(GearStyleType g) {
+        sessionGearStyleTypes.put(g.getRPath(), g);
+    }
+
+    public void setSessionString(Strings s) {
+        sessionStrings = s;
+    }
+    
     // GETTERS - CHANGED DATA
 
     public Map<String, Bench> getChangedBenches() {

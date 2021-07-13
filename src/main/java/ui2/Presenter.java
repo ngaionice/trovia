@@ -100,8 +100,9 @@ public class Presenter {
 
         JFXButton startButton = new JFXButton();
 
+        dataLocButton.setOnAction(e -> dataLoc.setText(controller.loadFile(stage, "JSON files", "*.json", "Select the JSON file containing the entities.")));
         bppLocButton.setOnAction(e -> bppLoc.setText(controller.loadDirectory(stage, "Select the directory containing the mapping files. This directory normally has a relative path of /prefabs/blocks.")));
-        startButton.setOnAction(e -> controller.loadData(logger, Arrays.asList(dataLocButton, startButton), actionButtons, bppLoc.getText()));
+        startButton.setOnAction(e -> controller.loadData(logger, Arrays.asList(dataLocButton, bppLocButton, startButton), actionButtons, dataLoc.getText() ,bppLoc.getText()));
 
         // element styling
         {
@@ -110,7 +111,6 @@ public class Presenter {
             dataLoc.getStyleClass().add("text-field-dir");
             dataLoc.setDisable(true);
             bppLoc.setDisable(true);
-            dataLocButton.setDisable(true);
             startButton.getStyleClass().addAll("floating-button", "button-start");
             Arrays.asList(dataLocButton, bppLocButton).forEach(b -> {
                 b.setId("button-set-dir");
