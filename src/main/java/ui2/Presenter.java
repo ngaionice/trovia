@@ -6,12 +6,10 @@ import datamodel.Enums;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
@@ -50,7 +48,7 @@ public class Presenter {
         JFXButton logsButton = new JFXButton("Logs");
         JFXButton quitButton = new JFXButton("Quit");
 
-        List<Button> actionButtons = Arrays.asList(parseButton, exportButton, logsButton);
+        List<Button> actionButtons = Arrays.asList(parseButton, reviewButton, exportButton, logsButton);
         List<JFXButton> buttonList = Arrays.asList(parseButton, reviewButton, exportButton, logsButton, quitButton);
         String[] buttonIds = new String[]{"button-parse", "button-review", "button-export", "button-logs", "button-quit"};
 
@@ -75,9 +73,8 @@ public class Presenter {
         logsButton.setOnAction(e -> setLogsScreen());
         quitButton.setOnAction(e -> runQuitSequence());
 
-        reviewButton.setDisable(true);
         controller.disableActionButtons(actionButtons);
-        root.setCenter(getScreenBorderPane("Load", getLoadScreenContent(actionButtons), true));
+        root.setCenter(getScreenBorderPaneWithLogger("Load", getLoadScreenContent(actionButtons)));
         return navBox;
     }
 
@@ -150,7 +147,7 @@ public class Presenter {
     }
 
     private void setParseScreen() {
-        root.setCenter(getScreenBorderPane("Parse", getParseScreenContent(), true));
+        root.setCenter(getScreenBorderPaneWithLogger("Parse", getParseScreenContent()));
     }
 
     private Pane getParseScreenContent() {
@@ -228,11 +225,57 @@ public class Presenter {
     }
 
     private void setReviewScreen() {
+        root.setCenter(getScreenBorderPaneWithLogger("Review", getReviewScreenContent()));
+    }
 
+    private Pane getReviewScreenContent() {
+        StackPane center = new StackPane();
+        AnchorPane anchor = new AnchorPane();
+        GridPane grid = new GridPane();
+        String[] types = new String[]{"Benches", "Collections", "Collection indices", "Gear styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
+
+        JFXComboBox<String> categories = new JFXComboBox<>();
+        categories.setPromptText("Current category");
+
+        Separator sepVert = new Separator();
+        sepVert.setOrientation(Orientation.VERTICAL);
+
+        Text overview = new Text("Change counts:");
+        List<Text> countTexts = new ArrayList<>();
+        for (int i = 0; i < 9; i++) countTexts.add(new Text());
+
+        VBox counts = new VBox();
+        counts.setSpacing(4);
+        counts.getChildren().addAll(countTexts);
+
+        ListView<String> changedView = new ListView<>();
+
+
+        overview.getStyleClass().add("text-normal");
+        countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
+
+        controller.rScreenBindCountTexts(countTexts, types);
+        controller.rScreenSetupDataViews(types, categories, changedView);
+
+        grid.add(categories, 0, 0);
+        grid.add(overview, 0, 1);
+        grid.add(counts, 0, 2);
+        grid.add(sepVert, 1, 0, 1, 3);
+        grid.add(changedView, 2, 0, 1, 3);
+
+        center.getChildren().add(anchor);
+        anchor.getChildren().add(grid);
+
+        center.getStyleClass().add("pane-background");
+        anchor.getStyleClass().add("card-backing");
+        grid.getStyleClass().add("grid-content");
+
+        JFXDepthManager.setDepth(anchor, 1);
+        return center;
     }
 
     private void setExportScreen() {
-        root.setCenter(getScreenBorderPane("Export", getExportScreenContent(), true));
+        root.setCenter(getScreenBorderPaneWithLogger("Export", getExportScreenContent()));
     }
 
     private Pane getExportScreenContent() {
@@ -319,7 +362,7 @@ public class Presenter {
         return center;
     }
 
-    private BorderPane getScreenBorderPane(String headerString, Node content, boolean showLogger) {
+    private BorderPane getScreenBorderPaneWithLogger(String headerString, Node content) {
         BorderPane screenRoot = new BorderPane();
         HBox header = new HBox();
         Text headerText = new Text(headerString);
@@ -330,7 +373,7 @@ public class Presenter {
 
         screenRoot.setTop(header);
         screenRoot.setCenter(content);
-        if (showLogger) screenRoot.setBottom(getLogsRegion());
+        screenRoot.setBottom(getLogsRegion());
         return screenRoot;
     }
 

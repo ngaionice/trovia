@@ -3,23 +3,33 @@ package ui2;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import datamodel.DataModel;
 import datamodel.Enums;
 import datamodel.Serializer;
-import datamodel.objects.*;
+import datamodel.objects.Collection;
 import datamodel.objects.Skin;
+import datamodel.objects.*;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -29,22 +39,58 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UIController {
 
-    DataModel model = new DataModel();
-    //    String benchFilter = "_interactive";
-    String filter = "";
-    //    String stringFilter = "prefabs_";
-    List<String> selectedPaths = new ArrayList<>();
-    List<String> failedPaths = new ArrayList<>();
+    DataModel model;
+    String filter;
+    List<String> selectedPathsToParse;
+    List<String> failedParsePaths;
+    List<String> selectedPathsToMerge;
+    Deque<MergeMemento> mementos;
 
+//    String benchFilter = "_interactive";
+//    String stringFilter = "prefabs_";
 //    StringProperty logs = new SimpleStringProperty("");
+
+    ObservableList<IntegerProperty> changedObjectSizes;
+
+    public UIController() {
+        model = new DataModel();
+        filter = "";
+        selectedPathsToParse = new ArrayList<>();
+        failedParsePaths = new ArrayList<>();
+        mementos = new ArrayDeque<>();
+        selectedPathsToMerge = new ArrayList<>();
+
+        changedObjectSizes = FXCollections.observableArrayList(p -> new Observable[]{p});
+
+        IntegerProperty bSize = new SimpleIntegerProperty(0);
+        IntegerProperty cSize = new SimpleIntegerProperty(0);
+        IntegerProperty ciSize = new SimpleIntegerProperty(0);
+        IntegerProperty gstSize = new SimpleIntegerProperty(0);
+        IntegerProperty iSize = new SimpleIntegerProperty(0);
+        IntegerProperty pSize = new SimpleIntegerProperty(0);
+        IntegerProperty rSize = new SimpleIntegerProperty(0);
+        IntegerProperty skSize = new SimpleIntegerProperty(0);
+        IntegerProperty strSize = new SimpleIntegerProperty(0);
+
+        changedObjectSizes.addAll(bSize, cSize, ciSize, gstSize, iSize, pSize, rSize, skSize, strSize);
+
+        model.getChangedBenches().addListener((MapChangeListener.Change<? extends String, ? extends Bench> c) -> bSize.setValue(model.getChangedBenches().size()));
+        model.getChangedCollections().addListener((MapChangeListener.Change<? extends String, ? extends Collection> c) -> cSize.setValue(model.getChangedCollections().size()));
+        model.getChangedCollectionIndices().addListener((MapChangeListener.Change<? extends String, ? extends CollectionIndex> c) -> ciSize.setValue(model.getChangedCollectionIndices().size()));
+        model.getChangedGearStyleTypes().addListener((MapChangeListener.Change<? extends String, ? extends GearStyleType> c) -> gstSize.setValue(model.getChangedGearStyleTypes().size()));
+        model.getChangedItems().addListener((MapChangeListener.Change<? extends String, ? extends Item> c) -> iSize.setValue(model.getChangedItems().size()));
+        model.getChangedPlaceables().addListener((MapChangeListener.Change<? extends String, ? extends Placeable> c) -> pSize.setValue(model.getChangedPlaceables().size()));
+        model.getChangedRecipes().addListener((MapChangeListener.Change<? extends String, ? extends Recipe> c) -> rSize.setValue(model.getChangedRecipes().size()));
+        model.getChangedSkins().addListener((MapChangeListener.Change<? extends String, ? extends Skin> c) -> skSize.setValue(model.getChangedSkins().size()));
+        model.getChangedStrings().addListener((MapChangeListener.Change<? extends String, ? extends String> c) -> strSize.setValue(model.getChangedStrings().size()));
+    }
+
+    // LOADING DATA
 
     /**
      * Can return null.
@@ -163,7 +209,7 @@ public class UIController {
                 if (selection[2] != 0)
                     s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
                 if (selection[3] != 0)
-                    s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyles() : model.getSessionGearStyles());
+                    s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyleTypes() : model.getSessionGearStyleTypes());
                 if (selection[4] != 0)
                     s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
                 if (selection[5] != 0)
@@ -196,34 +242,34 @@ public class UIController {
                 e.getValue().getAsJsonObject().entrySet().forEach(v -> {
                     switch (type) {
                         case "benches":
-                            model.addSessionBench(serializer.fromJson(v.getValue(), Bench.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Bench.class), Enums.ObjectType.BENCH);
                             break;
                         case "collections":
-                            model.addSessionCollection(serializer.fromJson(v.getValue(), Collection.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Collection.class), Enums.ObjectType.COLLECTION);
                             break;
                         case "collection_indices":
-                            model.addSessionCollectionIndex(serializer.fromJson(v.getValue(), CollectionIndex.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), CollectionIndex.class), Enums.ObjectType.COLL_INDEX);
                             break;
                         case "gear_styles":
-                            model.addSessionGearStyleType(serializer.fromJson(v.getValue(), GearStyleType.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), GearStyleType.class), Enums.ObjectType.GEAR_STYLE);
                             break;
                         case "items":
-                            model.addSessionItem(serializer.fromJson(v.getValue(), Item.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Item.class), Enums.ObjectType.ITEM);
                             break;
                         case "placeables":
-                            model.addSessionPlaceable(serializer.fromJson(v.getValue(), Placeable.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Placeable.class), Enums.ObjectType.PLACEABLE);
                             break;
                         case "recipes":
-                            model.addSessionRecipe(serializer.fromJson(v.getValue(), Recipe.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Recipe.class), Enums.ObjectType.RECIPE);
                             break;
                         case "skins":
-                            model.addSessionSkin(serializer.fromJson(v.getValue(), Skin.class));
+                            model.addArticleToSession(serializer.fromJson(v.getValue(), Skin.class), Enums.ObjectType.SKIN);
                             break;
                         case "strings":
                             model.setSessionString(serializer.fromJson(v.getValue(), Strings.class));
                             break;
                         default:
-                            throw new IllegalArgumentException("No such type: "  + type);
+                            throw new IllegalArgumentException("No such type: " + type);
                     }
                 });
             });
@@ -236,6 +282,7 @@ public class UIController {
     }
 
     // PARSING
+
     CheckBoxTreeItem<String> getParseTree(String path, Enums.ObjectType type) {
         File dir = new File(path);   // since presenter checks that the input path is a directory, we can assume that here
         List<String> paths = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
@@ -265,9 +312,9 @@ public class UIController {
                     // add items to selectedPaths to be parsed later
                     item.selectedProperty().addListener(event -> {
                         if (item.isSelected()) {
-                            selectedPaths.add(item.getValue());
+                            selectedPathsToParse.add(item.getValue());
                         } else {
-                            selectedPaths.remove(item.getValue());
+                            selectedPathsToParse.remove(item.getValue());
                         }
 
                     });
@@ -323,9 +370,9 @@ public class UIController {
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
-                selectedPaths.clear();
-                if (!failedPaths.isEmpty()) {
-                    failedPaths.clear();
+                selectedPathsToParse.clear();
+                if (!failedParsePaths.isEmpty()) {
+                    failedParsePaths.clear();
                 }
             });
         }).start();
@@ -336,20 +383,20 @@ public class UIController {
             @Override
             protected Void call() {
                 // clear out old failed paths
-                failedPaths.clear();
+                failedParsePaths.clear();
 
                 // begin parsing
                 StringBuilder loggerText = new StringBuilder();
-                int selectedPathsLength = selectedPaths.size();
+                int selectedPathsLength = selectedPathsToParse.size();
                 print(logger, "Parsing " + selectedPathsLength + " objects using parser for " + type.toString().toLowerCase() + ".");
                 for (int i = 0; i < selectedPathsLength; i++) {
                     updateMessage("Parsing " + type + ": " + (i + 1) + "/" + selectedPathsLength);
                     updateProgress(i, selectedPathsLength);
                     try {
-                        model.createObject(selectedPaths.get(i), type);
+                        model.createObject(selectedPathsToParse.get(i), type);
                     } catch (IOException | ParseException e) {
                         loggerText.append("[").append(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))).append("] ").append("Parse failure: ").append(e.getMessage()).append("\n");
-                        failedPaths.add(selectedPaths.get(i));
+                        failedParsePaths.add(selectedPathsToParse.get(i));
                     }
                 }
                 loggerText.append("[").append(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))).append("] ").append("Parsing completed.").append("\n");
@@ -367,10 +414,11 @@ public class UIController {
     }
 
     void clearSelectedPaths() {
-        selectedPaths.clear();
+        selectedPathsToParse.clear();
     }
 
     // LOGGING
+
     void print(TextArea logger, String message) {
         logger.appendText("[" + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")) + "] " + message + "\n");
     }
@@ -383,5 +431,131 @@ public class UIController {
         StringBuilder builder = new StringBuilder();
         messages.forEach(m -> builder.append("[").append(LocalTime.now()).append("] ").append(m).append("\n"));
         logger.appendText(builder.toString());
+    }
+
+    // REVIEWING
+
+    void rScreenBindCountTexts(List<Text> texts, String[] types) {
+        if (texts.size() != changedObjectSizes.size() || texts.size() != types.length) {
+            if (texts.size() > 0) texts.get(0).setText("Invalid length in Text list.");
+            return;
+        }
+        for (int i = 0; i < texts.size(); i++) {
+            int currIndex = i;
+            texts.get(i).textProperty().bind(Bindings.createStringBinding(() -> types[currIndex] + ": " + changedObjectSizes.get(currIndex).get(), changedObjectSizes.get(i)));
+        }
+    }
+
+    void rScreenSetupDataViews(String[] types, ComboBox<String> cb, ListView<String> lv) {
+        selectedPathsToMerge.clear();
+        cb.setItems(FXCollections.observableArrayList(types));
+        cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            selectedPathsToMerge.clear();
+            lv.setItems(getChangedObjectsPaths(newValue));
+        });
+
+        lv.setCellFactory(CheckBoxListCell.forListView(item -> {
+            BooleanProperty observable = new SimpleBooleanProperty();
+            observable.addListener((obs, wasSelected, isNowSelected) -> {
+                if (isNowSelected) selectedPathsToMerge.add(item);
+                else selectedPathsToMerge.remove(item);
+            });
+            return observable;
+        }));
+    }
+
+    ObservableList<String> getChangedObjectsPaths(String type) {
+        switch (Enums.ObjectType.getType(type)) {
+            case BENCH:
+                return FXCollections.observableArrayList(model.getChangedBenches().keySet());
+            case COLLECTION:
+                return FXCollections.observableArrayList(model.getChangedCollections().keySet());
+            case COLL_INDEX:
+                return FXCollections.observableArrayList(model.getChangedCollectionIndices().keySet());
+            case GEAR_STYLE:
+                return FXCollections.observableArrayList(model.getChangedGearStyleTypes().keySet());
+            case ITEM:
+                return FXCollections.observableArrayList(model.getChangedItems().keySet());
+            case PLACEABLE:
+                return FXCollections.observableArrayList(model.getChangedPlaceables().keySet());
+            case RECIPE:
+                return FXCollections.observableArrayList(model.getChangedRecipes().keySet());
+            case SKIN:
+                return FXCollections.observableArrayList(model.getChangedSkins().keySet());
+            case STRING:
+                return FXCollections.observableArrayList(model.getChangedStrings().keySet());
+            default:
+                throw new IllegalArgumentException("No such type: " + type);
+        }
+    }
+
+    /**
+     * order: (bSize, cSize, ciSize, gstSize, iSize, pSize, rSize, skSize, strSize)
+     */
+    ObservableList<IntegerProperty> getChangedObjectSizes() {
+        return changedObjectSizes;
+    }
+
+    void merge(List<String> pathsToMerge, Enums.ObjectType type) {
+        List<Article> oldArticles = new ArrayList<>();
+        pathsToMerge.forEach(p -> {
+            oldArticles.add(getObject(p, type, false));
+            model.addArticleToSession(getObject(p, type, true), type);
+            model.addMergedPath(p, type);
+        });
+        mementos.push(new MergeMemento(oldArticles, type));
+    }
+
+    void undoMerge() {
+        MergeMemento prevAction = mementos.pop();
+        Enums.ObjectType type = prevAction.getMementoType();
+        List<Article> mementosToUndo = prevAction.getState();
+        mementosToUndo.forEach(a -> model.addArticleToSession(a, type));
+    }
+
+    private Article getObject(String path, Enums.ObjectType type, boolean getChanged) {
+        switch (type) {
+            case BENCH:
+                return getChanged ? model.getSessionBenches().get(path) : model.getSessionBenches().get(path);
+            case COLLECTION:
+                return getChanged ? model.getSessionCollections().get(path) : model.getSessionCollections().get(path);
+            case COLL_INDEX:
+                return getChanged ? model.getSessionCollectionIndices().get(path) : model.getSessionCollectionIndices().get(path);
+            case GEAR_STYLE:
+                return getChanged ? model.getSessionGearStyleTypes().get(path) : model.getSessionGearStyleTypes().get(path);
+            case ITEM:
+                return getChanged ? model.getSessionItems().get(path) : model.getSessionItems().get(path);
+            case PLACEABLE:
+                return getChanged ? model.getSessionPlaceables().get(path) : model.getSessionPlaceables().get(path);
+            case RECIPE:
+                return getChanged ? model.getSessionRecipes().get(path) : model.getSessionRecipes().get(path);
+            case SKIN:
+                return getChanged ? model.getSessionSkins().get(path) : model.getSessionSkins().get(path);
+            case STRING:
+                Map<String, String> pairs = new HashMap<>();
+                if (getChanged) pairs.put(path, model.getChangedStrings().get(path));
+                else pairs.put(path, model.getSessionStrings().getString(path));
+                return new LangFile(pairs);
+            default:
+                throw new IllegalArgumentException("No such type: " + type);
+        }
+    }
+
+    private static class MergeMemento {
+        private final Enums.ObjectType type;
+        private final List<Article> state;
+
+        public MergeMemento(List<Article> object, Enums.ObjectType type) {
+            this.type = type;
+            this.state = object;
+        }
+
+        private Enums.ObjectType getMementoType() {
+            return type;
+        }
+
+        private List<Article> getState() {
+            return state;
+        }
     }
 }

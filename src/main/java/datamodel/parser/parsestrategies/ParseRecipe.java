@@ -37,13 +37,13 @@ public class ParseRecipe implements ParseStrategy{
         try {
             initialTrim = splitString.substring(12, splitString.length() - 102);
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new ParseException("Recipe formatting problematic at: " + absPath + "; string too short for trimming.");
+            throw new ParseException("Recipe formatting problematic at: " + rPath + "; string too short for trimming.");
         }
 
         Pattern pDivider = Pattern.compile(divider);
         Matcher mDivider = pDivider.matcher(initialTrim);
         if (!mDivider.find()) {
-            throw new ParseException("Recipe formatting problematic at: " + absPath + "; cannot split into input/output.");
+            throw new ParseException("Recipe formatting problematic at: " + rPath + "; cannot split into input/output.");
         }
         int splitIndex = mDivider.start();
         String inputs = initialTrim.substring(0, splitIndex);
@@ -80,7 +80,7 @@ public class ParseRecipe implements ParseStrategy{
         while (mOutputSplitter.find()) {
             outputEndIndex = mOutputSplitter.end();
             mOutputExtract = pOutputExtract.matcher(outputs.substring(outputStartIndex, outputEndIndex));
-            if (!mOutputExtract.find()) throw new ParseException("Output parsing errored at: " + absPath + "; no matching sequence found.");
+            if (!mOutputExtract.find()) throw new ParseException("Output parsing errored at: " + rPath + "; no matching sequence found.");
             char type = mOutputExtract.group(4).charAt(13);
             content = mOutputExtract.group(2);
 
@@ -88,26 +88,26 @@ public class ParseRecipe implements ParseStrategy{
                 case '0':
                     Matcher mOutputObject = pOutputObject.matcher(content);
                     if (!mOutputObject.find()) {
-                        throw new ParseException("Output parsing errored at: " + absPath + "; attempted to parse as object but no matching sequence found.");
+                        throw new ParseException("Output parsing errored at: " + rPath + "; attempted to parse as object but no matching sequence found.");
                     }
                     output.put(Parser.hexToAscii(mOutputObject.group(2)), Parser.recipeH2D(mOutputObject.group(5), absPath));
                     break;
                 case '2':
                     Matcher mOutputClass = pOutputClass.matcher(content);
                     if (!mOutputClass.find()) {
-                        throw new ParseException("Output parsing errored at: " + absPath + "; attempted to parse as class unlock but no matching sequence found.");
+                        throw new ParseException("Output parsing errored at: " + rPath + "; attempted to parse as class unlock but no matching sequence found.");
                     }
                     output.put(Parser.hexToAscii(mOutputClass.group(3)), 0);
                     break;
                 case '4':
                     Matcher mOutputCollection = pOutputCollection.matcher(content);
                     if (!mOutputCollection.find()) {
-                        throw new ParseException("Output parsing errored at: " + absPath + "; attempted to parse as collection unlock but no matching sequence found.");
+                        throw new ParseException("Output parsing errored at: " + rPath + "; attempted to parse as collection unlock but no matching sequence found.");
                     }
                     output.put(Parser.hexToAscii(mOutputCollection.group(3)), 0);
                     break;
                 default:
-                    throw new ParseException("Unexpected output type " + type + " at: " + absPath);
+                    throw new ParseException("Unexpected output type " + type + " at: " + rPath);
             }
             outputStartIndex = outputEndIndex;
         }

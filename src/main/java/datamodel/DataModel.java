@@ -4,6 +4,8 @@ import datamodel.objects.Collection;
 import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 
 import java.io.IOException;
 import java.util.*;
@@ -11,8 +13,10 @@ import java.util.*;
 public class DataModel {
 
     Parser parser = new Parser();
+
     Set<String> blueprintPaths = null;
     Map<String, String> blueprintMap = null;
+
     Map<String, Bench> sessionBenches = new HashMap<>();
     Map<String, Collection> sessionCollections = new HashMap<>();
     Map<String, CollectionIndex> sessionCollectionIndices = new HashMap<>();
@@ -22,15 +26,26 @@ public class DataModel {
     Map<String, Recipe> sessionRecipes = new HashMap<>();
     Map<String, Skin> sessionSkins = new HashMap<>();
     Strings sessionStrings = new Strings("en", new HashMap<>());
-    Map<String, Bench> changedBenches = new HashMap<>();
-    Map<String, Collection> changedCollections = new HashMap<>();
-    Map<String, CollectionIndex> changedCollectionIndices = new HashMap<>();
-    Map<String, GearStyleType> changedGearStyles = new HashMap<>();
-    Map<String, Item> changedItems = new HashMap<>();
-    Map<String, Placeable> changedPlaceables = new HashMap<>();
-    Map<String, Recipe> changedRecipes = new HashMap<>();
-    Map<String, Skin> changedSkins = new HashMap<>();
-    Map<String, String> changedStrings = new HashMap<>();
+
+    ObservableMap<String, Bench> changedBenches = FXCollections.observableHashMap();
+    ObservableMap<String, Collection> changedCollections = FXCollections.observableHashMap();
+    ObservableMap<String, CollectionIndex> changedCollectionIndices = FXCollections.observableHashMap();
+    ObservableMap<String, GearStyleType> changedGearStyleTypes = FXCollections.observableHashMap();
+    ObservableMap<String, Item> changedItems = FXCollections.observableHashMap();
+    ObservableMap<String, Placeable> changedPlaceables = FXCollections.observableHashMap();
+    ObservableMap<String, Recipe> changedRecipes = FXCollections.observableHashMap();
+    ObservableMap<String, Skin> changedSkins = FXCollections.observableHashMap();
+    ObservableMap<String, String> changedStrings = FXCollections.observableHashMap();
+
+    List<String> mergedBenchPaths = new ArrayList<>();
+    List<String> mergedCollectionPaths = new ArrayList<>();
+    List<String> mergedCollectionIndexPaths = new ArrayList<>();
+    List<String> mergedGearStyleTypePaths = new ArrayList<>();
+    List<String> mergedItemPaths = new ArrayList<>();
+    List<String> mergedPlaceablePaths = new ArrayList<>();
+    List<String> mergedRecipePaths = new ArrayList<>();
+    List<String> mergedSkinPaths = new ArrayList<>();
+    List<String> mergedStringIds = new ArrayList<>();
 
     public void createBlueprintPaths(String dirPath) {
         blueprintPaths = parser.getAllBlueprintPathsFromDir(dirPath, dirPath);
@@ -50,104 +65,16 @@ public class DataModel {
     // CREATING OBJECTS
 
     public void createObject(String absPath, Enums.ObjectType type) throws IOException, ParseException {
-        switch (type) {
-            case BENCH:
-            case PROFESSION:
-                upsertBench((Bench) parser.createObject(absPath, type));
-                break;
-            case COLLECTION:
-                upsertCollection((Collection) parser.createObject(absPath, type));
-                break;
-            case COLL_INDEX:
-                upsertCollectionIndex((CollectionIndex) parser.createObject(absPath, type));
-                break;
-            case GEAR_STYLE:
-                upsertGearStyleType((GearStyleType) parser.createObject(absPath, type));
-                break;
-            case ITEM:
-                upsertItem((Item) parser.createObject(absPath, type));
-                break;
-            case PLACEABLE:
-                Placeable p = (Placeable) parser.createObject(absPath, type);
-                if (p.getBlueprint() == null && blueprintMap != null && blueprintMap.containsKey(p.getRPath())) {
-                    p.setBlueprint(blueprintMap.get(p.getRPath()));
-                }
-                upsertPlaceable(p);
-                break;
-            case RECIPE:
-                upsertRecipe((Recipe) parser.createObject(absPath, type));
-                break;
-            case SKIN:
-                upsertSkin((Skin) parser.createObject(absPath, type));
-                break;
-            case STRING:
-                upsertStrings((LangFile) parser.createObject(absPath, type));
-                break;
-        }
-    }
-
-    private void upsertBench(Bench bench) {
-        String rPath = bench.getRPath();
-        if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(bench)){
-            changedBenches.put(rPath, bench);
-        }
-    }
-
-    private void upsertCollection(Collection collection) {
-        String rPath = collection.getRPath();
-        if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(collection)) {
-            changedCollections.put(rPath, collection);
-        }
-    }
-
-    private void upsertCollectionIndex(CollectionIndex index) {
-        String rPath = index.getRPath();
-        if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(index)) {
-            changedCollectionIndices.put(rPath, index);
-        }
-    }
-
-    private void upsertGearStyleType(GearStyleType gearStyleType) {
-        String rPath = gearStyleType.getRPath();
-        if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(gearStyleType)) {
-            changedGearStyles.put(rPath, gearStyleType);
-        }
-    }
-
-    private void upsertItem(Item item) {
-        String rPath = item.getRPath();
-        if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(item)) {
-            changedItems.put(item.getRPath(), item);
-        }
-    }
-
-    private void upsertPlaceable(Placeable placeable) {
-        String rPath = placeable.getRPath();
-        if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(placeable)) {
-            changedPlaceables.put(rPath, placeable);
-        }
-    }
-
-    private void upsertRecipe(Recipe recipe) {
-        String rPath = recipe.getRPath();
-        if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(recipe)) {
-            changedRecipes.put(rPath, recipe);
-        }
-    }
-
-    private void upsertSkin(Skin skin) {
-        String rPath = skin.getRPath();
-        if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(skin)) {
-            changedSkins.put(rPath, skin);
-        }
-    }
-
-    private void upsertStrings(LangFile newStrings) {
-        newStrings.getStrings().forEach((k, v) -> {
-            if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v)) {
-                changedStrings.put(k, v);
+        Enums.ObjectType inputType = type == Enums.ObjectType.PROFESSION ? Enums.ObjectType.BENCH : type;
+        if (type == Enums.ObjectType.PLACEABLE) {
+            Placeable p = (Placeable) parser.createObject(absPath, type);
+            if (p.getBlueprint() == null && blueprintMap != null && blueprintMap.containsKey(p.getRPath())) {
+                p.setBlueprint(blueprintMap.get(p.getRPath()));
             }
-        });
+            addArticleToChanges(p, type);
+        } else {
+            addArticleToChanges(parser.createObject(absPath, type), inputType);
+        }
     }
 
     // GETTERS - SESSION DATA
@@ -180,7 +107,7 @@ public class DataModel {
         return sessionCollectionIndices;
     }
 
-    public Map<String, GearStyleType> getSessionGearStyles() {
+    public Map<String, GearStyleType> getSessionGearStyleTypes() {
         return sessionGearStyleTypes;
     }
 
@@ -188,38 +115,77 @@ public class DataModel {
         return sessionSkins;
     }
     
-    // SETTERS - SESSION DATA
-    
-    public void addSessionBench(Bench b) {
-        sessionBenches.put(b.getRPath(), b);
+    // SETTERS
+
+    public void addArticleToSession(Article a, Enums.ObjectType type) {
+        switch (type) {
+            case BENCH:
+                sessionBenches.put(a.getRPath(), (Bench) a);
+                break;
+            case COLLECTION:
+                sessionCollections.put(a.getRPath(), (Collection) a);
+                break;
+            case COLL_INDEX:
+                sessionCollectionIndices.put(a.getRPath(), (CollectionIndex) a);
+                break;
+            case GEAR_STYLE:
+                sessionGearStyleTypes.put(a.getRPath(), (GearStyleType) a);
+                break;
+            case ITEM:
+                sessionItems.put(a.getRPath(), (Item) a);
+                break;
+            case PLACEABLE:
+                sessionPlaceables.put(a.getRPath(), (Placeable) a);
+                break;
+            case RECIPE:
+                sessionRecipes.put(a.getRPath(), (Recipe) a);
+                break;
+            case SKIN:
+                sessionSkins.put(a.getRPath(), (Skin) a);
+                break;
+            case STRING:
+                LangFile l = (LangFile) a;
+                l.getStrings().forEach((k, v) -> sessionStrings.upsertString(k, v));
+                break;
+            default:
+                throw new IllegalArgumentException("No such type: " + type);
+        }
     }
 
-    public void addSessionCollection(Collection c) {
-        sessionCollections.put(c.getRPath(), c);
-    }
-
-    public void addSessionItem(Item i) {
-        sessionItems.put(i.getRPath(), i);
-    }
-
-    public void addSessionPlaceable(Placeable p) {
-        sessionPlaceables.put(p.getRPath(), p);
-    }
-
-    public void addSessionSkin(Skin s) {
-        sessionSkins.put(s.getRPath(), s);
-    }
-
-    public void addSessionRecipe(Recipe r) {
-        sessionRecipes.put(r.getRPath(), r);
-    }
-
-    public void addSessionCollectionIndex(CollectionIndex c) {
-        sessionCollectionIndices.put(c.getRPath(), c);
-    }
-
-    public void addSessionGearStyleType(GearStyleType g) {
-        sessionGearStyleTypes.put(g.getRPath(), g);
+    private void addArticleToChanges(Article a, Enums.ObjectType type) {
+        String rPath = type != Enums.ObjectType.STRING ? a.getRPath() : null;
+        switch (type) {
+            case BENCH:
+                if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(a)) changedBenches.put(rPath, (Bench) a);
+                break;
+            case COLLECTION:
+                if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(a)) changedCollections.put(rPath, (Collection) a);
+                break;
+            case COLL_INDEX:
+                if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(a)) changedCollectionIndices.put(rPath, (CollectionIndex) a);
+                break;
+            case GEAR_STYLE:
+                if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(a)) changedGearStyleTypes.put(rPath, (GearStyleType) a);
+                break;
+            case ITEM:
+                if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(a)) changedItems.put(a.getRPath(), (Item) a);
+                break;
+            case PLACEABLE:
+                if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(a)) changedPlaceables.put(rPath, (Placeable) a);
+                break;
+            case RECIPE:
+                if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(a)) changedRecipes.put(rPath, (Recipe) a);
+                break;
+            case SKIN:
+                if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(a)) changedSkins.put(rPath, (Skin) a);
+                break;
+            case STRING:
+                LangFile l = (LangFile) a;
+                l.getStrings().forEach((k, v) -> {
+                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v)) changedStrings.put(k, v);
+                });
+                break;
+        }
     }
 
     public void setSessionString(Strings s) {
@@ -228,39 +194,102 @@ public class DataModel {
     
     // GETTERS - CHANGED DATA
 
-    public Map<String, Bench> getChangedBenches() {
+    public ObservableMap<String, Bench> getChangedBenches() {
         return changedBenches;
     }
 
-    public Map<String, Collection> getChangedCollections() {
+    public ObservableMap<String, Collection> getChangedCollections() {
         return changedCollections;
     }
 
-    public Map<String, Item> getChangedItems() {
+    public ObservableMap<String, Item> getChangedItems() {
         return changedItems;
     }
 
-    public Map<String, Placeable> getChangedPlaceables() {
+    public ObservableMap<String, Placeable> getChangedPlaceables() {
         return changedPlaceables;
     }
 
-    public Map<String, Recipe> getChangedRecipes() {
+    public ObservableMap<String, Recipe> getChangedRecipes() {
         return changedRecipes;
     }
 
-    public Map<String, String> getChangedStrings() {
+    public ObservableMap<String, String> getChangedStrings() {
         return changedStrings;
     }
 
-    public Map<String, CollectionIndex> getChangedCollectionIndices() {
+    public ObservableMap<String, CollectionIndex> getChangedCollectionIndices() {
         return changedCollectionIndices;
     }
 
-    public Map<String, GearStyleType> getChangedGearStyles() {
-        return changedGearStyles;
+    public ObservableMap<String, GearStyleType> getChangedGearStyleTypes() {
+        return changedGearStyleTypes;
     }
 
-    public Map<String, Skin> getChangedSkins() {
+    public ObservableMap<String, Skin> getChangedSkins() {
         return changedSkins;
+    }
+
+    // GETTERS - MERGED DATA
+
+    public List<String> getMergedPaths(Enums.ObjectType type) {
+        switch (type) {
+            case BENCH:
+                return mergedBenchPaths;
+            case COLLECTION:
+                return mergedCollectionPaths;
+            case COLL_INDEX:
+                return mergedCollectionIndexPaths;
+            case GEAR_STYLE:
+                return mergedGearStyleTypePaths;
+            case ITEM:
+                return mergedItemPaths;
+            case PLACEABLE:
+                return mergedPlaceablePaths;
+            case RECIPE:
+                return mergedRecipePaths;
+            case SKIN:
+                return mergedSkinPaths;
+            case STRING:
+                return mergedStringIds;
+            default:
+                throw new IllegalArgumentException("No such type: " + type);
+        }
+    }
+
+    // SETTERS - MERGED DATA
+
+    public void addMergedPath(String path, Enums.ObjectType type) {
+        switch (type) {
+            case BENCH:
+                this.mergedBenchPaths.add(path);
+                break;
+            case COLLECTION:
+                this.mergedCollectionPaths.add(path);
+                break;
+            case COLL_INDEX:
+                this.mergedCollectionIndexPaths.add(path);
+                break;
+            case GEAR_STYLE:
+                this.mergedGearStyleTypePaths.add(path);
+                break;
+            case ITEM:
+                this.mergedItemPaths.add(path);
+                break;
+            case PLACEABLE:
+                this.mergedPlaceablePaths.add(path);
+                break;
+            case RECIPE:
+                this.mergedRecipePaths.add(path);
+                break;
+            case SKIN:
+                this.mergedSkinPaths.add(path);
+                break;
+            case STRING:
+                this.mergedStringIds.add(path);
+                break;
+            default:
+                throw new IllegalArgumentException("No such type: " + type);
+        }
     }
 }

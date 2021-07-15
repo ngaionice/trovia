@@ -17,6 +17,12 @@ public class LangFile implements Article {
         this.strings = strings;
     }
 
+    public LangFile(Map<String, String> strings) {
+        this.name = null;
+        this.rPath = null;
+        this.strings = strings;
+    }
+
     public String getName() {
         return name;
     }

@@ -38,7 +38,7 @@ public class ParseLangFile implements ParseStrategy{
                 if (o.strings.contains(currString)) {
                     em.reset(o.replacements.get(o.strings.indexOf(currString))).find();
                 } else {
-                    throw new ParseException(absPath + " has an unrecognized invalid string pattern: " + currString);
+                    throw new ParseException(rPath + " has an unrecognized invalid string pattern: " + currString);
                 }
             }
             key = Parser.hexToAscii(em.group(2));
