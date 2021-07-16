@@ -2,79 +2,41 @@
     -fx-background-insets: 1;
 }
 
-.tree-view .tree-cell {
-    -fx-background-color: -fx-material;
-    -fx-text-fill: -fx-content-light;
-}
-
-.tree-view:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 1;
-    -fx-padding: 1;
-}
-
-.tree-view .check-box:selected > .box {
-    -fx-background-color: -fx-accent-dark;
-}
-
-.tree-view .check-box:default > .box {
-    -fx-background-color: -fx-content-light;
-}
-
-.tree-view .check-box:selected > .box > .mark,
-.tree-view .check-box:indeterminate > .box > .mark {
-    -fx-background-color: -fx-content-light;
-}
-
-.tree-view .tree-cell {
-    -fx-background-color: -fx-material-dark;
-    -fx-text-fill: -fx-content;
-}
-
-.table-view,
 .list-view {
     -fx-background-color: -fx-material-dark;
     -fx-base: -fx-material-dark;
     -fx-background-insets: 1;
 }
 
-.table-view:focused,
-.list-view:focused {
-    -fx-background-color: -fx-material-dark;
-    -fx-base: -fx-material-dark;
-    -fx-background-insets: 1;
-}
-
-.table-view .column-header,
-.table-view .column-header .filler,
-.table-view .column-header-background .filler {
-    -fx-background-color: -fx-material-dark;
-}
-
-.table-view .table-cell,
+.tree-view .tree-cell,
 .list-view .list-cell {
-    -fx-font-family: Roboto Regular;
-    -fx-text-fill: -fx-content-light;
-}
-
-.table-view .table-row-cell,
-.list-view .list-cell {
+    -fx-text-fill: -fx-content;
     -fx-background-color: -fx-material-dark;
-    -fx-border-width: 0 0 0 0;
+    -fx-border-width: 0;
 }
 
-.table-view:focused,
+.tree-view:focused,
 .list-view:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 1;
     -fx-padding: 1;
 }
 
-.combo-box .list-cell {
+.tree-view .check-box:selected > .box,
+.list-view .check-box:selected > .box {
+    -fx-background-color: -fx-accent;
+}
+
+.tree-view .check-box > .box,
+.list-view .check-box > .box{
     -fx-background-color: -fx-material;
-    -fx-text-fill: -fx-content-dark;
-    -fx-padding: 3 0 2 7;
-    -fx-cell-size: 32px;
+}
+
+.tree-view .check-box:selected > .box > .mark,
+.tree-view .check-box:indeterminate > .box > .mark {
+    -fx-background-color: -fx-content;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -fx-content;
 }
 
 .combo-box-popup .list-view {
@@ -84,24 +46,15 @@
 }
 
 .combo-box-popup .list-view .list-cell {
-    -fx-padding: 4 0 4 5;
-    /* No alternate highlighting */
     -fx-background-color: -fx-material;
 }
 
-.sidebar-list {
-    -fx-pref-height: 1000px;
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-accent;
 }
 
-.sidebar-list-short {
-    -fx-pref-height: 80px;
-}
-
-.sidebar-list-medium {
-    -fx-pref-height: 160px;
-}
-
-.sidebar-list-long {
-    -fx-pref-height: 240px;
+#logger .list-cell {
+    -fx-font-family: "Roboto Mono";
+    -fx-padding: 0px;
 }
 

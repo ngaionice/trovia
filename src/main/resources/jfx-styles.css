@@ -1,5 +1,4 @@
-.jfx-text-field,
-.jfx-text-area {
+.jfx-text-field{
     -jfx-focus-color: -fx-accent;
     -jfx-unfocus-color: -fx-unfocus;
     -jfx-label-float: true;
@@ -19,17 +18,15 @@
 
 .jfx-progress-bar > .track,
 .jfx-progress-bar > .bar {
-    -fx-background-radius: 0;
-    -fx-background-insets: 0.8 0 0.8 0;
+    -fx-background-radius: 4;
 }
 
 .jfx-progress-bar > .bar {
     -fx-background-color: -fx-accent;
-    -fx-pref-height: 2px;
 }
 
 .jfx-progress-bar > .track {
-    -fx-background-color: #424242;
+    -fx-background-color: -fx-material-light;
 }
 
 .jfx-check-box {

@@ -18,7 +18,6 @@
     -fx-accent-light: #FFC947;
     -fx-accent-dark: #C25E00;
     -fx-font-family: "Roboto";
-    /* to be factored out maybe */
     -fx-material: #212121;
     -fx-material-dark: #1B1B1B;
     -fx-material-light: #424242;
@@ -28,6 +27,8 @@
     -fx-background-color: -fx-material-dark;
     -fx-unfocus: -fx-material-light;
     -fx-subtle: -fx-material-light;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .label {
@@ -38,50 +39,18 @@
     -fx-font-size: 13;
 }
 
-.text-col,
-.text-col .label {
-    -fx-alignment: center-left;
+.scroll-bar {
+    -fx-background-color: -fx-material-dark;
 }
 
-.checkbox-col,
-.checkbox-col .label {
-    -fx-alignment: center;
+.scroll-bar .thumb{
+    -fx-background-color: -fx-content-dark;
 }
 
-.j-checkbox {
-    -jfx-checked-color: #C77800;
-    -jfx-unchecked-color: #EEEEEE;
-}
-
-.check-box:selected > .box {
-    -fx-background-color: #C77800;
-}
-
-.check-box:default > .box {
-    -fx-background-color: #EEEEEE;
-}
-
-.check-box:selected > .box > .mark,
-.check-box:indeterminate > .box > .mark {
-    -fx-background-color: #EEEEEE;
-}
-
-.table-row-cell {
-    -fx-table-cell-border-color: transparent;
-}
-
-.text-area {
-    -fx-background-insets: 0;
-    -fx-text-box-border: transparent;
-}
-
-.text-area:focused {
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
-
-.combo-box .list-cell:filled:hover {
-    -fx-background-color: #FF9800;
+.scroll-bar .increment-button .increment-arrow,
+.scroll-bar .decrement-button .decrement-arrow{
+    -fx-background-color: -fx-content-dark;
+    -fx-border-color: transparent;
 }
 
 .nav-button {
@@ -213,35 +182,18 @@
     -fx-icon-color: -fx-content-light;
 }
 
-.wide-button {
-    -fx-pref-width: 120px;
-    -fx-pref-height: 30px;
-    -fx-padding: 0 0 0 12;
-    -fx-background-color: -fx-material-dark;
-    -fx-alignment: center-left;
-    -fx-font-size: 13px;
-    -fx-text-fill: -fx-content;
-    -fx-graphic-text-gap: 12;
-    -jfx-button-type: FLAT;
-}
-
-.wide-button .ikonli-font-icon {
-    -fx-icon-size: 13px;
-    -fx-icon-color: -fx-content;
-}
-
 .color-subtle {
     -fx-background-color: -fx-subtle;
     -fx-text-fill: -fx-content;
 }
 
-.text-normal {
+.text-normal,
+.text-bold {
     -fx-fill: -fx-content;
 }
 
-.text-area {
-    -fx-text-fill: -fx-content-light;
-    -fx-background-color: -fx-material-dark;
+.text-bold {
+    -fx-font-family: "Roboto Medium";
 }
 
 #text-progress {
@@ -250,11 +202,9 @@
 }
 
 #logger {
-    -fx-font-family: "Roboto Mono";
     -fx-background-radius: 3px;
     -fx-padding: 24px;
-    -jfx-focus-color: -fx-material-dark;
-    -jfx-unfocus-color: -fx-material-dark;
+    -fx-pref-height: 240px;
 }
 
 .sidebar-text {
