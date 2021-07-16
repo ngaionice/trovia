@@ -42,6 +42,10 @@ public class Strings {
         this.strings.put(id, content);
     }
 
+    public void removeString(String id) {
+        this.strings.remove(id);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Strings)) return false;

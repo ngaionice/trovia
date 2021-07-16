@@ -71,9 +71,9 @@ public class DataModel {
             if (p.getBlueprint() == null && blueprintMap != null && blueprintMap.containsKey(p.getRPath())) {
                 p.setBlueprint(blueprintMap.get(p.getRPath()));
             }
-            addArticleToChanges(p, type);
+            addArticleToChanges(p, type, false);
         } else {
-            addArticleToChanges(parser.createObject(absPath, type), inputType);
+            addArticleToChanges(parser.createObject(absPath, type), inputType, false);
         }
     }
 
@@ -152,37 +152,101 @@ public class DataModel {
         }
     }
 
-    private void addArticleToChanges(Article a, Enums.ObjectType type) {
+    public void removeArticleFromSession(String identifier, Enums.ObjectType type){
+        switch (type) {
+            case BENCH:
+                sessionBenches.remove(identifier);
+                break;
+            case COLLECTION:
+                sessionCollections.remove(identifier);
+                break;
+            case COLL_INDEX:
+                sessionCollectionIndices.remove(identifier);
+                break;
+            case GEAR_STYLE:
+                sessionGearStyleTypes.remove(identifier);
+                break;
+            case ITEM:
+                sessionItems.remove(identifier);
+                break;
+            case PLACEABLE:
+                sessionPlaceables.remove(identifier);
+                break;
+            case RECIPE:
+                sessionRecipes.remove(identifier);
+                break;
+            case SKIN:
+                sessionSkins.remove(identifier);
+                break;
+            case STRING:
+                sessionStrings.removeString(identifier);
+                break;
+        }
+    }
+
+    public void removeArticleFromChanges(String identifier, Enums.ObjectType type) {
+        switch (type) {
+            case BENCH:
+                changedBenches.remove(identifier);
+                break;
+            case COLLECTION:
+                changedCollections.remove(identifier);
+                break;
+            case COLL_INDEX:
+                changedCollectionIndices.remove(identifier);
+                break;
+            case GEAR_STYLE:
+                changedGearStyleTypes.remove(identifier);
+                break;
+            case ITEM:
+                changedItems.remove(identifier);
+                break;
+            case PLACEABLE:
+                changedPlaceables.remove(identifier);
+                break;
+            case RECIPE:
+                changedRecipes.remove(identifier);
+                break;
+            case SKIN:
+                changedSkins.remove(identifier);
+                break;
+            case STRING:
+                changedStrings.remove(identifier);
+                break;
+        }
+    }
+
+    public void addArticleToChanges(Article a, Enums.ObjectType type, boolean forceAdd) {
         String rPath = type != Enums.ObjectType.STRING ? a.getRPath() : null;
         switch (type) {
             case BENCH:
-                if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(a)) changedBenches.put(rPath, (Bench) a);
+                if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(a) || forceAdd) changedBenches.put(rPath, (Bench) a);
                 break;
             case COLLECTION:
-                if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(a)) changedCollections.put(rPath, (Collection) a);
+                if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(a) || forceAdd) changedCollections.put(rPath, (Collection) a);
                 break;
             case COLL_INDEX:
-                if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(a)) changedCollectionIndices.put(rPath, (CollectionIndex) a);
+                if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(a) || forceAdd) changedCollectionIndices.put(rPath, (CollectionIndex) a);
                 break;
             case GEAR_STYLE:
-                if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(a)) changedGearStyleTypes.put(rPath, (GearStyleType) a);
+                if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(a) || forceAdd) changedGearStyleTypes.put(rPath, (GearStyleType) a);
                 break;
             case ITEM:
-                if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(a)) changedItems.put(a.getRPath(), (Item) a);
+                if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(a) || forceAdd) changedItems.put(a.getRPath(), (Item) a);
                 break;
             case PLACEABLE:
-                if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(a)) changedPlaceables.put(rPath, (Placeable) a);
+                if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(a) || forceAdd) changedPlaceables.put(rPath, (Placeable) a);
                 break;
             case RECIPE:
-                if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(a)) changedRecipes.put(rPath, (Recipe) a);
+                if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(a) || forceAdd) changedRecipes.put(rPath, (Recipe) a);
                 break;
             case SKIN:
-                if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(a)) changedSkins.put(rPath, (Skin) a);
+                if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(a) || forceAdd) changedSkins.put(rPath, (Skin) a);
                 break;
             case STRING:
                 LangFile l = (LangFile) a;
                 l.getStrings().forEach((k, v) -> {
-                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v)) changedStrings.put(k, v);
+                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v) || forceAdd) changedStrings.put(k, v);
                 });
                 break;
         }

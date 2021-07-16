@@ -29,3 +29,23 @@
 #button-update .ikonli-font-icon {
     -fx-icon-code: "mdi-update";
 }
+
+#button-merge .ikonli-font-icon {
+    -fx-icon-code: "mdi-call-merge";
+}
+
+#button-undo .ikonli-font-icon {
+    -fx-icon-code: "mdi-undo-variant";
+}
+
+#button-options .ikonli-font-icon {
+    -fx-icon-code: "mdi-dots-vertical";
+}
+
+#button-start .ikonli-font-icon {
+    -fx-icon-code: "mdi-play";
+}
+
+#button-check-all .ikonli-font-icon {
+    -fx-icon-code: "mdi-check-all";
+}

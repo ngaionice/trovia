@@ -18,7 +18,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
@@ -29,7 +28,6 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +46,7 @@ public class UIController {
     String filter;
     List<String> selectedPathsToParse;
     List<String> failedParsePaths;
-    List<String> selectedPathsToMerge;
+    Set<String> selectedPathsToMerge;
     Deque<MergeMemento> mementos;
 
 //    String benchFilter = "_interactive";
@@ -63,7 +61,7 @@ public class UIController {
         selectedPathsToParse = new ArrayList<>();
         failedParsePaths = new ArrayList<>();
         mementos = new ArrayDeque<>();
-        selectedPathsToMerge = new ArrayList<>();
+        selectedPathsToMerge = new HashSet<>();
 
         changedObjectSizes = FXCollections.observableArrayList(p -> new Observable[]{p});
 
@@ -451,7 +449,7 @@ public class UIController {
         cb.setItems(FXCollections.observableArrayList(types));
         cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             selectedPathsToMerge.clear();
-            lv.setItems(getChangedObjectsPaths(newValue));
+            lv.setItems(getChangedObjectPaths(newValue).sorted());
         });
 
         lv.setCellFactory(CheckBoxListCell.forListView(item -> {
@@ -464,7 +462,45 @@ public class UIController {
         }));
     }
 
-    ObservableList<String> getChangedObjectsPaths(String type) {
+    void rScreenSetupActionButtons(Button mergeButton, Button undoButton, ComboBox<String> typeText, ListView<String> lv, TextArea logger) {
+        mergeButton.setOnAction(e -> {
+            if (typeText.getValue() == null || typeText.getValue().equals("") || selectedPathsToMerge.size() == 0) return;
+            Enums.ObjectType type = Enums.ObjectType.getType(typeText.getValue());
+            int pathCount = selectedPathsToMerge.size();
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() {
+                    merge(selectedPathsToMerge, type);
+                    return null;
+                }
+            };
+            new Thread(() -> {
+                task.run();
+                selectedPathsToMerge.clear();
+                Platform.runLater(() -> lv.setItems(getChangedObjectPaths(typeText.getValue()).sorted()));
+                print(logger, "Merged " + pathCount + " object" + (pathCount != 1 ? "s" : "") + " to session data.");
+            }).start();
+        });
+
+        undoButton.setOnAction(e -> {
+            if (mementos.isEmpty()) return;
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() {
+                    undoMerge();
+                    return null;
+                }
+            };
+            new Thread(() -> {
+                task.run();
+                selectedPathsToMerge.clear();
+                Platform.runLater(() -> lv.setItems(getChangedObjectPaths(typeText.getValue()).sorted()));
+                print(logger, "Reverted previous merge.");
+            }).start();
+        });
+    }
+
+    ObservableList<String> getChangedObjectPaths(String type) {
         switch (Enums.ObjectType.getType(type)) {
             case BENCH:
                 return FXCollections.observableArrayList(model.getChangedBenches().keySet());
@@ -489,48 +525,56 @@ public class UIController {
         }
     }
 
-    /**
-     * order: (bSize, cSize, ciSize, gstSize, iSize, pSize, rSize, skSize, strSize)
-     */
-    ObservableList<IntegerProperty> getChangedObjectSizes() {
-        return changedObjectSizes;
-    }
-
-    void merge(List<String> pathsToMerge, Enums.ObjectType type) {
+    void merge(Set<String> pathsToMerge, Enums.ObjectType type) {
         List<Article> oldArticles = new ArrayList<>();
+        List<String> newPaths = new ArrayList<>();
         pathsToMerge.forEach(p -> {
-            oldArticles.add(getObject(p, type, false));
+            Article sessionObj = getObject(p, type, false);
+            if (sessionObj != null) {
+                oldArticles.add(sessionObj);
+            } else {
+                newPaths.add(p);
+            }
             model.addArticleToSession(getObject(p, type, true), type);
+            model.removeArticleFromChanges(p, type);
             model.addMergedPath(p, type);
         });
-        mementos.push(new MergeMemento(oldArticles, type));
+        mementos.push(new MergeMemento(oldArticles, newPaths, type));
     }
 
     void undoMerge() {
         MergeMemento prevAction = mementos.pop();
         Enums.ObjectType type = prevAction.getMementoType();
         List<Article> mementosToUndo = prevAction.getState();
-        mementosToUndo.forEach(a -> model.addArticleToSession(a, type));
+        List<String> pathsToRemove = prevAction.getNewPaths();
+        mementosToUndo.forEach(a -> {
+            model.addArticleToChanges(getObject(a.getRPath(), type, false), type, true);
+            model.addArticleToSession(a, type);
+        });
+        pathsToRemove.forEach(p -> {
+            model.addArticleToChanges(getObject(p, type, false), type, true);
+            model.removeArticleFromSession(p, type);
+        });
     }
 
     private Article getObject(String path, Enums.ObjectType type, boolean getChanged) {
         switch (type) {
             case BENCH:
-                return getChanged ? model.getSessionBenches().get(path) : model.getSessionBenches().get(path);
+                return getChanged ? model.getChangedBenches().get(path) : model.getSessionBenches().get(path);
             case COLLECTION:
-                return getChanged ? model.getSessionCollections().get(path) : model.getSessionCollections().get(path);
+                return getChanged ? model.getChangedCollections().get(path) : model.getSessionCollections().get(path);
             case COLL_INDEX:
-                return getChanged ? model.getSessionCollectionIndices().get(path) : model.getSessionCollectionIndices().get(path);
+                return getChanged ? model.getChangedCollectionIndices().get(path) : model.getSessionCollectionIndices().get(path);
             case GEAR_STYLE:
-                return getChanged ? model.getSessionGearStyleTypes().get(path) : model.getSessionGearStyleTypes().get(path);
+                return getChanged ? model.getChangedGearStyleTypes().get(path) : model.getSessionGearStyleTypes().get(path);
             case ITEM:
-                return getChanged ? model.getSessionItems().get(path) : model.getSessionItems().get(path);
+                return getChanged ? model.getChangedItems().get(path) : model.getSessionItems().get(path);
             case PLACEABLE:
-                return getChanged ? model.getSessionPlaceables().get(path) : model.getSessionPlaceables().get(path);
+                return getChanged ? model.getChangedPlaceables().get(path) : model.getSessionPlaceables().get(path);
             case RECIPE:
-                return getChanged ? model.getSessionRecipes().get(path) : model.getSessionRecipes().get(path);
+                return getChanged ? model.getChangedRecipes().get(path) : model.getSessionRecipes().get(path);
             case SKIN:
-                return getChanged ? model.getSessionSkins().get(path) : model.getSessionSkins().get(path);
+                return getChanged ? model.getChangedSkins().get(path) : model.getSessionSkins().get(path);
             case STRING:
                 Map<String, String> pairs = new HashMap<>();
                 if (getChanged) pairs.put(path, model.getChangedStrings().get(path));
@@ -544,10 +588,12 @@ public class UIController {
     private static class MergeMemento {
         private final Enums.ObjectType type;
         private final List<Article> state;
+        private final List<String> newPaths = new ArrayList<>(); // paths that did not exist before the change
 
-        public MergeMemento(List<Article> object, Enums.ObjectType type) {
+        private MergeMemento(List<Article> object, List<String> newPaths, Enums.ObjectType type) {
             this.type = type;
             this.state = object;
+            this.newPaths.addAll(newPaths);
         }
 
         private Enums.ObjectType getMementoType() {
@@ -556,6 +602,10 @@ public class UIController {
 
         private List<Article> getState() {
             return state;
+        }
+
+        private List<String> getNewPaths() {
+            return newPaths;
         }
     }
 }

@@ -20,6 +20,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Presenter {
@@ -108,7 +109,8 @@ public class Presenter {
             dataLoc.getStyleClass().add("text-field-dir");
             dataLoc.setDisable(true);
             bppLoc.setDisable(true);
-            startButton.getStyleClass().addAll("floating-button", "button-start");
+            startButton.getStyleClass().add("floating-button");
+            startButton.setId("button-start");
             Arrays.asList(dataLocButton, bppLocButton).forEach(b -> {
                 b.setId("button-set-dir");
                 b.getStyleClass().addAll("button-inline", "color-subtle");
@@ -191,7 +193,8 @@ public class Presenter {
         tree.getStyleClass().add("dir-view");
         dirButton.getStyleClass().addAll("button-inline", "color-subtle");
         filterButton.getStyleClass().addAll("button-inline", "color-subtle");
-        startButton.getStyleClass().addAll("floating-button", "button-start");
+        startButton.getStyleClass().add("floating-button");
+        startButton.setId("button-start");
         dirButton.setId("button-set-dir");
         filterButton.setId("button-update");
         progressText.getStyleClass().add("text-normal");
@@ -235,12 +238,12 @@ public class Presenter {
         String[] types = new String[]{"Benches", "Collections", "Collection indices", "Gear styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
 
         JFXComboBox<String> categories = new JFXComboBox<>();
-        categories.setPromptText("Current category");
+        categories.setPromptText("Category");
 
         Separator sepVert = new Separator();
         sepVert.setOrientation(Orientation.VERTICAL);
 
-        Text overview = new Text("Change counts:");
+        Text overview = new Text("# of changes:");
         List<Text> countTexts = new ArrayList<>();
         for (int i = 0; i < 9; i++) countTexts.add(new Text());
 
@@ -248,27 +251,43 @@ public class Presenter {
         counts.setSpacing(4);
         counts.getChildren().addAll(countTexts);
 
-        ListView<String> changedView = new ListView<>();
+        ListView<String> lv = new ListView<>();
 
+        JFXNodesList buttons = new JFXNodesList();
+        JFXButton actions = getJFXButton(Collections.singletonList("floating-button"), "button-options");
+        JFXButton mergeButton = getJFXButton(Collections.singletonList("floating-sub-button"), "button-merge");
+        JFXButton undoButton = getJFXButton(Collections.singletonList("floating-sub-button"), "button-undo");
+
+        buttons.addAnimatedNode(actions);
+        buttons.addAnimatedNode(mergeButton);
+        buttons.addAnimatedNode(undoButton);
 
         overview.getStyleClass().add("text-normal");
         countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
+        buttons.setRotate(180);
+        buttons.setSpacing(12);
 
         controller.rScreenBindCountTexts(countTexts, types);
-        controller.rScreenSetupDataViews(types, categories, changedView);
+        controller.rScreenSetupDataViews(types, categories, lv);
+        controller.rScreenSetupActionButtons(mergeButton, undoButton, categories, lv, logger);
 
         grid.add(categories, 0, 0);
         grid.add(overview, 0, 1);
         grid.add(counts, 0, 2);
         grid.add(sepVert, 1, 0, 1, 3);
-        grid.add(changedView, 2, 0, 1, 3);
+        grid.add(lv, 2, 0, 1, 3);
 
         center.getChildren().add(anchor);
         anchor.getChildren().add(grid);
+        anchor.getChildren().add(buttons);
 
         center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
+        lv.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
+
+        setMaxAnchor(grid);
+        setFabAnchor(buttons);
 
         JFXDepthManager.setDepth(anchor, 1);
         return center;
@@ -447,5 +466,13 @@ public class Presenter {
     private void setFabAnchor(Node node) {
         AnchorPane.setRightAnchor(node, 36.0);
         AnchorPane.setBottomAnchor(node, 36.0);
+    }
+
+    JFXButton getJFXButton(List<String> cssClasses, String cssId) {
+        JFXButton button = new JFXButton();
+        button.setGraphic(new FontIcon());
+        button.setId(cssId);
+        cssClasses.forEach(c -> button.getStyleClass().add(c));
+        return button;
     }
 }

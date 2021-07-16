@@ -3,7 +3,6 @@
     src: url("fonts/RobotoRegular.ttf");
 }
 
-
 @font-face {
     font-family: "Roboto Medium";
     src: url("fonts/RobotoMedium.ttf");
@@ -16,6 +15,7 @@
 
 .root {
     -fx-accent: #FF9800;
+    -fx-accent-light: #FFC947;
     -fx-accent-dark: #C25E00;
     -fx-font-family: "Roboto";
     /* to be factored out maybe */
@@ -78,23 +78,6 @@
 .text-area:focused {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
-}
-
-.animated-option-button {
-    -fx-background-color: #FF9800;
-    -fx-background-radius: 50px;
-    -fx-pref-height: 50px;
-    -fx-pref-width: 50px;
-    -fx-min-width: -fx-pref-width;
-    -fx-max-width: -fx-pref-width;
-    -fx-min-height: -fx-pref-height;
-    -fx-max-height: -fx-pref-height;
-    -jfx-button-type: RAISED;
-
-}
-
-.animated-option-button .jfx-rippler {
-    -jfx-rippler-fill: rgb(113, 118, 114);
 }
 
 .combo-box .list-cell:filled:hover {
@@ -199,7 +182,8 @@
     -fx-background-radius: 3px;
 }
 
-.floating-button {
+.floating-button,
+.floating-sub-button {
     -fx-background-radius: 50px;
     -fx-background-color: -fx-accent;
     -fx-pref-height: 50px;
@@ -211,13 +195,39 @@
     -jfx-button-type: RAISED;
 }
 
+.floating-button {
+    -fx-background-color: -fx-accent;
+}
+
+.floating-sub-button {
+    -fx-background-color: -fx-accent-light;
+}
+
 .floating-button .ikonli-font-icon {
     -fx-icon-size: 20px;
     -fx-icon-color: -fx-content;
 }
 
-.button-start .ikonli-font-icon {
-    -fx-icon-code: "mdi-play";
+.floating-sub-button .ikonli-font-icon {
+    -fx-icon-size: 20px;
+    -fx-icon-color: -fx-content-light;
+}
+
+.wide-button {
+    -fx-pref-width: 120px;
+    -fx-pref-height: 30px;
+    -fx-padding: 0 0 0 12;
+    -fx-background-color: -fx-material-dark;
+    -fx-alignment: center-left;
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-content;
+    -fx-graphic-text-gap: 12;
+    -jfx-button-type: FLAT;
+}
+
+.wide-button .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -fx-content;
 }
 
 .color-subtle {
