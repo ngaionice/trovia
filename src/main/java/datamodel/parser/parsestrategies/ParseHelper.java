@@ -1,11 +1,11 @@
 package datamodel.parser.parsestrategies;
 
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
 import datamodel.parser.Markers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ParseHelper {
 
@@ -32,7 +32,7 @@ public class ParseHelper {
             while (true) {
                 if (matcher.find()) {
                     int index = matcher.start();
-                    if (!rawRecipes.startsWith("5F", index-3)) { // ignore recipes that unlock recipes; if it matches 5F, the underscore, then it's not valid
+                    if (!rawRecipes.startsWith("5F", index - 3)) { // ignore recipes that unlock recipes; if it matches 5F, the underscore, then it's not valid
                         indices.add(index);
                     }
                 } else {
@@ -42,8 +42,8 @@ public class ParseHelper {
 
             // extract the recipes
             for (int i = 0; i < indices.size(); i++) {
-                if (i+1 < indices.size()) {
-                    recipes.add(rawRecipes.substring(indices.get(i), indices.get(i+1)));
+                if (i + 1 < indices.size()) {
+                    recipes.add(rawRecipes.substring(indices.get(i), indices.get(i + 1)));
                 } else {
                     recipes.add(rawRecipes.substring(indices.get(i))); // last recipe
                 }
@@ -52,11 +52,11 @@ public class ParseHelper {
             // clean up the recipes
             for (int i = 1; i < recipes.size(); i++) {
                 String processing = recipes.get(i);
-                if (processing.length()-6 > 0) {
-                    processing = processing.substring(0, processing.length()-6); // removing the guaranteed 2 characters that are useless
+                if (processing.length() - 6 > 0) {
+                    processing = processing.substring(0, processing.length() - 6); // removing the guaranteed 2 characters that are useless
                     int lastIndex = 0;
                     for (int j = 0; j < processing.length(); j += 3) {
-                        if (processing.substring(j, j+2).matches(m.alphabetRecipe)) {
+                        if (processing.substring(j, j + 2).matches(m.alphabetRecipe)) {
                             lastIndex = j + 3;
                         } else {
                             break;
@@ -64,7 +64,7 @@ public class ParseHelper {
                     }
                     recipes.set(i, processing.substring(0, lastIndex));
                 } else {
-                    throw new ParseException("Recipe clean-up failed at "+path+".");
+                    throw new ParseException("Recipe clean-up failed at " + path + ".");
                 }
             }
 

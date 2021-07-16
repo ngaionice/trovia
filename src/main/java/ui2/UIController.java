@@ -50,12 +50,10 @@ public class UIController {
     Set<String> selectedPathsToMerge;
     Deque<MergeMemento> mementos;
     ObservableList<String> logs;
-
-//    String benchFilter = "_interactive";
-//    String stringFilter = "prefabs_";
-
     ObservableList<IntegerProperty> changedObjectSizes;
 
+    //    String benchFilter = "_interactive";
+//    String stringFilter = "prefabs_";
     public UIController() {
         model = new DataModel();
         filter = "";
@@ -143,10 +141,6 @@ public class UIController {
         buttons.forEach(item -> item.setDisable(true));
     }
 
-    void loadBlueprints(String dirPath) {
-        model.createBlueprintPaths(dirPath);
-    }
-
     void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath) {
         Task<Void> task = getLoadTask(entitiesPath, mapDirPath);
         new Thread(() -> {
@@ -223,9 +217,9 @@ public class UIController {
                     s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
                 writer.endObject();
                 writer.close();
-                print( "Data exported to " + path);
+                print("Data exported to " + path);
             } catch (IOException e) {
-                print( "Export failed due to an IOException; stack trace below:");
+                print("Export failed due to an IOException; stack trace below:");
                 List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
                 printList(errorList);
             }
@@ -483,7 +477,8 @@ public class UIController {
 
     void rScreenSetupActionButtons(Button mergeButton, Button undoButton, ComboBox<String> typeText, ListView<String> lv) {
         mergeButton.setOnAction(e -> {
-            if (typeText.getValue() == null || typeText.getValue().equals("") || selectedPathsToMerge.size() == 0) return;
+            if (typeText.getValue() == null || typeText.getValue().equals("") || selectedPathsToMerge.size() == 0)
+                return;
             Enums.ObjectType type = Enums.ObjectType.getType(typeText.getValue());
             int pathCount = selectedPathsToMerge.size();
             Task<Void> task = new Task<Void>() {
@@ -505,7 +500,7 @@ public class UIController {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() {
-                    undoMerge();
+                    unmerge();
                     return null;
                 }
             };
@@ -560,7 +555,7 @@ public class UIController {
         mementos.push(new MergeMemento(oldArticles, newPaths, type));
     }
 
-    void undoMerge() {
+    void unmerge() {
         MergeMemento prevAction = mementos.pop();
         Enums.ObjectType type = prevAction.getMementoType();
         List<Article> mementosToUndo = prevAction.getState();

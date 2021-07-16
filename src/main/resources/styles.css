@@ -203,12 +203,18 @@
 
 #logger {
     -fx-background-radius: 3px;
-    -fx-padding: 24px;
+    -fx-padding: 32 48 32 48;
     -fx-pref-height: 240px;
 }
 
-.sidebar-text {
-    -fx-pref-width: 360px;
+#review-count-box {
+    -fx-spacing: 4px;
+    -fx-min-width: 160px;
+}
+
+.node-list {
+    -fx-rotate: 180;
+    -fx-spacing: 12px;
 }
 
 

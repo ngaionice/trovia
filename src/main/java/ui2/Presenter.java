@@ -111,10 +111,6 @@ public class Presenter {
             center.getStyleClass().add("pane-background");
             anchor.getStyleClass().add("card-backing");
             grid.getStyleClass().add("grid-content");
-
-            dataLocButton.setGraphic(new FontIcon());
-            bppLocButton.setGraphic(new FontIcon());
-            startButton.setGraphic(new FontIcon());
         }
 
         // placing items into grid
@@ -186,9 +182,6 @@ public class Presenter {
         progressText.getStyleClass().add("text-normal");
         progressText.setId("text-progress");
 
-        dirButton.setGraphic(new FontIcon());
-        filterButton.setGraphic(new FontIcon());
-        startButton.setGraphic(new FontIcon());
         tree.setCellFactory(CheckBoxTreeCell.forTreeView());
         tree.prefWidthProperty().bind(center.widthProperty());
         tree.prefHeightProperty().bind(center.heightProperty().multiply(0.68));
@@ -229,12 +222,11 @@ public class Presenter {
         Separator sepVert = new Separator();
         sepVert.setOrientation(Orientation.VERTICAL);
 
-        Text overview = new Text("# of changes:");
+        Text overview = new Text("Unmerged changes:");
         List<Text> countTexts = new ArrayList<>();
         for (int i = 0; i < 9; i++) countTexts.add(new Text());
 
         VBox counts = new VBox();
-        counts.setSpacing(4);
         counts.getChildren().addAll(countTexts);
 
         ListView<String> lv = new ListView<>();
@@ -248,15 +240,6 @@ public class Presenter {
         buttons.addAnimatedNode(mergeButton);
         buttons.addAnimatedNode(undoButton);
 
-        overview.getStyleClass().add("text-bold");
-        countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
-        buttons.setRotate(180);
-        buttons.setSpacing(12);
-
-        controller.rScreenBindCountTexts(countTexts, types);
-        controller.rScreenSetupDataViews(types, categories, lv);
-        controller.rScreenSetupActionButtons(mergeButton, undoButton, categories, lv);
-
         grid.add(categories, 0, 0);
         grid.add(overview, 0, 1);
         grid.add(counts, 0, 2);
@@ -267,6 +250,14 @@ public class Presenter {
         anchor.getChildren().add(grid);
         anchor.getChildren().add(buttons);
 
+        controller.rScreenBindCountTexts(countTexts, types);
+        controller.rScreenSetupDataViews(types, categories, lv);
+        controller.rScreenSetupActionButtons(mergeButton, undoButton, categories, lv);
+
+        overview.getStyleClass().add("text-bold");
+        countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
+        counts.setId("review-count-box");
+        buttons.getStyleClass().add("node-list");
         center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
@@ -337,9 +328,6 @@ public class Presenter {
         grid.getStyleClass().add("grid-content");
         directory.getStyleClass().add("text-field-dir");
 
-        dirButton.setGraphic(new FontIcon());
-        startButton.setGraphic(new FontIcon());
-
         center.getChildren().add(anchor);
         anchor.getChildren().add(grid);
         anchor.getChildren().add(startButton);
@@ -400,8 +388,6 @@ public class Presenter {
         headerText.getStyleClass().add("header-text");
         stack.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
-
-        dumpButton.setGraphic(new FontIcon());
 
         setMaxAnchor(logger);
         setFabAnchor(dumpButton);

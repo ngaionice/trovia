@@ -133,21 +133,6 @@ public class Parser {
         }
     }
 
-    public Set<String> getAllBlueprintPathsFromDir(String baseDirPath, String currDirPath) {
-        Set<String> set = new HashSet<>();
-        File dir = new File(currDirPath);
-        File[] files = Objects.requireNonNull(dir.listFiles());
-        for (File file : files) {
-            if (file.isDirectory()) {
-                Set<String> subDirSet = getAllBlueprintPathsFromDir(baseDirPath, file.getAbsolutePath());
-                set.addAll(subDirSet);
-            } else {
-                set.add(file.getAbsolutePath());
-            }
-        }
-        return set;
-    }
-
     public Map<String, String> getObjectBlueprintMappingFromDir(String dirPath) throws IOException {
         Map<String, String> map = new HashMap<>();
 

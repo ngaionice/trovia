@@ -13,8 +13,6 @@ import java.util.*;
 public class DataModel {
 
     Parser parser = new Parser();
-
-    Set<String> blueprintPaths = null;
     Map<String, String> blueprintMap = null;
 
     Map<String, Bench> sessionBenches = new HashMap<>();
@@ -46,17 +44,6 @@ public class DataModel {
     List<String> mergedRecipePaths = new ArrayList<>();
     List<String> mergedSkinPaths = new ArrayList<>();
     List<String> mergedStringIds = new ArrayList<>();
-
-    public void createBlueprintPaths(String dirPath) {
-        blueprintPaths = parser.getAllBlueprintPathsFromDir(dirPath, dirPath);
-    }
-
-    public Set<String> getBlueprintPaths() {
-        if (blueprintPaths == null) {
-            blueprintPaths = new HashSet<>();
-        }
-        return blueprintPaths;
-    }
 
     public void createBlueprintMapping(String dirPath) throws IOException {
         blueprintMap = parser.getObjectBlueprintMappingFromDir(dirPath);

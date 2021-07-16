@@ -29,17 +29,15 @@ Extraction of
     - tradability
 - strings/language files (English only currently)
 
-The extracted data can be exported as JSON objects.
+The extracted data can be exported as JSON objects. Exported data can be re-imported into the application as a base for later extractions to compare against.
 
 ## Future (possible) additional functionality
 
 - reading mastery values for Collections
-- allow re-import of exported data to track changes between parses
 
 ## Known issues
 
-- if an inappropriate parsing type is selected, the parsing may get stuck. This can be 'fixed' by going to the export/logs screen and back. Will be fixed in a future version.
-- if there is too much text in the logs area, screen tearing will very likely occur. This is likely an issue with using TextArea as the method to display logs. Will switch to ListView in a future version.
+- If the folder structure required by the extractor is not satisfied, the extractor fails to extract any data even if the data itself is intact. Will fix in a future version.
 
 ## Notes
 
