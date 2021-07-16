@@ -19,6 +19,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -48,10 +49,10 @@ public class UIController {
     List<String> failedParsePaths;
     Set<String> selectedPathsToMerge;
     Deque<MergeMemento> mementos;
+    ObservableList<String> logs;
 
 //    String benchFilter = "_interactive";
 //    String stringFilter = "prefabs_";
-//    StringProperty logs = new SimpleStringProperty("");
 
     ObservableList<IntegerProperty> changedObjectSizes;
 
@@ -62,6 +63,7 @@ public class UIController {
         failedParsePaths = new ArrayList<>();
         mementos = new ArrayDeque<>();
         selectedPathsToMerge = new HashSet<>();
+        logs = FXCollections.observableArrayList();
 
         changedObjectSizes = FXCollections.observableArrayList(p -> new Observable[]{p});
 
@@ -111,7 +113,7 @@ public class UIController {
         return selected == null ? null : selected.getAbsolutePath();
     }
 
-    void dumpLogs(Stage stage, TextArea logger) {
+    void dumpLogs(Stage stage) {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select the location to save the logs at.");
         File selected = dirChooser.showDialog(stage);
@@ -121,12 +123,14 @@ public class UIController {
             String fileName = "log-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".txt";
             try {
                 Path file = Paths.get(path + "\\" + fileName);
-                Files.write(file, Arrays.asList(logger.getText().split("\\n")), StandardCharsets.UTF_8);
-                logger.clear();
-                print(logger, "Dumped log at " + currTime.toLocalTime());
+                Files.write(file, logs, StandardCharsets.UTF_8);
+                logs.clear();
+                print("Dumped log at " + currTime.toLocalTime());
             } catch (IOException e) {
-                print(logger, "Log dump failed due to an IOException; stack trace below:");
-                Arrays.asList(e.getStackTrace()).forEach(error -> print(logger, error.toString()));
+                print("Log dump failed due to an IOException; stack trace below:");
+                List<String> messagesToLog = new ArrayList<>();
+                Arrays.asList(e.getStackTrace()).forEach(error -> messagesToLog.add(timestampMessage(error.toString())));
+                printList(messagesToLog);
             }
         }
     }
@@ -143,27 +147,27 @@ public class UIController {
         model.createBlueprintPaths(dirPath);
     }
 
-    void loadData(TextArea logger, List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath) {
-        Task<Void> task = getLoadTask(logger, entitiesPath, mapDirPath);
+    void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath) {
+        Task<Void> task = getLoadTask(entitiesPath, mapDirPath);
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
                 disableActionButtons(buttonsToDisable);
                 enableActionButtons(buttonsToEnable);
             });
-            print(logger, "Data loading complete.");
+            print("Data loading complete.");
         }).start();
     }
 
-    Task<Void> getLoadTask(TextArea logger, String entitiesPath, String mapDirPath) {
+    Task<Void> getLoadTask(String entitiesPath, String mapDirPath) {
         return new Task<Void>() {
             @Override
             protected Void call() {
                 try {
-                    deserialize(entitiesPath, logger);
+                    deserialize(entitiesPath);
                     model.createBlueprintMapping(mapDirPath);
                 } catch (IOException e) {
-                    print(logger, "Error occurred while loading in blueprint map.");
+                    print("Error occurred while loading in blueprint map.");
                 }
                 return null;
             }
@@ -183,14 +187,13 @@ public class UIController {
      *                    6: recipes
      *                    7: skins
      *                    8: strings
-     * @param logger      the TextArea used for logging
      */
-    void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection, TextArea logger) {
+    void serialize(File selected, boolean changedOnly, boolean usePrettyPrint, int[] selection) {
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(usePrettyPrint);
         if (selected != null) {
             if (selection.length != 9) {
-                print(logger, "Invalid selection length; probably a programming oversight. No exporting was done.");
+                print("Invalid selection length; probably a programming oversight. No exporting was done.");
                 return;
             }
             String dirPath = selected.getAbsolutePath();
@@ -220,16 +223,16 @@ public class UIController {
                     s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
                 writer.endObject();
                 writer.close();
-                print(logger, "Data exported to " + path);
+                print( "Data exported to " + path);
             } catch (IOException e) {
-                print(logger, "Export failed due to an IOException; stack trace below:");
+                print( "Export failed due to an IOException; stack trace below:");
                 List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
-                printList(logger, errorList);
+                printList(errorList);
             }
         }
     }
 
-    void deserialize(String path, TextArea logger) {
+    void deserialize(String path) {
         if (!new File(path).exists()) return;
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(false);
@@ -271,12 +274,24 @@ public class UIController {
                     }
                 });
             });
-            print(logger, "Entities imported from JSON file.");
+            print("Entities imported from JSON file.");
         } catch (IOException | IllegalArgumentException e) {
-            print(logger, "Import failed due to an IOException; stack trace below:");
+            print("Import failed due to an IOException; stack trace below:");
             List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
-            printList(logger, errorList);
+            printList(errorList);
         }
+    }
+
+    void setupLogger(ListView<String> logger) {
+        ObservableList<String> loggerItems = FXCollections.observableArrayList(logs);
+        logs.addListener((ListChangeListener<String>) c -> {
+            if (c.next()) {
+                if (c.wasAdded()) {
+                    Platform.runLater(() -> loggerItems.addAll(c.getAddedSubList()));
+                }
+            }
+        });
+        logger.setItems(loggerItems);
     }
 
     // PARSING
@@ -359,9 +374,9 @@ public class UIController {
         typeSelect.getSelectionModel().selectFirst();
     }
 
-    public void parse(ProgressBar progressBar, Text progressText, TextArea logger, String typeString) {
+    public void parse(ProgressBar progressBar, Text progressText, String typeString) {
         Enums.ObjectType type = Enums.ObjectType.getType(typeString);
-        Task<Void> task = getParseTask(type, logger);
+        Task<Void> task = getParseTask(type);
         progressBar.progressProperty().bind(task.progressProperty());
         progressText.textProperty().bind(task.messageProperty());
 
@@ -376,7 +391,7 @@ public class UIController {
         }).start();
     }
 
-    public Task<Void> getParseTask(Enums.ObjectType type, TextArea logger) {
+    public Task<Void> getParseTask(Enums.ObjectType type) {
         return new Task<Void>() {
             @Override
             protected Void call() {
@@ -384,21 +399,21 @@ public class UIController {
                 failedParsePaths.clear();
 
                 // begin parsing
-                StringBuilder loggerText = new StringBuilder();
+                List<String> parseLogs = new ArrayList<>();
                 int selectedPathsLength = selectedPathsToParse.size();
-                print(logger, "Parsing " + selectedPathsLength + " objects using parser for " + type.toString().toLowerCase() + ".");
+                print("Parsing " + selectedPathsLength + " objects using parser for " + type.toString().toLowerCase() + ".");
                 for (int i = 0; i < selectedPathsLength; i++) {
                     updateMessage("Parsing " + type + ": " + (i + 1) + "/" + selectedPathsLength);
                     updateProgress(i, selectedPathsLength);
                     try {
                         model.createObject(selectedPathsToParse.get(i), type);
                     } catch (IOException | ParseException e) {
-                        loggerText.append("[").append(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))).append("] ").append("Parse failure: ").append(e.getMessage()).append("\n");
+                        parseLogs.add(timestampMessage("Parse failure: " + e.getMessage()));
                         failedParsePaths.add(selectedPathsToParse.get(i));
                     }
                 }
-                loggerText.append("[").append(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))).append("] ").append("Parsing completed.").append("\n");
-                printPlain(logger, loggerText.toString());
+                parseLogs.add(timestampMessage("Parsing completed."));
+                printListPlain(parseLogs);
                 updateMessage("Parsing complete.");
                 updateProgress(selectedPathsLength, selectedPathsLength);
 
@@ -417,18 +432,22 @@ public class UIController {
 
     // LOGGING
 
-    void print(TextArea logger, String message) {
-        logger.appendText("[" + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")) + "] " + message + "\n");
+    void print(String message) {
+        logs.add(timestampMessage(message));
     }
 
-    void printPlain(TextArea logger, String message) {
-        logger.appendText(message);
+    void printList(List<String> messages) {
+        List<String> messagesToLog = new ArrayList<>();
+        messages.forEach(m -> messagesToLog.add(timestampMessage(m)));
+        logs.addAll(messagesToLog);
     }
 
-    void printList(TextArea logger, List<String> messages) {
-        StringBuilder builder = new StringBuilder();
-        messages.forEach(m -> builder.append("[").append(LocalTime.now()).append("] ").append(m).append("\n"));
-        logger.appendText(builder.toString());
+    void printListPlain(List<String> messages) {
+        logs.addAll(messages);
+    }
+
+    String timestampMessage(String message) {
+        return "[" + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")) + "] " + message;
     }
 
     // REVIEWING
@@ -462,7 +481,7 @@ public class UIController {
         }));
     }
 
-    void rScreenSetupActionButtons(Button mergeButton, Button undoButton, ComboBox<String> typeText, ListView<String> lv, TextArea logger) {
+    void rScreenSetupActionButtons(Button mergeButton, Button undoButton, ComboBox<String> typeText, ListView<String> lv) {
         mergeButton.setOnAction(e -> {
             if (typeText.getValue() == null || typeText.getValue().equals("") || selectedPathsToMerge.size() == 0) return;
             Enums.ObjectType type = Enums.ObjectType.getType(typeText.getValue());
@@ -478,10 +497,9 @@ public class UIController {
                 task.run();
                 selectedPathsToMerge.clear();
                 Platform.runLater(() -> lv.setItems(getChangedObjectPaths(typeText.getValue()).sorted()));
-                print(logger, "Merged " + pathCount + " object" + (pathCount != 1 ? "s" : "") + " to session data.");
+                print("Merged " + pathCount + " object" + (pathCount != 1 ? "s" : "") + " to session data.");
             }).start();
         });
-
         undoButton.setOnAction(e -> {
             if (mementos.isEmpty()) return;
             Task<Void> task = new Task<Void>() {
@@ -495,7 +513,7 @@ public class UIController {
                 task.run();
                 selectedPathsToMerge.clear();
                 Platform.runLater(() -> lv.setItems(getChangedObjectPaths(typeText.getValue()).sorted()));
-                print(logger, "Reverted previous merge.");
+                print("Reverted previous merge.");
             }).start();
         });
     }

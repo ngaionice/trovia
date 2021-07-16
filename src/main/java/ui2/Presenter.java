@@ -29,14 +29,12 @@ public class Presenter {
     Scene scene;
     BorderPane root;
     UIController controller;
-    TextArea logger;
 
     public Presenter(Stage stage, Scene sc, BorderPane root) {
         this.stage = stage;
         this.scene = sc;
         this.root = root;
         this.controller = new UIController();
-        this.logger = getLogger();
     }
 
     public VBox getNavBar() {
@@ -84,23 +82,23 @@ public class Presenter {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
 
-        Text externalText = new Text("Load existing data (coming soon)");
+        Text externalText = new Text("Load existing data");
         JFXTextField dataLoc = new JFXTextField();
-        JFXButton dataLocButton = new JFXButton();
+        JFXButton dataLocButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
 
         Separator sep = new Separator();
         Text mapText = new Text("Parsing aids");
         JFXTextField bppLoc = new JFXTextField();
-        JFXButton bppLocButton = new JFXButton();
+        JFXButton bppLocButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
 
         Separator sep2 = new Separator();
         Text ignoreText = new Text("Press the start button to load in the data, or to skip data loading and start parsing data.\nIf you do not load data now, you will not be able to do so later.");
 
-        JFXButton startButton = new JFXButton();
+        JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"), "button-start");
 
         dataLocButton.setOnAction(e -> dataLoc.setText(controller.loadFile(stage, "JSON files", "*.json", "Select the JSON file containing the entities.")));
         bppLocButton.setOnAction(e -> bppLoc.setText(controller.loadDirectory(stage, "Select the directory containing the mapping files. This directory normally has a relative path of /prefabs/blocks.")));
-        startButton.setOnAction(e -> controller.loadData(logger, Arrays.asList(dataLocButton, bppLocButton, startButton), actionButtons, dataLoc.getText() ,bppLoc.getText()));
+        startButton.setOnAction(e -> controller.loadData(Arrays.asList(dataLocButton, bppLocButton, startButton), actionButtons, dataLoc.getText() ,bppLoc.getText()));
 
         // element styling
         {
@@ -109,12 +107,6 @@ public class Presenter {
             dataLoc.getStyleClass().add("text-field-dir");
             dataLoc.setDisable(true);
             bppLoc.setDisable(true);
-            startButton.getStyleClass().add("floating-button");
-            startButton.setId("button-start");
-            Arrays.asList(dataLocButton, bppLocButton).forEach(b -> {
-                b.setId("button-set-dir");
-                b.getStyleClass().addAll("button-inline", "color-subtle");
-            });
             Arrays.asList(externalText, mapText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
             center.getStyleClass().add("pane-background");
             anchor.getStyleClass().add("card-backing");
@@ -157,12 +149,12 @@ public class Presenter {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
         JFXTextField directory = new JFXTextField();
-        JFXButton dirButton = new JFXButton();
+        JFXButton dirButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
         JFXTextField filter = new JFXTextField();
-        JFXButton filterButton = new JFXButton();
+        JFXButton filterButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-update");
         JFXComboBox<String> typeSelect = new JFXComboBox<>();
         TreeView<String> tree = new TreeView<>();
-        JFXButton startButton = new JFXButton();
+        JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"),"button-start");
         JFXProgressBar progressBar = new JFXProgressBar();
         Text progressText = new Text("Status");
         VBox progressBox = new VBox();
@@ -183,7 +175,7 @@ public class Presenter {
             controller.updateParseDirectory(filter, directory, tree, Enums.ObjectType.getType(typeSelect.getValue()));
             controller.clearSelectedPaths();
         });
-        startButton.setOnAction(e -> controller.parse(progressBar, progressText, logger, typeSelect.getValue()));
+        startButton.setOnAction(e -> controller.parse(progressBar, progressText, typeSelect.getValue()));
 
         center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
@@ -191,12 +183,6 @@ public class Presenter {
         directory.getStyleClass().add("text-field-dir");
         filter.getStyleClass().add("text-field-filter");
         tree.getStyleClass().add("dir-view");
-        dirButton.getStyleClass().addAll("button-inline", "color-subtle");
-        filterButton.getStyleClass().addAll("button-inline", "color-subtle");
-        startButton.getStyleClass().add("floating-button");
-        startButton.setId("button-start");
-        dirButton.setId("button-set-dir");
-        filterButton.setId("button-update");
         progressText.getStyleClass().add("text-normal");
         progressText.setId("text-progress");
 
@@ -204,7 +190,7 @@ public class Presenter {
         filterButton.setGraphic(new FontIcon());
         startButton.setGraphic(new FontIcon());
         tree.setCellFactory(CheckBoxTreeCell.forTreeView());
-        tree.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
+        tree.prefWidthProperty().bind(center.widthProperty());
         tree.prefHeightProperty().bind(center.heightProperty().multiply(0.68));
         progressBar.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
 
@@ -262,14 +248,14 @@ public class Presenter {
         buttons.addAnimatedNode(mergeButton);
         buttons.addAnimatedNode(undoButton);
 
-        overview.getStyleClass().add("text-normal");
+        overview.getStyleClass().add("text-bold");
         countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
         buttons.setRotate(180);
         buttons.setSpacing(12);
 
         controller.rScreenBindCountTexts(countTexts, types);
         controller.rScreenSetupDataViews(types, categories, lv);
-        controller.rScreenSetupActionButtons(mergeButton, undoButton, categories, lv, logger);
+        controller.rScreenSetupActionButtons(mergeButton, undoButton, categories, lv);
 
         grid.add(categories, 0, 0);
         grid.add(overview, 0, 1);
@@ -284,7 +270,8 @@ public class Presenter {
         center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
-        lv.prefWidthProperty().bind(center.widthProperty().multiply(0.80));
+        lv.prefWidthProperty().bind(center.widthProperty());
+        lv.prefHeightProperty().bind(center.heightProperty());
 
         setMaxAnchor(grid);
         setFabAnchor(buttons);
@@ -302,8 +289,8 @@ public class Presenter {
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
         JFXTextField directory = new JFXTextField();
-        JFXButton dirButton = new JFXButton();
-        JFXButton startButton = new JFXButton();
+        JFXButton dirButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
+        JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"), "button-dump");
         JFXCheckBox changedButton = new JFXCheckBox();
         JFXCheckBox prettyPrintButton = new JFXCheckBox();
         Separator separator = new Separator();
@@ -341,7 +328,7 @@ public class Presenter {
                 for (int i = 0; i < selection.length; i++) {
                     if (selected[i].getValue()) selection[i] = 1;
                 }
-                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), prettyPrintButton.selectedProperty().getValue(), selection, logger);
+                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), prettyPrintButton.selectedProperty().getValue(), selection);
             }
         });
 
@@ -349,9 +336,6 @@ public class Presenter {
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
         directory.getStyleClass().add("text-field-dir");
-        dirButton.getStyleClass().addAll("button-inline", "color-subtle");
-        startButton.getStyleClass().addAll("floating-button", "button-start");
-        dirButton.setId("button-set-dir");
 
         dirButton.setGraphic(new FontIcon());
         startButton.setGraphic(new FontIcon());
@@ -402,9 +386,10 @@ public class Presenter {
         AnchorPane anchor = new AnchorPane();
         HBox header = new HBox();
         Text headerText = new Text("Logs");
-        JFXButton dumpButton = new JFXButton();
+        JFXButton dumpButton = getJFXButton(Collections.singletonList("floating-button"), "button-dump");
+        ListView<String> logger = getLogger();
 
-        dumpButton.setOnAction(e -> controller.dumpLogs(stage, logger));
+        dumpButton.setOnAction(e -> controller.dumpLogs(stage));
 
         header.getChildren().add(headerText);
         stack.getChildren().add(anchor);
@@ -415,8 +400,6 @@ public class Presenter {
         headerText.getStyleClass().add("header-text");
         stack.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
-        dumpButton.getStyleClass().add("floating-button");
-        dumpButton.setId("button-dump");
 
         dumpButton.setGraphic(new FontIcon());
 
@@ -435,16 +418,15 @@ public class Presenter {
         StackPane loggerWrapper = new StackPane();
         root.getStyleClass().add("pane-background-no-top");
         root.getChildren().add(loggerWrapper);
-        loggerWrapper.getChildren().add(logger);
+        loggerWrapper.getChildren().add(getLogger());
         JFXDepthManager.setDepth(loggerWrapper, 1);
 
         return root;
     }
 
-    private TextArea getLogger() {
-        TextArea logger = new JFXTextArea();
-        logger.setEditable(false);
-        logger.setWrapText(true);
+    private ListView<String> getLogger() {
+        ListView<String> logger = new ListView<>();
+        controller.setupLogger(logger);
         logger.setId("logger");
         return logger;
     }
