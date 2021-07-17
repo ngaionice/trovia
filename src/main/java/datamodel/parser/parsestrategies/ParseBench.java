@@ -10,13 +10,13 @@ import java.util.*;
 public class ParseBench implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             Markers m = new Markers();
             List<List<String>> categoryList = new ArrayList<>();
             ParseHelper helper = new ParseHelper();
 
-            String rPath = Parser.extractRPath(absPath).replace("_interactive", "");
+            String rPath = useRPath ? Parser.extractRPath(absPath).replace("_interactive", "") : absPath.replace("\\", "/").replace("_interactive", "");
 
             // first identify the number of categories; $prefabs show up at least twice for 0 categories; +1 for each additional
             String temp = splitString.replace(m.prefab, "");

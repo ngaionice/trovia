@@ -6,10 +6,14 @@ import datamodel.Enums;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
@@ -73,11 +77,11 @@ public class Presenter {
         quitButton.setOnAction(e -> runQuitSequence());
 
         controller.disableActionButtons(actionButtons);
-        root.setCenter(getScreenBorderPaneWithLogger("Load", getLoadScreenContent(actionButtons)));
+        root.setCenter(getScreenBorderPaneWithLogger("Setup", getSetupScreenContent(actionButtons)));
         return navBox;
     }
 
-    private Pane getLoadScreenContent(List<Button> actionButtons) {
+    private Pane getSetupScreenContent(List<Button> actionButtons) {
         StackPane center = new StackPane();
         AnchorPane anchor = new AnchorPane();
         GridPane grid = new GridPane();
@@ -92,22 +96,27 @@ public class Presenter {
         JFXButton bppLocButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
 
         Separator sep2 = new Separator();
+        Text configText = new Text("Additional configuration");
+        JFXCheckBox weirdBox = new JFXCheckBox("Non-standard folder structure");
+
+        Separator sep3 = new Separator();
+
         Text ignoreText = new Text("Press the start button to load in the data, or to skip data loading and start parsing data.\nIf you do not load data now, you will not be able to do so later.");
 
         JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"), "button-start");
 
         dataLocButton.setOnAction(e -> dataLoc.setText(controller.loadFile(stage, "JSON files", "*.json", "Select the JSON file containing the entities.")));
         bppLocButton.setOnAction(e -> bppLoc.setText(controller.loadDirectory(stage, "Select the directory containing the mapping files. This directory normally has a relative path of /prefabs/blocks.")));
-        startButton.setOnAction(e -> controller.loadData(Arrays.asList(dataLocButton, bppLocButton, startButton), actionButtons, dataLoc.getText() ,bppLoc.getText()));
+        startButton.setOnAction(e -> controller.loadData(Arrays.asList(dataLocButton, bppLocButton, startButton), actionButtons, dataLoc.getText(), bppLoc.getText(), weirdBox.selectedProperty().getValue()));
 
         // element styling
         {
             dataLoc.setPromptText("Entity JSON file location");
-            bppLoc.setPromptText("Blueprint-placeable mapping files directory (skip if not parsing blueprints)");
+            bppLoc.setPromptText("Blueprint-placeable mapping supplementary files directory (skip if not parsing placeables)");
             dataLoc.getStyleClass().add("text-field-dir");
             dataLoc.setDisable(true);
             bppLoc.setDisable(true);
-            Arrays.asList(externalText, mapText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
+            Arrays.asList(externalText, mapText, configText, ignoreText).forEach(text -> text.getStyleClass().add("text-normal"));
             center.getStyleClass().add("pane-background");
             anchor.getStyleClass().add("card-backing");
             grid.getStyleClass().add("grid-content");
@@ -126,7 +135,10 @@ public class Presenter {
             grid.add(bppLoc, 0, 4);
             grid.add(bppLocButton, 1, 4);
             grid.add(sep2, 0, 5, 2, 1);
-            grid.add(ignoreText, 0, 6, 2, 1);
+            grid.add(configText, 0, 6);
+            grid.add(weirdBox, 0, 7);
+            grid.add(sep3, 0, 8, 2, 1);
+            grid.add(ignoreText, 0, 9, 2, 1);
         }
 
         setMaxAnchor(grid);
@@ -150,7 +162,7 @@ public class Presenter {
         JFXButton filterButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-update");
         JFXComboBox<String> typeSelect = new JFXComboBox<>();
         TreeView<String> tree = new TreeView<>();
-        JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"),"button-start");
+        JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"), "button-start");
         JFXProgressBar progressBar = new JFXProgressBar();
         Text progressText = new Text("Status");
         VBox progressBox = new VBox();
@@ -256,7 +268,7 @@ public class Presenter {
 
         overview.getStyleClass().add("text-bold");
         countTexts.forEach(t -> t.getStyleClass().add("text-normal"));
-        counts.setId("review-count-box");
+        counts.getStyleClass().add("list-box");
         buttons.getStyleClass().add("node-list");
         center.getStyleClass().add("pane-background");
         anchor.getStyleClass().add("card-backing");
@@ -282,12 +294,14 @@ public class Presenter {
         JFXTextField directory = new JFXTextField();
         JFXButton dirButton = getJFXButton(Arrays.asList("button-inline", "color-subtle"), "button-set-dir");
         JFXButton startButton = getJFXButton(Collections.singletonList("floating-button"), "button-dump");
-        JFXCheckBox changedButton = new JFXCheckBox();
-        JFXCheckBox prettyPrintButton = new JFXCheckBox();
+        JFXToggleButton exportTypeToggle = new JFXToggleButton();
+        JFXToggleButton prettyPrintToggle = new JFXToggleButton();
         Separator separator = new Separator();
 
         BooleanProperty[] selected = new BooleanProperty[9];
         String[] texts = new String[]{"Benches", "Collections", "Collection Indices", "Gear Styles", "Items", "Placeables", "Recipes", "Skins", "Strings"};
+        VBox types = new VBox();
+        VBox toggles = new VBox();
 
         List<JFXCheckBox> checkboxes = new ArrayList<>();
         for (int i = 0; i < selected.length; i++) {
@@ -297,13 +311,29 @@ public class Presenter {
             cb.setSelected(false);
             checkboxes.add(cb);
         }
-        prettyPrintButton.setSelected(true);
+        types.getChildren().addAll(checkboxes);
+        toggles.getChildren().addAll(prettyPrintToggle, exportTypeToggle);
 
         directory.setPromptText("Directory");
         directory.setDisable(true);
-        changedButton.setText("Export changes only");
-        prettyPrintButton.setText("Pretty printing");
+        exportTypeToggle.setText("Export session data and merged changes");
+        prettyPrintToggle.setText("Pretty printing");
+        prettyPrintToggle.setSelected(true);
 
+        exportTypeToggle.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                exportTypeToggle.setText("Export unmerged changes");
+            } else {
+                exportTypeToggle.setText("Export session data and merged changes");
+            }
+        });
+        prettyPrintToggle.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                prettyPrintToggle.setText("Use pretty printing");
+            } else {
+                prettyPrintToggle.setText("Use compressed mode");
+            }
+        });
         dirButton.setOnAction(e -> {
             DirectoryChooser dirChooser = new DirectoryChooser();
             dirChooser.setTitle("Select the location to export data to.");
@@ -319,7 +349,7 @@ public class Presenter {
                 for (int i = 0; i < selection.length; i++) {
                     if (selected[i].getValue()) selection[i] = 1;
                 }
-                controller.serialize(selectedDir, changedButton.selectedProperty().getValue(), prettyPrintButton.selectedProperty().getValue(), selection);
+                controller.serialize(selectedDir, exportTypeToggle.selectedProperty().getValue(), prettyPrintToggle.selectedProperty().getValue(), selection);
             }
         });
 
@@ -327,24 +357,22 @@ public class Presenter {
         anchor.getStyleClass().add("card-backing");
         grid.getStyleClass().add("grid-content");
         directory.getStyleClass().add("text-field-dir");
+        types.getStyleClass().add("list-box");
+        toggles.getStyleClass().add("list-box-negative");
+        separator.setOrientation(Orientation.VERTICAL);
 
         center.getChildren().add(anchor);
         anchor.getChildren().add(grid);
         anchor.getChildren().add(startButton);
-        grid.add(directory, 0, 0, 2, 1);
-        grid.add(dirButton, 2, 0);
-        grid.add(changedButton, 1, 1);
-        grid.add(prettyPrintButton, 0, 1);
-        grid.add(separator, 0, 2, 3, 1);
-        int row = 3;
-        for (int i = 0; i < checkboxes.size(); i++) {
-            if ((i % 2) == 0) {
-                grid.add(checkboxes.get(i), 0, row);
-            } else {
-                grid.add(checkboxes.get(i), 1, row);
-                row++;
-            }
-        }
+        grid.add(directory, 0, 0, 3, 1);
+        grid.add(dirButton, 3, 0);
+        grid.add(types, 0, 1);
+        grid.add(toggles, 2, 1);
+        grid.add(separator, 1, 1);
+//        int row = 1;
+//        for (int i = 0; i < checkboxes.size(); i++) {
+//            grid.add(checkboxes.get(i), 0, i + row);
+//        }
 
         setMaxAnchor(grid);
         setFabAnchor(startButton);

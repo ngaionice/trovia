@@ -10,11 +10,11 @@ import datamodel.parser.Regexes;
 public class ParsePlaceable implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             Regexes r = new Regexes();
 
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
             String name, desc;
             String blueprint = null;

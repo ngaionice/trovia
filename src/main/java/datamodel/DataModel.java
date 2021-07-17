@@ -51,16 +51,16 @@ public class DataModel {
 
     // CREATING OBJECTS
 
-    public void createObject(String absPath, Enums.ObjectType type) throws IOException, ParseException {
+    public void createObject(String absPath, Enums.ObjectType type, boolean useRPath) throws IOException, ParseException {
         Enums.ObjectType inputType = type == Enums.ObjectType.PROFESSION ? Enums.ObjectType.BENCH : type;
         if (type == Enums.ObjectType.PLACEABLE) {
-            Placeable p = (Placeable) parser.createObject(absPath, type);
+            Placeable p = (Placeable) parser.createObject(absPath, type, useRPath);
             if (p.getBlueprint() == null && blueprintMap != null && blueprintMap.containsKey(p.getRPath())) {
                 p.setBlueprint(blueprintMap.get(p.getRPath()));
             }
             addArticleToChanges(p, type, false);
         } else {
-            addArticleToChanges(parser.createObject(absPath, type), inputType, false);
+            addArticleToChanges(parser.createObject(absPath, type, useRPath), inputType, false);
         }
     }
 
@@ -171,38 +171,6 @@ public class DataModel {
         }
     }
 
-    public void removeArticleFromChanges(String identifier, Enums.ObjectType type) {
-        switch (type) {
-            case BENCH:
-                changedBenches.remove(identifier);
-                break;
-            case COLLECTION:
-                changedCollections.remove(identifier);
-                break;
-            case COLL_INDEX:
-                changedCollectionIndices.remove(identifier);
-                break;
-            case GEAR_STYLE:
-                changedGearStyleTypes.remove(identifier);
-                break;
-            case ITEM:
-                changedItems.remove(identifier);
-                break;
-            case PLACEABLE:
-                changedPlaceables.remove(identifier);
-                break;
-            case RECIPE:
-                changedRecipes.remove(identifier);
-                break;
-            case SKIN:
-                changedSkins.remove(identifier);
-                break;
-            case STRING:
-                changedStrings.remove(identifier);
-                break;
-        }
-    }
-
     public void addArticleToChanges(Article a, Enums.ObjectType type, boolean forceAdd) {
         String rPath = type != Enums.ObjectType.STRING ? a.getRPath() : null;
         switch (type) {
@@ -235,6 +203,38 @@ public class DataModel {
                 l.getStrings().forEach((k, v) -> {
                     if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v) || forceAdd) changedStrings.put(k, v);
                 });
+                break;
+        }
+    }
+
+    public void removeArticleFromChanges(String identifier, Enums.ObjectType type) {
+        switch (type) {
+            case BENCH:
+                changedBenches.remove(identifier);
+                break;
+            case COLLECTION:
+                changedCollections.remove(identifier);
+                break;
+            case COLL_INDEX:
+                changedCollectionIndices.remove(identifier);
+                break;
+            case GEAR_STYLE:
+                changedGearStyleTypes.remove(identifier);
+                break;
+            case ITEM:
+                changedItems.remove(identifier);
+                break;
+            case PLACEABLE:
+                changedPlaceables.remove(identifier);
+                break;
+            case RECIPE:
+                changedRecipes.remove(identifier);
+                break;
+            case SKIN:
+                changedSkins.remove(identifier);
+                break;
+            case STRING:
+                changedStrings.remove(identifier);
                 break;
         }
     }

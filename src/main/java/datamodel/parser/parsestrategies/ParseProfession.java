@@ -10,7 +10,7 @@ import java.util.*;
 public class ParseProfession implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             Markers m = new Markers();
 
@@ -39,7 +39,7 @@ public class ParseProfession implements ParseStrategy {
 
             // creating the Bench object
             String path = absPath.substring(absPath.lastIndexOf("\\") + 1, absPath.indexOf(m.endFile));
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
             return new Bench(path, rPath, categories);
         } catch (Exception e) {

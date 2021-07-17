@@ -14,7 +14,7 @@ import java.util.List;
 public class ParseItem implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             // instantiate the stuff needed to parse
             Markers m = new Markers();
@@ -25,7 +25,7 @@ public class ParseItem implements ParseStrategy {
             String[] unlocks = new String[0];
 
             // extract relative path
-            rPath = Parser.extractRPath(absPath);
+            rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
             // identify name and desc paths
             Pattern ndp = Pattern.compile(r.nameDescExtractor);

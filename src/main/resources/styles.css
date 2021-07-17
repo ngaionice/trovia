@@ -204,12 +204,16 @@
 #logger {
     -fx-background-radius: 3px;
     -fx-padding: 32 48 32 48;
-    -fx-pref-height: 240px;
+    -fx-pref-height: 200px;
 }
 
-#review-count-box {
+.list-box {
     -fx-spacing: 4px;
     -fx-min-width: 160px;
+}
+
+.list-box-negative {
+    -fx-spacing: -20px;
 }
 
 .node-list {

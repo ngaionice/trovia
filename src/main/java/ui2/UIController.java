@@ -45,6 +45,7 @@ public class UIController {
 
     DataModel model;
     String filter;
+    boolean useRPath;
     List<String> selectedPathsToParse;
     List<String> failedParsePaths;
     Set<String> selectedPathsToMerge;
@@ -141,25 +142,31 @@ public class UIController {
         buttons.forEach(item -> item.setDisable(true));
     }
 
-    void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath) {
-        Task<Void> task = getLoadTask(entitiesPath, mapDirPath);
+    void loadData(List<Button> buttonsToDisable, List<Button> buttonsToEnable, String entitiesPath, String mapDirPath, boolean useAbsPath) {
+        Task<Void> task = getLoadTask(entitiesPath, mapDirPath, useAbsPath);
         new Thread(() -> {
             task.run();
             Platform.runLater(() -> {
                 disableActionButtons(buttonsToDisable);
                 enableActionButtons(buttonsToEnable);
             });
-            print("Data loading complete.");
+            List<String> messages = new ArrayList<>();
+            if (entitiesPath != null && !entitiesPath.equals("")) messages.add("Existing data loaded from " + entitiesPath);
+            if (mapDirPath != null && !mapDirPath.equals("")) messages.add("Blueprint mapping supplementary files loaded from " + mapDirPath);
+            if (useAbsPath) messages.add("Non-standard folder structure selected; this makes comparison with existing and future data impossible unless they have the same absolute file paths.");
+            messages.add("Data loading complete.");
+            printList(messages);
         }).start();
     }
 
-    Task<Void> getLoadTask(String entitiesPath, String mapDirPath) {
+    Task<Void> getLoadTask(String entitiesPath, String mapDirPath, boolean useAbsPath) {
         return new Task<Void>() {
             @Override
             protected Void call() {
                 try {
                     deserialize(entitiesPath);
                     model.createBlueprintMapping(mapDirPath);
+                    useRPath = !useAbsPath;
                 } catch (IOException e) {
                     print("Error occurred while loading in blueprint map.");
                 }
@@ -169,6 +176,7 @@ public class UIController {
     }
 
     /**
+     * Serializes current data in a new thread.
      * @param selected    the selected file from the file selector
      * @param changedOnly if true, export changed data only; else exports everything stored
      * @param selection   an int array of length 9, indicating which categories are to be exported: 0 = not exported, exported otherwise; index-category mapping as follows:
@@ -190,39 +198,46 @@ public class UIController {
                 print("Invalid selection length; probably a programming oversight. No exporting was done.");
                 return;
             }
-            String dirPath = selected.getAbsolutePath();
-            LocalDateTime currTime = LocalDateTime.now();
-            String fileName = "trove-entity-" + currTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss-SSS")) + ".json";
-            try {
-                String path = dirPath + "\\" + fileName;
-                JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
-                writer.beginObject();
-                if (selection[0] != 0)
-                    s.writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
-                if (selection[1] != 0)
-                    s.writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
-                if (selection[2] != 0)
-                    s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
-                if (selection[3] != 0)
-                    s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyleTypes() : model.getSessionGearStyleTypes());
-                if (selection[4] != 0)
-                    s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
-                if (selection[5] != 0)
-                    s.writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
-                if (selection[6] != 0)
-                    s.writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
-                if (selection[7] != 0)
-                    s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
-                if (selection[8] != 0)
-                    s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
-                writer.endObject();
-                writer.close();
-                print("Data exported to " + path);
-            } catch (IOException e) {
-                print("Export failed due to an IOException; stack trace below:");
-                List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
-                printList(errorList);
-            }
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() {
+                    String dirPath = selected.getAbsolutePath();
+                    LocalDateTime currTime = LocalDateTime.now();
+                    String fileName = "trove-entities-" + (useRPath ? "" : "ns-") + (changedOnly ? "changes " : "all ") + currTime.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS")) + ".json";
+                    try {
+                        String path = dirPath + "\\" + fileName;
+                        JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
+                        writer.beginObject();
+                        if (selection[0] != 0)
+                            s.writeBenches(writer, serializer, changedOnly ? model.getChangedBenches() : model.getSessionBenches());
+                        if (selection[1] != 0)
+                            s.writeCollections(writer, serializer, changedOnly ? model.getChangedCollections() : model.getSessionCollections());
+                        if (selection[2] != 0)
+                            s.writeCollectionIndices(writer, serializer, changedOnly ? model.getChangedCollectionIndices() : model.getSessionCollectionIndices());
+                        if (selection[3] != 0)
+                            s.writeGearStyles(writer, serializer, changedOnly ? model.getChangedGearStyleTypes() : model.getSessionGearStyleTypes());
+                        if (selection[4] != 0)
+                            s.writeItems(writer, serializer, changedOnly ? model.getChangedItems() : model.getSessionItems());
+                        if (selection[5] != 0)
+                            s.writePlaceables(writer, serializer, changedOnly ? model.getChangedPlaceables() : model.getSessionPlaceables());
+                        if (selection[6] != 0)
+                            s.writeRecipes(writer, serializer, changedOnly ? model.getChangedRecipes() : model.getSessionRecipes());
+                        if (selection[7] != 0)
+                            s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
+                        if (selection[8] != 0)
+                            s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
+                        writer.endObject();
+                        writer.close();
+                        print("Data exported to " + path);
+                    } catch (IOException e) {
+                        print("Export failed due to an IOException; stack trace below:");
+                        List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+                        printList(errorList);
+                    }
+                    return null;
+                }
+            };
+            new Thread(task).start();
         }
     }
 
@@ -282,6 +297,9 @@ public class UIController {
             if (c.next()) {
                 if (c.wasAdded()) {
                     Platform.runLater(() -> loggerItems.addAll(c.getAddedSubList()));
+                }
+                else if (c.wasRemoved()) {
+                    Platform.runLater(() -> loggerItems.removeAll(c.getRemoved()));
                 }
             }
         });
@@ -363,7 +381,7 @@ public class UIController {
     }
 
     void setParseTypes(ComboBox<String> typeSelect) {
-        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Collection indices", "Items", "Gear styles", "Placeables", "Professions", "Recipes", "Skins", "Strings");
+        ObservableList<String> types = FXCollections.observableArrayList("Benches", "Collections", "Collection indices", "Gear styles", "Items", "Placeables", "Professions", "Recipes", "Skins", "Strings");
         typeSelect.setItems(types);
         typeSelect.getSelectionModel().selectFirst();
     }
@@ -400,7 +418,7 @@ public class UIController {
                     updateMessage("Parsing " + type + ": " + (i + 1) + "/" + selectedPathsLength);
                     updateProgress(i, selectedPathsLength);
                     try {
-                        model.createObject(selectedPathsToParse.get(i), type);
+                        model.createObject(selectedPathsToParse.get(i), type, useRPath);
                     } catch (IOException | ParseException e) {
                         parseLogs.add(timestampMessage("Parse failure: " + e.getMessage()));
                         failedParsePaths.add(selectedPathsToParse.get(i));

@@ -35,12 +35,9 @@ The extracted data can be exported as JSON objects. Exported data can be re-impo
 
 - reading mastery values for Collections
 
-## Known issues
-
-- If the folder structure required by the extractor is not satisfied, the extractor fails to extract any data even if the data itself is intact. Will fix in a future version.
-
 ## Notes
 
-- this extractor assumes the folder structure obtained by extracting the game using the script `devtool_unpack_client.bat` found [here](https://gist.github.com/chrmoritz/c304dead49ce6a38653f). Deviations from this structure can lead to unsuccessful parsing.
+- this extractor works best with the folder structure obtained by extracting the game using the script `devtool_unpack_client.bat` found [here](https://gist.github.com/chrmoritz/c304dead49ce6a38653f).  
+  If such folder structure is not available, users can select the 'non-standard folder structure' option on application start-up. However, comparison of existing and future data with data exported with this option selected using the application will be impossible unless they have the same absolute file paths.
 
 

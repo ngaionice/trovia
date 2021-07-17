@@ -33,3 +33,11 @@
     -jfx-checked-color: -fx-accent;
     -fx-text-fill: -fx-content;
 }
+
+.jfx-toggle-button {
+    -jfx-toggle-color: -fx-accent;
+    -jfx-untoggle-color: -fx-content;
+    -jfx-toggle-line-color: -fx-accent-light;
+    -jfx-untoggle-line-color: -fx-content-dark;
+    -fx-text-fill: -fx-content;
+}

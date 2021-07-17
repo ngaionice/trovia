@@ -9,9 +9,9 @@ import datamodel.parser.Regexes;
 
 public class ParseSkin implements ParseStrategy {
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
             Regexes r = new Regexes();
             Pattern p = Pattern.compile(r.skinInfoExtractor);
             Matcher mt = p.matcher(splitString);

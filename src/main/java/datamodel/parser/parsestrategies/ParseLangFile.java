@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class ParseLangFile implements ParseStrategy {
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             Regexes r = new Regexes();
             Pattern p = Pattern.compile(r.langSplitter);
@@ -24,7 +24,7 @@ public class ParseLangFile implements ParseStrategy {
             Outliers o = new Outliers();
 
             String name = absPath.substring(absPath.lastIndexOf("\\") + 1, absPath.indexOf(mk.endFile));
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
             Map<String, String> strings = new HashMap<>();
 

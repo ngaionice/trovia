@@ -12,11 +12,11 @@ import java.util.Map;
 
 public class ParseGearStyle implements ParseStrategy {
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             Regexes r = new Regexes();
 
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
             String type = rPath.substring(rPath.lastIndexOf("/") + 1).replace("weapon_", "");
 
             Matcher cm = Pattern.compile(r.gearStyleCatExtractor).matcher(splitString);

@@ -94,40 +94,40 @@ public class Parser {
         return hexRaw.replaceAll("(.{2})", "$1 ").trim();
     }
 
-    public Article createObject(String path, Enums.ObjectType itemType) throws IOException, ParseException {
+    public Article createObject(String path, Enums.ObjectType itemType, boolean useRPath) throws IOException, ParseException {
         String splitString = insertSpaces(byteToString(path));
         ParseContext context;
         switch (itemType) {
             case BENCH:
                 context = new ParseContext(new ParseBench());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case COLLECTION:
                 context = new ParseContext(new ParseCollection());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case COLL_INDEX:
                 context = new ParseContext(new ParseCollectionIndex());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case GEAR_STYLE:
                 context = new ParseContext(new ParseGearStyle());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case ITEM:
                 context = new ParseContext(new ParseItem());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case PLACEABLE:
                 context = new ParseContext(new ParsePlaceable());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case PROFESSION:
                 context = new ParseContext(new ParseProfession());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case RECIPE:
                 context = new ParseContext(new ParseRecipe());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case SKIN:
                 context = new ParseContext(new ParseSkin());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             case STRING:
                 context = new ParseContext(new ParseLangFile());
-                return context.parse(splitString, path);
+                return context.parse(splitString, path, useRPath);
             default:
                 return null;
         }

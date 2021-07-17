@@ -17,10 +17,10 @@ import com.google.re2j.Pattern;
 public class ParseCollection implements ParseStrategy {
 
     @Override
-    public Article parseObject(String splitString, String absPath) throws ParseException {
+    public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
             // obtain relative path
-            String rPath = Parser.extractRPath(absPath);
+            String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
             // filter out things we don't want to read
             if (absPath.contains("\\dev_")) {
