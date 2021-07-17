@@ -1,12 +1,10 @@
-package ui2;
+package ui;
 
 import com.jfoenix.controls.*;
 import com.jfoenix.effects.JFXDepthManager;
 import datamodel.Enums;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -15,7 +13,6 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.kordamp.ikonli.javafx.FontIcon;

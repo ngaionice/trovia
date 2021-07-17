@@ -1,4 +1,4 @@
-package ui2;
+package ui;
 
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -7,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -32,12 +33,15 @@ public class Main extends Application {
         Scene scene = new Scene(root, 1280, 720);
         presenter = new Presenter(primaryStage, scene, root);
 
+
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/data-views.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/icon-styles.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/jfx-styles.css")).toExternalForm());
         root.setLeft(presenter.getNavBar());
 
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/cube.png"))));
+        primaryStage.setTitle("Trovia-E");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
