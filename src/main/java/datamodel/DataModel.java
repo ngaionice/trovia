@@ -287,6 +287,12 @@ public class DataModel {
                 changedCollectionIndices.isEmpty() && changedGearStyleTypes.isEmpty() && changedSkins.isEmpty();
     }
 
+    public boolean hasNoMergedPaths() {
+        return mergedBenchPaths.isEmpty() && mergedCollectionPaths.isEmpty() && mergedCollectionIndexPaths.isEmpty() &&
+                mergedGearStyleTypePaths.isEmpty() && mergedItemPaths.isEmpty() && mergedPlaceablePaths.isEmpty() &&
+                mergedRecipePaths.isEmpty() && mergedSkinPaths.isEmpty() && mergedStringIds.isEmpty();
+    }
+
     // GETTERS - MERGED DATA
 
     public List<String> getMergedPaths(Enums.ObjectType type) {

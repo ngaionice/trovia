@@ -45,7 +45,8 @@ public class UIController {
 
     DataModel model;
     String filter;
-    boolean useRPath;
+    boolean useRPathFlag;
+    boolean hasExportedFlag;
     List<String> selectedPathsToParse;
     List<String> failedParsePaths;
     Set<String> selectedPathsToMerge;
@@ -166,7 +167,7 @@ public class UIController {
                 try {
                     deserialize(entitiesPath);
                     model.createBlueprintMapping(mapDirPath);
-                    useRPath = !useAbsPath;
+                    useRPathFlag = !useAbsPath;
                 } catch (IOException e) {
                     print("Error occurred while loading in blueprint map.");
                 }
@@ -203,7 +204,7 @@ public class UIController {
                 protected Void call() {
                     String dirPath = selected.getAbsolutePath();
                     LocalDateTime currTime = LocalDateTime.now();
-                    String fileName = "trove-entities-" + (useRPath ? "" : "ns-") + (changedOnly ? "changes " : "all ") + currTime.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS")) + ".json";
+                    String fileName = "trove-entities-" + (useRPathFlag ? "" : "ns-") + (changedOnly ? "changes " : "all ") + currTime.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS")) + ".json";
                     try {
                         String path = dirPath + "\\" + fileName;
                         JsonWriter writer = serializer.newJsonWriter(new BufferedWriter(new FileWriter(path)));
@@ -228,6 +229,7 @@ public class UIController {
                             s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
                         writer.endObject();
                         writer.close();
+                        hasExportedFlag = true;
                         print("Data exported to " + path);
                     } catch (IOException e) {
                         print("Export failed due to an IOException; stack trace below:");
@@ -307,7 +309,7 @@ public class UIController {
     }
 
     boolean safeToClose() {
-        return model.hasNoUnmergedChanges();
+        return model.hasNoUnmergedChanges() && (model.hasNoMergedPaths() || hasExportedFlag);
     }
 
     // PARSING
@@ -422,7 +424,7 @@ public class UIController {
                     updateMessage("Parsing " + type + ": " + (i + 1) + "/" + selectedPathsLength);
                     updateProgress(i, selectedPathsLength);
                     try {
-                        model.createObject(selectedPathsToParse.get(i), type, useRPath);
+                        model.createObject(selectedPathsToParse.get(i), type, useRPathFlag);
                     } catch (IOException | ParseException e) {
                         parseLogs.add(timestampMessage("Parse failure: " + e.getMessage()));
                         failedParsePaths.add(selectedPathsToParse.get(i));

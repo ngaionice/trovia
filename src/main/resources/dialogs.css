@@ -19,21 +19,21 @@
     -fx-material: #212121;
     -fx-material-dark: #1B1B1B;
     -fx-content: #EEEEEE;
-    -fx-background-color: -fx-material-dark;
+    -fx-background: -fx-material-dark;
 }
 
 .dialog{
-    -fx-background-color: #1B1B1B;
+    -fx-background-color: -fx-background;
 }
 .dialog > *.button-bar > *.container{
-    -fx-background-color: #1B1B1B;
+    -fx-background-color: -fx-background;
 }
 .dialog > *.label.content{
     -fx-font-size: 12px;
     -fx-text-fill: -fx-content;
 }
 .dialog *.header-panel{
-    -fx-background-color: #1B1B1B;
+    -fx-background-color: -fx-background;
 }
 .dialog .header-panel .label{
     -fx-font-size: 14px;
