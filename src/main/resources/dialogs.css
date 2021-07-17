@@ -1,0 +1,48 @@
+@font-face {
+    font-family: "Roboto";
+    src: url("fonts/RobotoRegular.ttf");
+}
+
+@font-face {
+    font-family: "Roboto Medium";
+    src: url("fonts/RobotoMedium.ttf");
+}
+
+@font-face {
+    font-family: "Roboto Mono";
+    src: url("fonts/RobotoMono-Regular.ttf");
+}
+
+.root {
+    -fx-accent: #FF9800;
+    -fx-font-family: "Roboto";
+    -fx-material: #212121;
+    -fx-material-dark: #1B1B1B;
+    -fx-content: #EEEEEE;
+    -fx-background-color: -fx-material-dark;
+}
+
+.dialog{
+    -fx-background-color: #1B1B1B;
+}
+.dialog > *.button-bar > *.container{
+    -fx-background-color: #1B1B1B;
+}
+.dialog > *.label.content{
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-content;
+}
+.dialog *.header-panel{
+    -fx-background-color: #1B1B1B;
+}
+.dialog .header-panel .label{
+    -fx-font-size: 14px;
+    -fx-text-fill: -fx-content;
+}
+
+.dialog-pane .button{
+    -fx-background-color: -fx-material;
+    -fx-text-fill: -fx-content;
+    -fx-wrap-text: true;
+    -fx-cursor:hand;
+}
