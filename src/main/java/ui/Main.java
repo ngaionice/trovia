@@ -49,7 +49,7 @@ public class Main extends Application {
 
     private final EventHandler<WindowEvent> confirmCloseEventHandler = event -> {
         if (presenter == null || presenter.safeToClose()) return;
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You haven't exported your changes. Are you sure you want to exit?");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "You have unmerged changes and/or haven't exported your changes. Are you sure you want to exit?");
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/dialogs.css")).toExternalForm());
         dialogPane.getStyleClass().add("dialog");

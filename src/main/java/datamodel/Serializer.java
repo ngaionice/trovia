@@ -163,7 +163,7 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(collection.getRPath()));
             obj.add("name", new JsonPrimitive(collection.getName()));
             obj.add("desc", collection.getDesc() != null ? new JsonPrimitive(collection.getDesc()) : null);
-            obj.add("blueprint", new JsonPrimitive(collection.getBlueprint()));
+            obj.add("blueprint", collection.getBlueprint() != null ? new JsonPrimitive(collection.getBlueprint()) : null);
             obj.add("trove_mr", new JsonPrimitive(collection.getTroveMR()));
             obj.add("geode_mr", new JsonPrimitive(collection.getGeodeMR()));
 
@@ -346,7 +346,7 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(item.getRPath()));
             obj.add("name", new JsonPrimitive(item.getName()));
             obj.add("desc", item.getDesc() != null ? new JsonPrimitive(item.getDesc()) : null);
-            obj.add("blueprint", new JsonPrimitive(item.getBlueprint()));
+            obj.add("blueprint", item.getBlueprint() != null ? new JsonPrimitive(item.getBlueprint()) : null);
             obj.add("tradable", new JsonPrimitive(item.getTradable()));
             obj.add("lootbox", new JsonPrimitive(item.getLootbox()));
             obj.add("decay", new JsonPrimitive(item.getDecay()));
