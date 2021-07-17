@@ -89,7 +89,7 @@ public class UIController {
         model.getChangedStrings().addListener((MapChangeListener.Change<? extends String, ? extends String> c) -> strSize.setValue(model.getChangedStrings().size()));
     }
 
-    // LOADING DATA
+    // LOADING DATA & GENERAL METHODS
 
     /**
      * Can return null.
@@ -304,6 +304,10 @@ public class UIController {
             }
         });
         logger.setItems(loggerItems);
+    }
+
+    boolean safeToClose() {
+        return model.hasNoUnmergedChanges();
     }
 
     // PARSING

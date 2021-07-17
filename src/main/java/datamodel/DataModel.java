@@ -281,6 +281,12 @@ public class DataModel {
         return changedSkins;
     }
 
+    public boolean hasNoUnmergedChanges() {
+        return changedBenches.isEmpty() && changedCollections.isEmpty() && changedItems.isEmpty() &&
+                changedPlaceables.isEmpty() && changedRecipes.isEmpty() && changedStrings.isEmpty() &&
+                changedCollectionIndices.isEmpty() && changedGearStyleTypes.isEmpty() && changedSkins.isEmpty();
+    }
+
     // GETTERS - MERGED DATA
 
     public List<String> getMergedPaths(Enums.ObjectType type) {

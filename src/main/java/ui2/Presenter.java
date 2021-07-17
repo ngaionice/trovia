@@ -10,22 +10,18 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Presenter {
 
@@ -34,14 +30,14 @@ public class Presenter {
     BorderPane root;
     UIController controller;
 
-    public Presenter(Stage stage, Scene sc, BorderPane root) {
+    Presenter(Stage stage, Scene sc, BorderPane root) {
         this.stage = stage;
         this.scene = sc;
         this.root = root;
         this.controller = new UIController();
     }
 
-    public VBox getNavBar() {
+    VBox getNavBar() {
         VBox navBox = new VBox();
         Region spacer = new Region();
         JFXButton parseButton = new JFXButton("Parse");
@@ -79,6 +75,10 @@ public class Presenter {
         controller.disableActionButtons(actionButtons);
         root.setCenter(getScreenBorderPaneWithLogger("Setup", getSetupScreenContent(actionButtons)));
         return navBox;
+    }
+
+    boolean safeToClose() {
+        return controller.safeToClose();
     }
 
     private Pane getSetupScreenContent(List<Button> actionButtons) {
@@ -446,8 +446,7 @@ public class Presenter {
     }
 
     private void runQuitSequence() {
-        // need to add more stuff such as checking data is saved, etc
-        Platform.exit();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
     // HELPER METHODS
