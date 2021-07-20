@@ -1,5 +1,12 @@
-note that stats always start with 24 ($), then the middle numbers are variable
+# Dragon buff identifiers:
 
+Stats always start with `24` ($), then the middle numbers are variable, such that they have the format of
+
+`24 aa bb [marker]`
+
+## The markers:
+
+```
 mh: (flat/%)         6D 61 78 68 65 61 6C 74 68 46                   (maxhealthF)
 crit dmg:            63 72 69 74 68 69 74 64 61 6D 61 67 65 46       (crithitdamageF)
 crit dmg - old:      63 72 69 74 68 69 74 64 6D 67 46                (crithitdmgF)
@@ -35,3 +42,4 @@ note that attack speed, crit dmg, crit hit are not multipliers (%) here
 
 if both mh and mh% are granted, then maxhealth2 kicks in, where mh2 is the %;
 otherwise it is dependent on whether CD CC shows up
+```
