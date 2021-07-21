@@ -4,6 +4,7 @@ import datamodel.Enums;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Collection implements Article {
 
@@ -104,8 +105,8 @@ public class Collection implements Article {
     public boolean equals(Object o) {
         if (!(o instanceof Collection)) return false;
         Collection c = (Collection) o;
-        return name.equals(c.getName()) && desc.equals(c.getDesc()) && rPath.equals(c.getRPath()) && troveMR == c.getTroveMR()
+        return name.equals(c.getName()) && Objects.equals(desc, c.getDesc()) && rPath.equals(c.getRPath()) && troveMR == c.getTroveMR()
                 && geodeMR == c.getGeodeMR() && types.equals(c.getTypes()) && properties.equals(c.getProperties()) && buffs.equals(c.getBuffs())
-                && blueprint.equals(c.getBlueprint());
+                && Objects.equals(blueprint, c.getBlueprint());
     }
 }

@@ -36,11 +36,16 @@ public class ParseLangFile implements ParseStrategy {
                 currString = splitString.substring(currStartIndex, m.start());
                 em.reset(currString);
                 if (!em.find()) {
-                    if (o.strings.contains(currString)) {
-                        em.reset(o.replacements.get(o.strings.indexOf(currString))).find();
-                    } else {
-                        throw new ParseException(rPath + " has an unrecognized invalid string pattern: " + currString);
+                    boolean replaced = false;
+                    for (int i = 0; i < o.strings.size(); i++) {
+                        if (currString.contains(o.strings.get(i))) {
+                            currString = currString.replace(o.strings.get(i), o.replacements.get(i));
+                            em.reset(currString).find();
+                            replaced = true;
+                            break;
+                        }
                     }
+                    if (!replaced) throw new ParseException(rPath + " has an unrecognized invalid string pattern: " + currString);
                 }
                 key = Parser.hexToAscii(em.group(2));
                 if (!Character.isLetter(key.charAt(1)) && !Character.isDigit(key.charAt(1))) key = key.substring(1);

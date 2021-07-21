@@ -1,5 +1,7 @@
 package datamodel.objects;
 
+import java.util.Objects;
+
 public class Placeable implements Article {
 
     String name;
@@ -58,7 +60,7 @@ public class Placeable implements Article {
     public boolean equals(Object o) {
         if (!(o instanceof Placeable)) return false;
         Placeable p = (Placeable) o;
-        return name.equals(p.getName()) && desc.equals(p.getDesc()) && rPath.equals(p.getRPath())
-                && blueprint.equals(p.getBlueprint()) && tradable == p.getTradable();
+        return name.equals(p.getName()) && Objects.equals(desc, p.getDesc()) && rPath.equals(p.getRPath())
+                && Objects.equals(blueprint, p.getBlueprint()) && tradable == p.getTradable();
     }
 }

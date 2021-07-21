@@ -151,12 +151,6 @@ public class UIController {
                 disableActionButtons(buttonsToDisable);
                 enableActionButtons(buttonsToEnable);
             });
-            List<String> messages = new ArrayList<>();
-            if (entitiesPath != null && !entitiesPath.equals("")) messages.add("Existing data loaded from " + entitiesPath);
-            if (mapDirPath != null && !mapDirPath.equals("")) messages.add("Blueprint mapping supplementary files loaded from " + mapDirPath);
-            if (useAbsPath) messages.add("Non-standard folder structure selected; this makes comparison with existing and future data impossible unless they have the same absolute file paths.");
-            messages.add("Data loading complete.");
-            printList(messages);
         }).start();
     }
 
@@ -166,10 +160,17 @@ public class UIController {
             protected Void call() {
                 try {
                     deserialize(entitiesPath);
+                    if (entitiesPath != null && !entitiesPath.equals("")) logs.add("Existing data loaded from " + entitiesPath);
                     model.createBlueprintMapping(mapDirPath);
+                    if (mapDirPath != null && !mapDirPath.equals("")) logs.add("Blueprint mapping supplementary files will be sourced from " + mapDirPath);
                     useRPathFlag = !useAbsPath;
-                } catch (IOException e) {
-                    print("Error occurred while loading in blueprint map.");
+                    if (useAbsPath) logs.add("Non-standard folder structure selected; this makes comparison with existing and future data impossible unless they have the same absolute file paths.");
+                    logs.add("Data loading complete.");
+                } catch (Exception e) {
+                    print("An error occurred while loading in data; stack trace below:");
+                    List<String> messages = new ArrayList<>();
+                    Arrays.stream(e.getStackTrace()).forEach(m -> messages.add(m.toString()));
+                    printList(messages);
                 }
                 return null;
             }
@@ -226,13 +227,13 @@ public class UIController {
                         if (selection[7] != 0)
                             s.writeSkins(writer, serializer, changedOnly ? model.getChangedSkins() : model.getSessionSkins());
                         if (selection[8] != 0)
-                            s.writeStrings(writer, changedOnly ? model.getChangedStrings() : model.getSessionStrings().getStrings());
+                            s.writeStrings(writer, serializer, changedOnly ? new Strings("en", model.getChangedStrings()) : model.getSessionStrings());
                         writer.endObject();
                         writer.close();
                         hasExportedFlag = true;
                         print("Data exported to " + path);
-                    } catch (IOException e) {
-                        print("Export failed due to an IOException; stack trace below:");
+                    } catch (Exception e) {
+                        print("Export failed due to an exception; stack trace below:");
                         List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
                         printList(errorList);
                     }
@@ -248,7 +249,7 @@ public class UIController {
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(false);
         try {
-            JsonElement tree = new JsonParser().parse(new FileReader(path));
+            JsonElement tree = JsonParser.parseReader(new FileReader(path));
             tree.getAsJsonObject().entrySet().forEach(e -> {
                 String type = e.getKey();
                 e.getValue().getAsJsonObject().entrySet().forEach(v -> {

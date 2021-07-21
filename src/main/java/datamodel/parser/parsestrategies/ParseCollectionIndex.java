@@ -10,7 +10,7 @@ import datamodel.parser.Regexes;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParseCollectionIndex implements ParseStrategy{
+public class ParseCollectionIndex implements ParseStrategy {
     @Override
     public Article parseObject(String splitString, String absPath, boolean useRPath) throws ParseException {
         try {
@@ -18,7 +18,7 @@ public class ParseCollectionIndex implements ParseStrategy{
 
             String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
             if (!rPath.contains("collection_")) throw new ParseException(rPath + ": cannot extract collection type.");
-            String type = rPath.substring(rPath.lastIndexOf("\\") + 1).replace("collection_", "");
+            String type = rPath.substring(rPath.lastIndexOf("/") + 1).replace("collection_", "");
 
             Matcher cm = Pattern.compile(r.collIndexCatExtractor).matcher(splitString);
             Matcher im = Pattern.compile(r.collIndexInfoExtractor).matcher("");

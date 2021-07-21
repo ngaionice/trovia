@@ -1,5 +1,7 @@
 package datamodel.objects;
 
+import java.util.Objects;
+
 public class Skin implements Article {
 
     String rPath;
@@ -46,6 +48,6 @@ public class Skin implements Article {
     public boolean equals(Object o) {
         if (!(o instanceof Skin)) return false;
         Skin s = (Skin) o;
-        return name.equals(s.getName()) && desc.equals(s.getDesc()) && rPath.equals(s.getRPath()) && blueprint.equals(s.getBlueprint());
+        return name.equals(s.getName()) && Objects.equals(desc, s.getDesc()) && rPath.equals(s.getRPath()) && blueprint.equals(s.getBlueprint());
     }
 }

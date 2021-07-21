@@ -3,6 +3,7 @@ package datamodel.objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Item implements Article {
 
@@ -94,8 +95,8 @@ public class Item implements Article {
     public boolean equals(Object o) {
         if (!(o instanceof Item)) return false;
         Item i = (Item) o;
-        return name.equals(i.getName()) && desc.equals(i.getDesc()) && rPath.equals(i.getRPath())
-                && blueprint.equals(i.getBlueprint()) && tradable == i.getTradable() && lootbox == i.getLootbox()
+        return name.equals(i.getName()) && Objects.equals(desc, i.getDesc()) && rPath.equals(i.getRPath())
+                && Objects.equals(blueprint, i.getBlueprint()) && tradable == i.getTradable() && lootbox == i.getLootbox()
                 && decay == i.getDecay() && unlocks.equals(i.getUnlocks());
     }
 }

@@ -6,24 +6,12 @@ public class GearStyleType implements Article {
 
     String rPath;
     String type;
-    Map<String, Map<String, String[]>> styles;
+    Map<String, Map<String, GearStyleEntry>> styles;
 
-    public GearStyleType(String rPath, String type, Map<String, Map<String, String[]>> styles) {
+    public GearStyleType(String rPath, String type, Map<String, Map<String, GearStyleEntry>> styles) {
         this.rPath = rPath;
         this.type = type;
         this.styles = styles;
-    }
-
-    public void upsertStyle(String category, String blueprint, String[] data) {
-        if (data.length == 3) {
-            styles.get(category).put(blueprint, data);
-        }
-    }
-
-    public void updateBlueprint(String category, String oldBlueprint, String newBlueprint) {
-        String[] value = styles.get(category).get(oldBlueprint);
-        styles.remove(oldBlueprint);
-        styles.get(category).put(newBlueprint, value);
     }
 
     public String getRPath() {
@@ -34,16 +22,12 @@ public class GearStyleType implements Article {
         return type;
     }
 
-    public Map<String, Map<String, String[]>> getStyles() {
+    public Map<String, Map<String, GearStyleEntry>> getStyles() {
         return styles;
     }
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public void setStyles(Map<String, Map<String, String[]>> styles) {
-        this.styles = styles;
     }
 
     @Override

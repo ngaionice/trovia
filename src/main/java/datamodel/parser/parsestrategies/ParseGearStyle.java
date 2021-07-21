@@ -3,6 +3,7 @@ package datamodel.parser.parsestrategies;
 import com.google.re2j.Matcher;
 import com.google.re2j.Pattern;
 import datamodel.objects.Article;
+import datamodel.objects.GearStyleEntry;
 import datamodel.objects.GearStyleType;
 import datamodel.parser.Parser;
 import datamodel.parser.Regexes;
@@ -23,7 +24,7 @@ public class ParseGearStyle implements ParseStrategy {
             Matcher em = Pattern.compile(r.gearStyleInfoExtractor).matcher("");
 
             Map<String, String> categories = new HashMap<>();
-            Map<String, Map<String, String[]>> styles = new HashMap<>();
+            Map<String, Map<String, GearStyleEntry>> styles = new HashMap<>();
 
             while (cm.find()) {
                 categories.put(Parser.hexToAscii(cm.group(1)), cm.group(3));
@@ -31,13 +32,13 @@ public class ParseGearStyle implements ParseStrategy {
 
             categories.forEach((k, v) -> {
                 em.reset(v);
-                Map<String, String[]> currStyles = new HashMap<>();
+                Map<String, GearStyleEntry> currStyles = new HashMap<>();
                 while (em.find()) {
                     String blueprint = Parser.hexToAscii(em.group(1));
                     String name = em.group(2).equals("00 ") ? null : Parser.hexToAscii(em.group(3));
                     String desc = em.group(4).equals("00 ") ? null : Parser.hexToAscii(em.group(5));
                     String info = em.group(6).equals("00 ") ? null : Parser.hexToAscii(em.group(7));
-                    currStyles.put(blueprint, new String[]{name, desc, info});
+                    currStyles.put(blueprint, new GearStyleEntry(name, desc, blueprint, info));
                 }
                 styles.put(k, currStyles);
             });

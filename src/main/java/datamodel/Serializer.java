@@ -2,9 +2,8 @@ package datamodel;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
-import datamodel.objects.*;
 import datamodel.objects.Collection;
-import jdk.nashorn.internal.scripts.JD;
+import datamodel.objects.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -102,13 +101,8 @@ public class Serializer {
         writer.endObject();
     }
 
-    public void writeStrings(JsonWriter writer, Map<String, String> strings) throws IOException {
-        writer.name("strings");
-        writer.beginObject();
-        for (Map.Entry<String, String> entry: strings.entrySet()) {
-            writer.name(entry.getKey()).value(entry.getValue());
-        }
-        writer.endObject();
+    public void writeStrings(JsonWriter writer, Gson serializer, Strings strings) throws IOException {
+        writer.name("strings").jsonValue(serializer.toJson(strings));
     }
 
     public static class BenchSerializer implements JsonSerializer<Bench>, JsonDeserializer<Bench> {
@@ -120,16 +114,16 @@ public class Serializer {
             obj.add("name", new JsonPrimitive(bench.getName()));
 
             JsonObject categories = new JsonObject();
-            for (Map.Entry<String[], List<String>> entry : bench.getCategories().entrySet()) {
-                String bench_index = entry.getKey()[1];
+            for (Map.Entry<String, List<String>> entry : bench.getCategories().entrySet()) {
+                String benchIndex = bench.getOrder().get(entry.getKey()).toString(); // note that this will throw an NullPointerException if no such key-value pair exists
 
                 JsonObject value = new JsonObject();
-                value.add("name_id", new JsonPrimitive(entry.getKey()[0]));
+                value.add("name_id", new JsonPrimitive(entry.getKey()));
                 JsonArray recipes = new JsonArray();
                 entry.getValue().forEach(recipes::add);
                 value.add("recipes", recipes);
 
-                categories.add(bench_index, value);
+                categories.add(benchIndex, value);
             }
             obj.add("categories", categories);
             return obj;
@@ -140,18 +134,21 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
-            Map<String[], List<String>> categories = new HashMap<>();
+            Map<String, List<String>> categories = new HashMap<>();
+            Map<String, Integer> order = new HashMap<>();
             JsonObject catsObj = obj.get("categories").getAsJsonObject();
 
             catsObj.entrySet().forEach(e -> {
                 JsonObject val = e.getValue().getAsJsonObject();
-                String[] key = new String[]{val.get("name_id").getAsString(), e.getKey()};
+                int catOrder = Integer.parseInt(e.getKey());
+                String catName = val.get("name_id").getAsString();
                 List<String> recipes = new ArrayList<>();
                 val.get("recipes").getAsJsonArray().forEach(rec -> recipes.add(rec.getAsString()));
-                categories.put(key, recipes);
+                order.put(catName, catOrder);
+                categories.put(catName, recipes);
             });
 
-            return new Bench(name, rPath, categories);
+            return new Bench(name, rPath, order, categories);
         }
     }
 
@@ -188,8 +185,8 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
-            String desc = obj.get("desc").getAsString();
-            String blueprint = obj.get("blueprint").getAsString();
+            String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").isJsonNull() ? null : obj.get("blueprint").getAsString();
             int troveMR = obj.get("trove_mr").getAsInt();
             int geodeMR = obj.get("geode_mr").getAsInt();
             List<Enums.Type> types = new ArrayList<>();
@@ -289,19 +286,19 @@ public class Serializer {
             obj.add("type", new JsonPrimitive(gearStyleType.getType()));
 
             JsonObject styles = new JsonObject();
-            for (Map.Entry<String, Map<String, String[]>> entry: gearStyleType.getStyles().entrySet()) {
+            for (Map.Entry<String, Map<String, GearStyleEntry>> entry: gearStyleType.getStyles().entrySet()) {
                 String category = entry.getKey();
                 JsonObject categoryStyles = new JsonObject();
-                for (Map.Entry<String, String[]> styleEntry: entry.getValue().entrySet()) {
+                for (Map.Entry<String, GearStyleEntry> styleEntry: entry.getValue().entrySet()) {
                     String blueprint = styleEntry.getKey();
-                    String[] values = styleEntry.getValue();
-                    String name = values[0];
-                    String desc = values[1];
-                    String info = values[2];
+                    GearStyleEntry value = styleEntry.getValue();
+                    String name = value.getName();
+                    String desc = value.getDesc();
+                    String info = value.getAdditionalInfo();
                     JsonObject objectProps = new JsonObject();
-                    objectProps.add("name", values[0] != null ? new JsonPrimitive(name) : null);
-                    objectProps.add("desc", values[1] != null ? new JsonPrimitive(desc) : null);
-                    objectProps.add("additional_info", values[2] != null ? new JsonPrimitive(info) : null);
+                    objectProps.add("name", name != null ? new JsonPrimitive(name) : null);
+                    objectProps.add("desc", desc != null ? new JsonPrimitive(desc) : null);
+                    objectProps.add("additional_info", info != null ? new JsonPrimitive(info) : null);
                     categoryStyles.add(blueprint, objectProps);
                 }
                 styles.add(category, categoryStyles);
@@ -316,20 +313,20 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String gsType = obj.get("type").getAsString();
-            Map<String, Map<String, String[]>> styles = new HashMap<>();
+            Map<String, Map<String, GearStyleEntry>> styles = new HashMap<>();
 
             JsonObject categories = obj.get("styles").getAsJsonObject();
             categories.entrySet().forEach(c -> {
                 String key = c.getKey();
                 JsonObject entriesObj = c.getValue().getAsJsonObject();
-                Map<String, String[]> entries = new HashMap<>();
+                Map<String, GearStyleEntry> entries = new HashMap<>();
                 entriesObj.entrySet().forEach(e -> {
                     String blueprint = e.getKey();
                     JsonObject val = e.getValue().getAsJsonObject();
-                    String name = val.get("name").getAsString();
-                    String desc = val.get("desc").getAsString();
-                    String additional = val.get("additional_info").getAsString();
-                    entries.put(blueprint, new String[]{name, desc, additional});
+                    String name = val.get("name").isJsonNull() ? null : val.get("name").getAsString();
+                    String desc = val.get("desc").isJsonNull() ? null : val.get("desc").getAsString();
+                    String additional = val.get("additional_info").isJsonNull() ? null : val.get("additional_info").getAsString();
+                    entries.put(blueprint, new GearStyleEntry(name, desc, blueprint, additional));
                 });
                 styles.put(key, entries);
             });
@@ -364,8 +361,8 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
-            String desc = obj.get("desc").getAsString();
-            String blueprint = obj.get("blueprint").getAsString();
+            String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").isJsonNull() ? null :obj.get("blueprint").getAsString();
             boolean tradable = obj.get("tradable").getAsBoolean();
             boolean lootbox = obj.get("lootbox").getAsBoolean();
             boolean decay = obj.get("decay").getAsBoolean();
@@ -386,8 +383,8 @@ public class Serializer {
             obj.add("rel_path", new JsonPrimitive(placeable.getRPath()));
             obj.add("name", new JsonPrimitive(placeable.getName()));
             obj.add("desc", placeable.getDesc() != null ? new JsonPrimitive(placeable.getDesc()) : null);
-            obj.add("tradable", new JsonPrimitive(placeable.getTradable() ? 1 : 0));
             obj.add("blueprint", placeable.getBlueprint() != null ? new JsonPrimitive(placeable.getBlueprint()) : null);
+            obj.add("tradable", new JsonPrimitive(placeable.getTradable() ? 1 : 0));
 
             return obj;
         }
@@ -397,8 +394,8 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
-            String desc = obj.get("desc").getAsString();
-            String blueprint = obj.get("blueprint").getAsString();
+            String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
+            String blueprint = obj.get("blueprint").isJsonNull() ? null : obj.get("blueprint").getAsString();
             boolean tradable = obj.get("tradable").getAsBoolean();
 
             return new Placeable(name, desc, rPath, blueprint, tradable);
@@ -461,7 +458,7 @@ public class Serializer {
             JsonObject obj = jsonElement.getAsJsonObject();
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
-            String desc = obj.get("desc").getAsString();
+            String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
             String blueprint = obj.get("blueprint").getAsString();
 
             return new Skin(rPath, name, desc, blueprint);
@@ -476,7 +473,7 @@ public class Serializer {
             obj.add("lang", new JsonPrimitive(s.getLang()));
 
             JsonObject strings = new JsonObject();
-            s.getStrings().forEach((k, v) -> strings.add(k, new JsonPrimitive(v)));
+            s.getStrings().forEach((k, v) -> strings.add(k, v == null ? null : new JsonPrimitive(v)));
 
             obj.add("strings", strings);
 

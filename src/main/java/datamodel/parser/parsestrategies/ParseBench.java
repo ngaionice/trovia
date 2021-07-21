@@ -62,12 +62,13 @@ public class ParseBench implements ParseStrategy {
 
             // non-standard format, not handled by this function
             else {
-                throw new ParseException("Less than 2 '$prefab's were found for" + rPath + ".");
+                throw new ParseException("Less than 2 '$prefab's were found for " + rPath + ".");
             }
 
             // creating the Bench object
             String name = categoryList.get(0).get(0);
-            Map<String[], List<String>> categories = new HashMap<>(250);
+            Map<String, List<String>> categories = new HashMap<>(250);
+            Map<String, Integer> order = new HashMap<>();
             for (int i = 1; i < categoryList.size(); i++) {
 
                 List<String> currCatHex = categoryList.get(i);
@@ -76,14 +77,13 @@ public class ParseBench implements ParseStrategy {
                     currCat.add(Parser.hexToAscii(catHex));
                 }
 
-                String[] categoryName = new String[]{currCat.get(0), Integer.toString(i)};
+                String categoryName = currCat.get(0);
+                order.put(categoryName, i);
                 List<String> recipes = new ArrayList<>(currCat.subList(1, currCat.size()));
 
                 categories.put(categoryName, recipes);
             }
-
-
-            return new Bench(name, rPath, categories);
+            return new Bench(name, rPath, order, categories);
         } catch (Exception e) {
             throw new ParseException(e.getMessage());
         }
