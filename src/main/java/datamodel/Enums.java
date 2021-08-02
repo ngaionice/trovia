@@ -131,7 +131,7 @@ public class Enums {
         COLLECTION,
         COLL_INDEX,
         GEAR_STYLE,
-        STRING,
+        LANG_FILE,
         PLACEABLE,
         RECIPE,
         PROFESSION,
@@ -146,13 +146,12 @@ public class Enums {
                     return COLL_INDEX;
                 }
                 return COLLECTION;
-            }
-            else if (inputCleaned.contains("gear style")) return GEAR_STYLE;
+            } else if (inputCleaned.contains("gear style")) return GEAR_STYLE;
             else if (inputCleaned.contains("placeable")) return PLACEABLE;
             else if (inputCleaned.contains("profession")) return PROFESSION;
             else if (inputCleaned.contains("recipe")) return RECIPE;
             else if (inputCleaned.contains("skin")) return SKIN;
-            else if (inputCleaned.contains("string")) return STRING;
+            else if (inputCleaned.contains("string")) return LANG_FILE;
             else throw new IllegalArgumentException();
         }
 
@@ -169,6 +168,8 @@ public class Enums {
                     return "Collection index";
                 case GEAR_STYLE:
                     return "Gear style";
+                case LANG_FILE:
+                    return "Language File";
                 case PLACEABLE:
                     return "Placeable";
                 case PROFESSION:
@@ -177,8 +178,6 @@ public class Enums {
                     return "Recipe";
                 case SKIN:
                     return "Skin";
-                case STRING:
-                    return "Language File";
                 default:
                     throw new IllegalArgumentException();
             }

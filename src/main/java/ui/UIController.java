@@ -2,6 +2,7 @@ package ui;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import datamodel.DataModel;
@@ -160,12 +161,11 @@ public class UIController {
             protected Void call() {
                 try {
                     deserialize(entitiesPath);
-                    if (entitiesPath != null && !entitiesPath.equals("")) logs.add("Existing data loaded from " + entitiesPath);
                     model.createBlueprintMapping(mapDirPath);
-                    if (mapDirPath != null && !mapDirPath.equals("")) logs.add("Blueprint mapping supplementary files will be sourced from " + mapDirPath);
+                    if (mapDirPath != null && !mapDirPath.equals("")) logs.add(timestampMessage("Blueprint mapping supplementary files will be sourced from " + mapDirPath));
                     useRPathFlag = !useAbsPath;
-                    if (useAbsPath) logs.add("Non-standard folder structure selected; this makes comparison with existing and future data impossible unless they have the same absolute file paths.");
-                    logs.add("Data loading complete.");
+                    if (useAbsPath) logs.add(timestampMessage("Non-standard folder structure selected; this makes comparison with existing and future data impossible unless they have the same absolute file paths."));
+                    logs.add(timestampMessage("Initial setup complete."));
                 } catch (Exception e) {
                     print("An error occurred while loading in data; stack trace below:");
                     List<String> messages = new ArrayList<>();
@@ -279,14 +279,16 @@ public class UIController {
                             model.addArticleToSession(serializer.fromJson(v.getValue(), Skin.class), Enums.ObjectType.SKIN);
                             break;
                         case "strings":
-                            model.setSessionString(serializer.fromJson(v.getValue(), Strings.class));
+                            JsonObject obj = new JsonObject();
+                            obj.add(type, v.getValue());
+                            model.setSessionString(serializer.fromJson(obj, Strings.class));
                             break;
                         default:
                             throw new IllegalArgumentException("No such type: " + type);
                     }
                 });
             });
-            print("Entities imported from JSON file.");
+            print("Existing data loaded from " + path);
         } catch (IOException | IllegalArgumentException e) {
             print("Import failed due to an IOException; stack trace below:");
             List<String> errorList = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
@@ -556,7 +558,7 @@ public class UIController {
                 return FXCollections.observableArrayList(model.getChangedRecipes().keySet());
             case SKIN:
                 return FXCollections.observableArrayList(model.getChangedSkins().keySet());
-            case STRING:
+            case LANG_FILE:
                 return FXCollections.observableArrayList(model.getChangedStrings().keySet());
             default:
                 throw new IllegalArgumentException("No such type: " + type);
@@ -574,7 +576,7 @@ public class UIController {
                 newPaths.add(p);
             }
             model.addArticleToSession(getObject(p, type, true), type);
-            model.removeArticleFromChanges(p, type);
+            model.removeArticle(p, type, true);
             model.addMergedPath(p, type);
         });
         mementos.push(new MergeMemento(oldArticles, newPaths, type));
@@ -591,7 +593,7 @@ public class UIController {
         });
         pathsToRemove.forEach(p -> {
             model.addArticleToChanges(getObject(p, type, false), type, true);
-            model.removeArticleFromSession(p, type);
+            model.removeArticle(p, type, false);
         });
     }
 
@@ -613,7 +615,7 @@ public class UIController {
                 return getChanged ? model.getChangedRecipes().get(path) : model.getSessionRecipes().get(path);
             case SKIN:
                 return getChanged ? model.getChangedSkins().get(path) : model.getSessionSkins().get(path);
-            case STRING:
+            case LANG_FILE:
                 Map<String, String> pairs = new HashMap<>();
                 if (getChanged) pairs.put(path, model.getChangedStrings().get(path));
                 else pairs.put(path, model.getSessionStrings().getString(path));

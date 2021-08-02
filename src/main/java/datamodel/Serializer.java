@@ -32,7 +32,7 @@ public class Serializer {
     public void writeBenches(JsonWriter writer, Gson serializer, Map<String, Bench> benches) throws IOException {
         writer.name("benches");
         writer.beginObject();
-        for (Map.Entry<String, Bench> entry: benches.entrySet()) {
+        for (Map.Entry<String, Bench> entry : benches.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -41,7 +41,7 @@ public class Serializer {
     public void writeCollections(JsonWriter writer, Gson serializer, Map<String, Collection> collections) throws IOException {
         writer.name("collections");
         writer.beginObject();
-        for (Map.Entry<String, Collection> entry: collections.entrySet()) {
+        for (Map.Entry<String, Collection> entry : collections.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -50,7 +50,7 @@ public class Serializer {
     public void writeCollectionIndices(JsonWriter writer, Gson serializer, Map<String, CollectionIndex> indices) throws IOException {
         writer.name("collection_indices");
         writer.beginObject();
-        for (Map.Entry<String, CollectionIndex> entry: indices.entrySet()) {
+        for (Map.Entry<String, CollectionIndex> entry : indices.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -59,7 +59,7 @@ public class Serializer {
     public void writeGearStyles(JsonWriter writer, Gson serializer, Map<String, GearStyleType> styles) throws IOException {
         writer.name("gear_styles");
         writer.beginObject();
-        for (Map.Entry<String, GearStyleType> entry: styles.entrySet()) {
+        for (Map.Entry<String, GearStyleType> entry : styles.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -68,7 +68,7 @@ public class Serializer {
     public void writeItems(JsonWriter writer, Gson serializer, Map<String, Item> items) throws IOException {
         writer.name("items");
         writer.beginObject();
-        for (Map.Entry<String, Item> entry: items.entrySet()) {
+        for (Map.Entry<String, Item> entry : items.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -77,7 +77,7 @@ public class Serializer {
     public void writePlaceables(JsonWriter writer, Gson serializer, Map<String, Placeable> placeables) throws IOException {
         writer.name("placeables");
         writer.beginObject();
-        for (Map.Entry<String, Placeable> entry: placeables.entrySet()) {
+        for (Map.Entry<String, Placeable> entry : placeables.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -86,7 +86,7 @@ public class Serializer {
     public void writeRecipes(JsonWriter writer, Gson serializer, Map<String, Recipe> recipes) throws IOException {
         writer.name("recipes");
         writer.beginObject();
-        for (Map.Entry<String, Recipe> entry: recipes.entrySet()) {
+        for (Map.Entry<String, Recipe> entry : recipes.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -95,7 +95,7 @@ public class Serializer {
     public void writeSkins(JsonWriter writer, Gson serializer, Map<String, Skin> skins) throws IOException {
         writer.name("skins");
         writer.beginObject();
-        for (Map.Entry<String, Skin> entry: skins.entrySet()) {
+        for (Map.Entry<String, Skin> entry : skins.entrySet()) {
             writer.name(entry.getKey()).jsonValue(serializer.toJson(entry.getValue()));
         }
         writer.endObject();
@@ -215,7 +215,7 @@ public class Serializer {
             obj.add("type", new JsonPrimitive(index.getType()));
 
             JsonObject categories = new JsonObject();
-            for (Map.Entry<String, String> nameEntry: index.getNames().entrySet()) {
+            for (Map.Entry<String, String> nameEntry : index.getNames().entrySet()) {
                 String key = nameEntry.getKey();
 
                 JsonObject category = new JsonObject();
@@ -223,7 +223,7 @@ public class Serializer {
 
                 JsonArray entries = new JsonArray();
                 JsonObject additionalInfo = new JsonObject();
-                for (Map.Entry<String, String> infoEntry: index.getCategories().get(key).entrySet()) {
+                for (Map.Entry<String, String> infoEntry : index.getCategories().get(key).entrySet()) {
                     entries.add(infoEntry.getKey());
                     if (infoEntry.getValue() != null) {
                         additionalInfo.add(infoEntry.getKey(), new JsonPrimitive(infoEntry.getValue()));
@@ -286,10 +286,10 @@ public class Serializer {
             obj.add("type", new JsonPrimitive(gearStyleType.getType()));
 
             JsonObject styles = new JsonObject();
-            for (Map.Entry<String, Map<String, GearStyleEntry>> entry: gearStyleType.getStyles().entrySet()) {
+            for (Map.Entry<String, Map<String, GearStyleEntry>> entry : gearStyleType.getStyles().entrySet()) {
                 String category = entry.getKey();
                 JsonObject categoryStyles = new JsonObject();
-                for (Map.Entry<String, GearStyleEntry> styleEntry: entry.getValue().entrySet()) {
+                for (Map.Entry<String, GearStyleEntry> styleEntry : entry.getValue().entrySet()) {
                     String blueprint = styleEntry.getKey();
                     GearStyleEntry value = styleEntry.getValue();
                     String name = value.getName();
@@ -362,7 +362,7 @@ public class Serializer {
             String rPath = obj.get("rel_path").getAsString();
             String name = obj.get("name").getAsString();
             String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
-            String blueprint = obj.get("blueprint").isJsonNull() ? null :obj.get("blueprint").getAsString();
+            String blueprint = obj.get("blueprint").isJsonNull() ? null : obj.get("blueprint").getAsString();
             boolean tradable = obj.get("tradable").getAsBoolean();
             boolean lootbox = obj.get("lootbox").getAsBoolean();
             boolean decay = obj.get("decay").getAsBoolean();
@@ -470,7 +470,7 @@ public class Serializer {
         @Override
         public JsonElement serialize(Strings s, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
-            obj.add("lang", new JsonPrimitive(s.getLang()));
+//            obj.add("lang", new JsonPrimitive(s.getLang() == null ? "n/a" : s.getLang()));
 
             JsonObject strings = new JsonObject();
             s.getStrings().forEach((k, v) -> strings.add(k, v == null ? null : new JsonPrimitive(v)));
@@ -483,12 +483,12 @@ public class Serializer {
         @Override
         public Strings deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             JsonObject obj = jsonElement.getAsJsonObject();
-            String lang = obj.get("lang").getAsString();
+//            String lang = obj.get("lang").getAsString();
             JsonObject strObj = obj.get("strings").getAsJsonObject();
             Map<String, String> strings = new HashMap<>();
-            strObj.entrySet().forEach(e -> strings.put(e.getKey(), e.getValue().getAsString()));
+            strObj.entrySet().forEach(e -> strings.put(e.getKey(), e.getValue().isJsonNull() ? null : e.getValue().getAsString()));
 
-            return new Strings(lang, strings);
+            return new Strings("n/a", strings);
         }
     }
 }

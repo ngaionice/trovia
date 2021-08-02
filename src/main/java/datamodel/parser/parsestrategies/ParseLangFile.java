@@ -26,6 +26,16 @@ public class ParseLangFile implements ParseStrategy {
             String name = absPath.substring(absPath.lastIndexOf("\\") + 1, absPath.indexOf(mk.endFile));
             String rPath = useRPath ? Parser.extractRPath(absPath) : absPath.replace("\\", "/");
 
+            String lang;
+            if (!useRPath) lang = "default";
+            else {
+                int lastSlash = rPath.lastIndexOf("/");
+                int secondLastSlash = rPath.substring(0, Math.max(lastSlash, 0)).lastIndexOf("/");
+                if (secondLastSlash == -1)
+                    throw new ParseException(rPath + " was not able to have its language extracted.");
+                lang = rPath.substring(secondLastSlash + 1, lastSlash);
+            }
+
             Map<String, String> strings = new HashMap<>();
 
             int currStartIndex = 0;
@@ -45,7 +55,8 @@ public class ParseLangFile implements ParseStrategy {
                             break;
                         }
                     }
-                    if (!replaced) throw new ParseException(rPath + " has an unrecognized invalid string pattern: " + currString);
+                    if (!replaced)
+                        throw new ParseException(rPath + " has an unrecognized invalid string pattern: " + currString);
                 }
                 key = Parser.hexToAscii(em.group(2));
                 if (!Character.isLetter(key.charAt(1)) && !Character.isDigit(key.charAt(1))) key = key.substring(1);
@@ -53,7 +64,7 @@ public class ParseLangFile implements ParseStrategy {
                 currStartIndex = m.start() + 18;
             }
 
-            return new LangFile(name, rPath, strings);
+            return new LangFile(name, rPath, lang, strings);
         } catch (Exception e) {
             throw new ParseException(e.getMessage());
         }

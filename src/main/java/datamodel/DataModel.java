@@ -1,6 +1,5 @@
 package datamodel;
 
-import datamodel.objects.Collection;
 import datamodel.objects.*;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
@@ -8,7 +7,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DataModel {
 
@@ -101,7 +103,7 @@ public class DataModel {
     public Map<String, Skin> getSessionSkins() {
         return sessionSkins;
     }
-    
+
     // SETTERS
 
     public void addArticleToSession(Article a, Enums.ObjectType type) {
@@ -130,7 +132,7 @@ public class DataModel {
             case SKIN:
                 sessionSkins.put(a.getRPath(), (Skin) a);
                 break;
-            case STRING:
+            case LANG_FILE:
                 LangFile l = (LangFile) a;
                 l.getStrings().forEach((k, v) -> sessionStrings.upsertString(k, v));
                 break;
@@ -139,102 +141,91 @@ public class DataModel {
         }
     }
 
-    public void removeArticleFromSession(String identifier, Enums.ObjectType type){
-        switch (type) {
-            case BENCH:
-                sessionBenches.remove(identifier);
-                break;
-            case COLLECTION:
-                sessionCollections.remove(identifier);
-                break;
-            case COLL_INDEX:
-                sessionCollectionIndices.remove(identifier);
-                break;
-            case GEAR_STYLE:
-                sessionGearStyleTypes.remove(identifier);
-                break;
-            case ITEM:
-                sessionItems.remove(identifier);
-                break;
-            case PLACEABLE:
-                sessionPlaceables.remove(identifier);
-                break;
-            case RECIPE:
-                sessionRecipes.remove(identifier);
-                break;
-            case SKIN:
-                sessionSkins.remove(identifier);
-                break;
-            case STRING:
-                sessionStrings.removeString(identifier);
-                break;
-        }
-    }
-
     public void addArticleToChanges(Article a, Enums.ObjectType type, boolean forceAdd) {
-        String rPath = type != Enums.ObjectType.STRING ? a.getRPath() : null;
+        String rPath = type != Enums.ObjectType.LANG_FILE ? a.getRPath() : null;
         switch (type) {
             case BENCH:
-                if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(a) || forceAdd) changedBenches.put(rPath, (Bench) a);
+                if (!sessionBenches.containsKey(rPath) || !sessionBenches.get(rPath).equals(a) || forceAdd)
+                    changedBenches.put(rPath, (Bench) a);
                 break;
             case COLLECTION:
-                if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(a) || forceAdd) changedCollections.put(rPath, (Collection) a);
+                if (!sessionCollections.containsKey(rPath) || !sessionCollections.get(rPath).equals(a) || forceAdd)
+                    changedCollections.put(rPath, (Collection) a);
                 break;
             case COLL_INDEX:
-                if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(a) || forceAdd) changedCollectionIndices.put(rPath, (CollectionIndex) a);
+                if (!sessionCollectionIndices.containsKey(rPath) || !sessionCollectionIndices.get(rPath).equals(a) || forceAdd)
+                    changedCollectionIndices.put(rPath, (CollectionIndex) a);
                 break;
             case GEAR_STYLE:
-                if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(a) || forceAdd) changedGearStyleTypes.put(rPath, (GearStyleType) a);
+                if (!sessionGearStyleTypes.containsKey(rPath) || !sessionGearStyleTypes.get(rPath).equals(a) || forceAdd)
+                    changedGearStyleTypes.put(rPath, (GearStyleType) a);
                 break;
             case ITEM:
-                if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(a) || forceAdd) changedItems.put(a.getRPath(), (Item) a);
+                if (!sessionItems.containsKey(rPath) || !sessionItems.get(rPath).equals(a) || forceAdd)
+                    changedItems.put(a.getRPath(), (Item) a);
                 break;
             case PLACEABLE:
-                if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(a) || forceAdd) changedPlaceables.put(rPath, (Placeable) a);
+                if (!sessionPlaceables.containsKey(rPath) || !sessionPlaceables.get(rPath).equals(a) || forceAdd)
+                    changedPlaceables.put(rPath, (Placeable) a);
                 break;
             case RECIPE:
-                if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(a) || forceAdd) changedRecipes.put(rPath, (Recipe) a);
+                if (!sessionRecipes.containsKey(rPath) || !sessionRecipes.get(rPath).equals(a) || forceAdd)
+                    changedRecipes.put(rPath, (Recipe) a);
                 break;
             case SKIN:
-                if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(a) || forceAdd) changedSkins.put(rPath, (Skin) a);
+                if (!sessionSkins.containsKey(rPath) || !sessionSkins.get(rPath).equals(a) || forceAdd)
+                    changedSkins.put(rPath, (Skin) a);
                 break;
-            case STRING:
+            case LANG_FILE:
                 LangFile l = (LangFile) a;
                 l.getStrings().forEach((k, v) -> {
-                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v) || forceAdd) changedStrings.put(k, v);
+                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v) || forceAdd)
+                        changedStrings.put(k, v);
                 });
                 break;
         }
     }
 
-    public void removeArticleFromChanges(String identifier, Enums.ObjectType type) {
+    /**
+     * Removes an Article from the data.
+     *
+     * @param identifier        The identifier of the entity
+     * @param type              All ObjectTypes are valid besides PROFESSION and LANG_FILE. Inputting them results in no action.
+     * @param removeFromChanges If true, removes from the changed data; else removes from session data.
+     */
+    public void removeArticle(String identifier, Enums.ObjectType type, boolean removeFromChanges) {
         switch (type) {
             case BENCH:
-                changedBenches.remove(identifier);
+                if (removeFromChanges) changedBenches.remove(identifier);
+                else sessionBenches.remove(identifier);
                 break;
             case COLLECTION:
-                changedCollections.remove(identifier);
+                if (removeFromChanges) changedCollections.remove(identifier);
+                else sessionCollections.remove(identifier);
                 break;
             case COLL_INDEX:
-                changedCollectionIndices.remove(identifier);
+                if (removeFromChanges) changedCollectionIndices.remove(identifier);
+                else sessionCollectionIndices.remove(identifier);
                 break;
             case GEAR_STYLE:
-                changedGearStyleTypes.remove(identifier);
+                if (removeFromChanges) changedGearStyleTypes.remove(identifier);
+                else sessionGearStyleTypes.remove(identifier);
                 break;
             case ITEM:
-                changedItems.remove(identifier);
+                if (removeFromChanges) changedItems.remove(identifier);
+                else sessionItems.remove(identifier);
                 break;
             case PLACEABLE:
-                changedPlaceables.remove(identifier);
+                if (removeFromChanges) changedPlaceables.remove(identifier);
+                else sessionPlaceables.remove(identifier);
                 break;
             case RECIPE:
-                changedRecipes.remove(identifier);
+                if (removeFromChanges) changedRecipes.remove(identifier);
+                else sessionRecipes.remove(identifier);
                 break;
             case SKIN:
-                changedSkins.remove(identifier);
-                break;
-            case STRING:
-                changedStrings.remove(identifier);
+                if (removeFromChanges) changedSkins.remove(identifier);
+                else sessionSkins.remove(identifier);
                 break;
         }
     }
@@ -242,7 +233,7 @@ public class DataModel {
     public void setSessionString(Strings s) {
         sessionStrings = s;
     }
-    
+
     // GETTERS - CHANGED DATA
 
     public ObservableMap<String, Bench> getChangedBenches() {
@@ -313,7 +304,7 @@ public class DataModel {
                 return mergedRecipePaths;
             case SKIN:
                 return mergedSkinPaths;
-            case STRING:
+            case LANG_FILE:
                 return mergedStringIds;
             default:
                 throw new IllegalArgumentException("No such type: " + type);
@@ -348,7 +339,7 @@ public class DataModel {
             case SKIN:
                 this.mergedSkinPaths.add(path);
                 break;
-            case STRING:
+            case LANG_FILE:
                 this.mergedStringIds.add(path);
                 break;
             default:

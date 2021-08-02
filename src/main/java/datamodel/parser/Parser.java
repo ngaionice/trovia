@@ -10,7 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Parser {
 
@@ -125,7 +126,7 @@ public class Parser {
             case SKIN:
                 context = new ParseContext(new ParseSkin());
                 return context.parse(splitString, path, useRPath);
-            case STRING:
+            case LANG_FILE:
                 context = new ParseContext(new ParseLangFile());
                 return context.parse(splitString, path, useRPath);
             default:
@@ -139,7 +140,7 @@ public class Parser {
         String[] fileNames = new String[]{"blocks", "plants", "gardening", "signs", "torches", "trophies"};
         for (String name : fileNames) {
             Map<String, String> result = getOBMappingFromFile(dirPath + "\\" + name + ".binfab", name.equals("plants") || name.equals("gardening"));
-            if (result != null) result.forEach(map::put);
+            if (result != null) map.putAll(result);
         }
         return map;
     }

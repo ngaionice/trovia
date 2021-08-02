@@ -34,7 +34,6 @@ public class Main extends Application {
         Scene scene = new Scene(root, 1280, 720);
         presenter = new Presenter(primaryStage, scene, root);
 
-
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/data-views.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/icon-styles.css")).toExternalForm());
