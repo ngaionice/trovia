@@ -1,16 +1,14 @@
 package datamodel;
 
 import datamodel.objects.*;
+import datamodel.objects.Collection;
 import datamodel.parser.Parser;
 import datamodel.parser.parsestrategies.ParseException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataModel {
 
@@ -179,7 +177,7 @@ public class DataModel {
             case LANG_FILE:
                 LangFile l = (LangFile) a;
                 l.getStrings().forEach((k, v) -> {
-                    if (!sessionStrings.hasString(k) || !sessionStrings.getString(k).equals(v) || forceAdd)
+                    if (!sessionStrings.hasString(k) || !Objects.equals(sessionStrings.getString(k), v) || forceAdd)
                         changedStrings.put(k, v);
                 });
                 break;
