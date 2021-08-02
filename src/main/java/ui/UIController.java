@@ -245,7 +245,7 @@ public class UIController {
     }
 
     void deserialize(String path) {
-        if (!new File(path).exists()) return;
+        if (path == null || !new File(path).exists()) return;
         Serializer s = new Serializer();
         Gson serializer = s.getSerializer(false);
         try {

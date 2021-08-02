@@ -396,7 +396,7 @@ public class Serializer {
             String name = obj.get("name").getAsString();
             String desc = obj.get("desc").isJsonNull() ? null : obj.get("desc").getAsString();
             String blueprint = obj.get("blueprint").isJsonNull() ? null : obj.get("blueprint").getAsString();
-            boolean tradable = obj.get("tradable").getAsBoolean();
+            boolean tradable = obj.get("tradable").getAsInt() == 1;
 
             return new Placeable(name, desc, rPath, blueprint, tradable);
         }
